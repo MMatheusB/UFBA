@@ -17,7 +17,6 @@ P_out = 5
 C = 479
 
 result = fsolve(fun, (0, 10), args = (A1, Lc, kv, P1, P_out, C)) 
-print(result)
 
 a = result[0]
 b = result[1]
@@ -27,6 +26,7 @@ x = ca.MX.sym('x', 2)
 alpha = ca.MX.sym('alpha', 1)
 x0_values = []
 x1_values = []
+alpha_values = [np.full(1000, 0.5)]
 
 
 for i in range(0,5):  
@@ -34,6 +34,7 @@ for i in range(0,5):
         alpha0 = 0.5
     else:
         alpha0 = np.random.uniform(0.2, 0.8)
+        alpha_values.append(np.full(1000, alpha0))
     
     rhs = ca.vertcat((A1/Lc)*((1.5 * P1) - x[1]), (C**2)/2 * (x[0] - alpha * kv * np.sqrt(x[1] - P_out)))
     ode = {'x' : x, 'ode' : rhs, 'p' : alpha }
@@ -51,14 +52,20 @@ for i in range(0,5):
     b = aux2[-1]
 
 
-plt.figure()
+plt.figure("mass flow rate x time")
 for i in range(0,5):
     plt.plot(intervalo[i], np.squeeze(x0_values[i]), label='x0(t)')
 plt.grid(True)
-plt.show()
 
-plt.figure()
+plt.figure("Plenum pressure x time")
 for i in range(0,5):
     plt.plot(intervalo[i], np.squeeze(x1_values[i]), label='x0(t)')
 plt.grid(True)
+
+plt.figure("alpha x time")
+for i in range(0,5):
+    plt.plot(intervalo[i], np.squeeze(alpha_values[i]), linestyle=':')
+plt.grid(True)
+
+
 plt.show()
