@@ -1,0 +1,10 @@
+import numpy as np
+
+# Defina dois vetores
+vetor1 = np.array([1, 2, 3])
+vetor2 = np.array([4, 5, 6])
+
+# Junte os vetores horizontalmente
+vetor_junto = np.hstack((vetor1, vetor2))
+
+print(vetor_junto)
