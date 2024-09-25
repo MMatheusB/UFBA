@@ -35,7 +35,6 @@ for i in range(0,5):
     else:
         alpha0 = np.random.uniform(0.2, 0.8)
         alpha_values.append(np.full(1000, alpha0))
-        ##alpha_values = np.hstack((alpha_values, np.full(400, alpha0)))
     
     rhs = ca.vertcat((A1/Lc)*((1.5 * P1) - x[1]), (C**2)/2 * (x[0] - alpha * kv * np.sqrt(x[1] - P_out)))
     ode = {'x' : x, 'ode' : rhs, 'p' : alpha }

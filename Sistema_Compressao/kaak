@@ -1,10 +1,159 @@
 import numpy as np
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+from scipy.optimize import fsolve
+import casadi as ca
+import matplotlib.pyplot as plt
 
-# Defina dois vetores
-vetor1 = np.array([1, 2, 3])
-vetor2 = np.array([4, 5, 6])
+np.random.seed(42)
+alpha0 = np.random.uniform(0.2, 0.8)
+A1 = (2.6)*(10**-3)
+Lc = 2
+kv = 0.38
+P1 = 8.5
+P_out = 5
+C = 479
 
-# Junte os vetores horizontalmente
-vetor_junto = np.hstack((vetor1, vetor2))
+def fun(variables, A1, Lc, kv, P1, P_out, C) :
+    (x,y) = variables
+    eqn_1 = (A1/Lc)* ((1.5 * P1) - y)
+    eqn_2 = (C**2)/2 * (x - alpha0 * kv * np.sqrt(y - P_out))
+    return [eqn_1, eqn_2]
 
-print(vetor_junto)
+
+result = fsolve(fun, (0, 10), args = (A1, Lc, kv, P1, P_out, C)) 
+
+init_m = result[0]
+init_p = result[1]
+interval = [np.linspace(i * 500, (i + 1) * 500, 500) for i in range(10)]
+x = ca.MX.sym('x', 2)
+alpha = ca.MX.sym('alpha', 1)
+massFlowrate = []
+PlenumPressure = []
+alpha_values = [np.full(500, alpha0)]
+RNN_train = []
+RNN_test = []
+
+
+
+for i in range(0,10):  
+    if i ==0:
+        alpha1 = alpha0
+    else:
+        alpha1 = np.random.uniform(0.2, 0.8)
+        alpha_values.append(np.full(500, alpha1))
+    
+    rhs = ca.vertcat((A1/Lc)*((1.5 * P1) - x[1]), (C**2)/2 * (x[0] - alpha * kv * np.sqrt(x[1] - P_out)))
+    ode = {'x' : x, 'ode' : rhs, 'p' : alpha }
+
+    F = ca.integrator('F','idas', ode, interval[i][0], interval[i])
+    
+    sol = F(x0 = [init_m, init_p], p = alpha1)
+
+    xf_values = np.array(sol["xf"])
+
+    aux1, aux2 = xf_values
+    massFlowrate.append(aux1)
+    PlenumPressure.append(aux2)
+    init_m = aux1[-1]
+    init_p = aux2[-1]
+
+    if i < 5:
+        RNN_train.append(xf_values)
+    else:
+        RNN_test.append(xf_values)
+
+plt.figure("mass flow rate x time")
+for i in range(0,5):
+    plt.plot(interval[i], np.squeeze(massFlowrate[i]), label='x0(t)')
+plt.grid(True)
+plt.xlabel('Time')  
+plt.ylabel('Value')
+
+plt.figure("Plenum pressure x time")
+for i in range(0,5):
+    plt.plot(interval[i], np.squeeze(PlenumPressure[i]), label='x0(t)')
+plt.grid(True)
+plt.xlabel('Time')  
+plt.ylabel('Value')
+
+plt.figure("alpha x time")
+for i in range(0,5):
+    plt.plot(interval[i], np.squeeze(alpha_values[i]), linestyle=':')
+plt.grid(True)
+plt.xlabel('time') 
+plt.ylabel('Value')
+
+
+plt.show()
+
+RNN_train = np.array(RNN_train)
+RNN_test = np.array(RNN_test)
+
+timestep = 4
+
+X = []
+y = []
+
+x_test = []
+
+for i in range(len(RNN_train[0][0])-1):
+    X.append(RNN_train[:,:,i])
+    y.append(RNN_train[:,:, i+1])
+    x_test.append(RNN_test[:,:,i])
+
+
+X = np.array(X)
+print(X.shape)
+y = np.array(y)
+
+x_test = np.array(x_test)
+
+model = keras.Sequential()
+
+model.add(layers.LSTM(50, input_shape=(timestep,2), return_sequences= True))
+model.add(layers.Dropout(0.2))
+model.add(layers.Dense(2))
+
+model.compile(optimizer = 'adam', loss = 'mean_squared_error')
+
+history = model.fit(X,y,epochs = 300, verbose = 0)
+
+# Plot the training loss
+plt.plot(history.history['loss'])
+plt.title('Model Loss')
+plt.ylabel('Loss')
+plt.xlabel('Epoch')
+plt.show()
+
+# Assuming X_new is the new data for prediction
+prediction = model.predict(x_test)
+
+# Extract mass and pressure from prediction
+mass = prediction[:,:,0]
+pressure = prediction[:,:,1]
+print(mass.shape, pressure.shape)
+
+# Cria uma figura com subplots
+fig, axs = plt.subplots(2, 1, figsize=(10, 7))
+
+# Gráfico da mass FlowRate vs. Tempo
+for i in range(5, 10):
+    axs[0].plot(interval[i][:-1], np.squeeze(mass[:,i-5]))
+axs[0].grid(True)
+axs[0].set_xlabel('Time')
+axs[0].set_ylabel('Mass Flow Rate')
+axs[0].set_title('Mass Flow Rate vs Time')
+axs[0].legend()
+
+# Gráfico da Pressão do PlenumPressure vs. Tempo
+for i in range(5, 10):
+    axs[1].plot(interval[i][:-1], np.squeeze(pressure[:,i-5]))
+axs[1].grid(True)
+axs[1].set_xlabel('Time')
+axs[1].set_ylabel('Plenum Pressure')
+axs[1].set_title('Plenum Pressure vs Time')
+axs[1].legend()
+
+plt.show()
