@@ -27,10 +27,10 @@ class MyModel(nn.Module):
         self.dense = nn.Linear(units*2, 2)
 
         # Inicialização dos pesos com Xavier (Glorot Uniform)
-        self._initialize_weights()
+        # self._initialize_weights()
 
     def _initialize_weights(self):
-        # Inicializador Xavier (Glorot) nos pesos das camadas RNN
+         # Inicializador Xavier (Glorot) nos pesos das camadas RNN
         for rnn_layer in self.rnn_layers:
             for name, param in rnn_layer.named_parameters():
                 if 'weight' in name:
@@ -43,15 +43,24 @@ class MyModel(nn.Module):
 
     def forward(self, inputs):
         # Passagem pelas camadas RNN
-        rnn_output = 2 * (inputs - self.x_min) / (self.x_max - self.x_min) - 1
+        if self.training:  # Verifica se o modelo está em modo de treinamento
+            rnn_output = 2 * (inputs - self.x_min) / (self.x_max - self.x_min) - 1
+        else:
+            rnn_output = inputs  # Em modo de avaliação, não normaliza
+
         for rnn_layer in self.rnn_layers:
-            rnn_output, _ = rnn_layer(rnn_output)
-            rnn_output = torch.tanh(rnn_output)  # Aplicando tanh explicitamente após cada camada RNN
-         # Pegando apenas a última saída da sequência e desnormalizando
-        dense_output = self.dense(rnn_output[:, -1, :])  # Dimensão [batch_size, hidden_size * num_directions]
-        
-        desnormalizado = ((dense_output + 1) / 2) * (self.x_max[:, :, :2] - self.x_min[:, :, :2]) + self.x_min[:, :, :2]
-          # Pegando apenas a última saída da sequência
+            rnn_output, _ = rnn_layer(rnn_output) # Aplicando tanh explicitamente após cada camada RNN
+
+        # Pegando apenas a última saída da sequência e desnormalizando
+        dense_output = self.dense(rnn_output[:, -1, :])
+
+        if self.training:
+            # Desnormaliza apenas se estiver no modo de treinamento
+            desnormalizado = ((dense_output + 1) / 2) * (self.x_max[:, :, :2] - self.x_min[:, :, :2]) + self.x_min[:, :, :2]
+        else:
+            desnormalizado = dense_output  # No modo de avaliação, retorna diretamente
+
+        # Retorna a saída desnormalizada ou direta, dependendo do modo
         return desnormalizado
     
     def loss_custom(self, y_true, y_pred, inputs):
@@ -82,6 +91,7 @@ class MyModel(nn.Module):
             print(f"Epoch [{epoch+1}/{epochs}], Loss: {total_loss / len(train_loader)}")
         
     def test_model(self, x_test, interval, model):
+        model.eval()
         massFlowrate100 = [x_test[0, 0, 0].item(), x_test[0, 1, 0].item(), x_test[0, 2, 0].item()]
         PlenumPressure100 = [x_test[0, 0, 1].item(), x_test[0, 1, 1].item(), x_test[0, 2, 1].item()]
 
@@ -101,8 +111,9 @@ class MyModel(nn.Module):
                 prediction100 = model(input_tensor)
 
             # Adicionar previsões diretamente
-            massFlowrate100.append(prediction100[0, 0, 0].item())
-            PlenumPressure100.append(prediction100[0, 0, 1].item())
+            massFlowrate100.append(prediction100[0, 0].item())
+            PlenumPressure100.append(prediction100[0, 1].item())
         tm2 = time.time()
         timeteste = tm2 - tm1
+        model.train()
         return massFlowrate100,PlenumPressure100, timeteste
