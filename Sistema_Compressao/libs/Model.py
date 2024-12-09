@@ -45,42 +45,60 @@ class MyModel(nn.Module):
           #Pegando apenas a última saída da sequência
         return desnormalizado
     
-    def loss_custom(self, y_true, y_pred, inputs):
-        # Implementação da função de perda
-        interp = []
-        for i in range (0, inputs.shape[0]):
-            aux = self.interpolation([(inputs[i, -1, -1]).item(), (y_pred[0, i, 0]).item()])
-            interp.append(aux)
-        interp = np.array(interp)
-        interp = torch.tensor(interp, dtype=torch.float32)
-
-        m_t = (11* y_pred[:, :, 0] - 18 *inputs[:, -2, 0] + 9 * inputs[:, -3, 0] - 2 * inputs[:, 0, 0])/(6*self.dt)
-        p_t = (11* y_pred[:, :, 1] - 18 *inputs[:, -2, 1] + 9 * inputs[:, -2, 1] - 2 * inputs[:, -2, 1])/(6*self.dt)
-        
-        fLoss_mass = torch.mean(torch.square(m_t - (self.A1/self.Lc)*(( interp * self.P1) - y_pred[:, :, 1]) * 1e3))
-        fLoss_pres = torch.mean(torch.square(p_t - (self.C**2)/2 * (y_pred[:, :, 0] - inputs[:, -1, -2]* self.kv * torch.sqrt((torch.abs(y_pred[:, :, 1] * 1000 - self.P_out * 1000))))))
-        
-        phys_loss = fLoss_mass + fLoss_pres
-        data_loss =  1e2* torch.mean((y_true[:, 0, 0] - y_pred[:, :, 0]) ** 2) + 1e1*torch.mean((y_true[:, 0, 1] - y_pred[:, :, 1]) ** 2)
-        
-        return data_loss +  3e-9 *phys_loss
-
     def train_model(self, model, train_loader, lr, epochs, optimizers):
         optimizer = optimizers(model.parameters(), lr=lr)
         model.train()
-        
+
+        # Listas para armazenar as perdas
+        loss_values = []
+        phys_loss_values = []
+        data_loss_values = []
+
         for epoch in range(epochs):
             total_loss = 0
+            total_phys_loss = 0
+            total_data_loss = 0
+
             for inputs, y_true in train_loader:
                 optimizer.zero_grad()
-                
+
                 y_pred = model(inputs)
-                loss = self.loss_custom(y_true, y_pred, inputs)
+                
+                # Calcular as perdas individuais
+                interp = []
+                for i in range(inputs.shape[0]):
+                    aux = self.interpolation([(inputs[i, -1, -1]).item(), (y_pred[0, i, 0]).item()])
+                    interp.append(aux)
+                interp = np.array(interp)
+                interp = torch.tensor(interp, dtype=torch.float32)
+
+                m_t = (11 * y_pred[:, :, 0] - 18 * inputs[:, -2, 0] + 9 * inputs[:, -3, 0] - 2 * inputs[:, 0, 0]) / (6 * self.dt)
+                p_t = (11 * y_pred[:, :, 1] - 18 * inputs[:, -2, 1] + 9 * inputs[:, -2, 1] - 2 * inputs[:, -2, 1]) / (6 * self.dt)
+
+                fLoss_mass = torch.mean(torch.square(m_t - (self.A1/self.Lc) * ((interp * self.P1) - y_pred[:, :, 1]) * 1e3))
+                fLoss_pres = torch.mean(torch.square(p_t - (self.C**2)/2 * (y_pred[:, :, 0] - inputs[:, -1, -2]*self.kv*torch.sqrt((torch.abs(y_pred[:, :, 1]*1000 - self.P_out*1000))))))
+
+                phys_loss = (fLoss_mass + fLoss_pres)*2e-8
+                data_loss = 1e1 * torch.mean((y_true[:, 0, 0] - y_pred[:, :, 0]) ** 2) + 1e3 * torch.mean((y_true[:, 0, 1] - y_pred[:, :, 1]) ** 2)
+
+                loss = data_loss + phys_loss
+                
                 loss.backward()
                 optimizer.step()
-                
+
                 total_loss += loss.item()
-            print(f"Epoch [{epoch+1}/{epochs}], Loss: {total_loss / len(train_loader)}")
+                total_phys_loss += phys_loss.item()
+                total_data_loss += data_loss.item()
+            
+            # Armazenar as médias por época
+            loss_values.append(total_loss / len(train_loader))
+            phys_loss_values.append(total_phys_loss / len(train_loader))
+            data_loss_values.append(total_data_loss / len(train_loader))
+
+            print(f"Epoch [{epoch+1}/{epochs}], Loss: {loss_values[-1]}, Phys Loss: {phys_loss_values[-1]}, Data Loss: {data_loss_values[-1]}")
+
+        # Retornar os valores para posterior plotagem
+        return loss_values, phys_loss_values, data_loss_values
             
     def test_model(self, x_test, interval, model):
         model.eval()
