@@ -5,7 +5,8 @@ from scipy.optimize import fsolve
 import torch
 
 class Simulation:
-    def __init__(self, A1, Lc, kv, P1, P_out, C, alphas, N_RotS, nAlphas, nData, perturb,tempo, dt, interpolation, timestep):
+    def __init__(self, A1, Lc, kv, P1, P_out, C, alphas, N_RotS, nAlphas, nData, perturb,tempo, dt, interpolation, timestep, integrator):
+        self.integrator = integrator
         self.A1 = A1
         self.Lc = Lc
         self.kv = kv
@@ -35,7 +36,6 @@ class Simulation:
         self.N_values = []
         self.massFlowrate = []
         self.PlenumPressure = []
-        self.Phi_values = []
         self.RNN_train = []
         self.RNN_trainFut = []
         self.X_train = []
@@ -73,7 +73,7 @@ class Simulation:
             
             ode = {'x': x, 'ode': rhs, 'p': p}
 
-            F = ca.integrator('F', 'cvodes', ode, self.interval[0][0],self.dt)
+            F = ca.integrator('F', self.integrator, ode, self.interval[0][0],self.dt)
 
             for j in range(self.nData):
                 params = [alpha_value[j], N_value[j]]
@@ -82,7 +82,6 @@ class Simulation:
                 aux1, aux2 = xf_values
                 self.massFlowrate.append(aux1)
                 self.PlenumPressure.append(aux2)
-                self.Phi_values.append(lut(ca.vertcat(N_value[j], aux1)))
                 init_m = aux1[-1]
                 init_p = aux2[-1]
                 self.RNN_train.append([aux1[0], aux2[0], alpha_value[j], N_value[j]])
@@ -92,7 +91,7 @@ class Simulation:
         self.time = tm2-tm1
         self.massFlowrate = np.reshape(self.massFlowrate, [self.nAlphas, self.nData])
         self.PlenumPressure = np.reshape(self.PlenumPressure, [self.nAlphas, self.nData])
-        self.Phi_values = np.reshape(self.Phi_values, [self.nAlphas, self.nData])
+        self.N_values = np.reshape(self.N_values, [self.nAlphas, self.nData])
         
         self.RNN_train = np.array(self.RNN_train)
 
