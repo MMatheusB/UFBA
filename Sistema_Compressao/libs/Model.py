@@ -76,7 +76,7 @@ class MyModel(nn.Module):
                 # Calcular as perdas
                 interp = []
                 for i in range(inputs.shape[0]):
-                    aux = self.interpolation([(inputs[i, -1, -1]).item(), (y_pred[0, i, 0]).item()])
+                    aux = self.interpolation([(inputs[i, -1, -1]).item(), (y_true[0, i, 0]).item()])
                     interp.append(aux)
                 interp = np.array(interp)
                 interp = torch.tensor(interp, dtype=torch.float32)
@@ -84,10 +84,10 @@ class MyModel(nn.Module):
                 m_t = (11 * y_pred[:, :, 0] - 18 * inputs[:, -2, 0] + 9 * inputs[:, -3, 0] - 2 * inputs[:, 0, 0]) / (6 * self.dt)
                 p_t = (11 * y_pred[:, :, 1] - 18 * inputs[:, -2, 1] + 9 * inputs[:, -2, 1] - 2 * inputs[:, -2, 1]) / (6 * self.dt)
 
-                fLoss_mass = torch.mean(torch.square(m_t - (self.A1 / self.Lc) * ((interp * self.P1) - y_pred[:, :, 1]) * 1e3))
+                fLoss_mass = torch.mean(torch.square(m_t - (self.A1 / self.Lc) * ((interp * self.P1) - y_true[:, :, 1]) * 1e3))
                 fLoss_pres = torch.mean(torch.square(
-                    p_t - (self.C ** 2) / 2 * (y_pred[:, :, 0] - inputs[:, -1, -2] * self.kv * torch.sqrt(
-                        (torch.abs(y_pred[:, :, 1] * 1000 - self.P_out * 1000))))))
+                    p_t - (self.C ** 2) / 2 * (y_true[:, :, 0] - inputs[:, -1, -2] * self.kv * torch.sqrt(
+                        ((y_true[:, :, 1] * 1000 - self.P_out * 1000))))))
 
                 phys_loss = (fLoss_mass + fLoss_pres) * 2e-9
                 data_loss = 1e1 * torch.mean((y_true[:, 0, 0] - y_pred[:, :, 0]) ** 2) + 1e2 * torch.mean(
