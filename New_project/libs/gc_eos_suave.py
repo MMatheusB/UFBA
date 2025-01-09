@@ -247,6 +247,14 @@ class gc_eos_class:
     def evaluate_eos_P(self):
 
         self.evaluate_par_a()
+        
+        crit_gas = self.copy_change_conditions(T0, None, V0, 'gas')
+
+        K = crit_gas.Veos/self.b_m
+
+        Tr = self.T/crit_gas.T
+        
+        alpha = 1 + K*(1 - (self.Tr)**0.5)
 
         V_eos = self.V + self.delta_vm
 
