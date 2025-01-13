@@ -35,7 +35,7 @@ class gc_eos_class:
         if [T, P, V].count(None) > 1:
             print("It is necessary 2 values in T, P or V")
 
-        self.pr_parameters()
+        self.soave_parameters()
 
         if self.T == None:
             if self.phase == 'liquid':
@@ -154,61 +154,6 @@ class gc_eos_class:
         else:
             return Cf
     
-    def critical_case_fehbet(self, T0, V0, delta_y0,eval):
-        
-        delta_y0 = array(delta_y0)
-        
-        D1 = self.u/2 + (self.u**2-4*self.w)**0.5/2
-        D2 = self.u/2 - (self.u**2-4*self.w)**0.5/2
-        crit_gas = self.copy_change_conditions(T0, None, V0, 'gas')
-        K = crit_gas.Veos/self.b_m
-        F1 = 1/(K-1)
-        F2 = 2/(D1-D2)*(D1/(K+D1)-D2/(K+D2))
-        F3 = 1/(D1-D2)*(D1**2/(K+D1)**2-D2**2/(K+D2)**2)
-        F4 = 1/(D1-D2)*(D1**3/(K+D1)**3-D2**3/(K+D2)**3)
-        F5 = 2/(D1-D2)*log((K+D1)/(K+D2))
-        F6 = F2 - F5
-        
-        F = [0, F1, F2, F3, F4, F5, F6]
-        
-        B = self.b/self.b_m
-        
-        #t_solver = lambda T: self.critical_case_T(T, V0, F, B, False)
-        #res = fsolve(t_solver, x0 = T0)
-        #T0 = res[0]
-        x = array(crit_gas.mixture.x)
-        crit_gas = self.copy_change_conditions(T0, None, V0, 'gas')
-        
-        mat_Q = self.critical_case_T(array([T0]), V0, F, B, True)
-        
-        N_ = sum(delta_y0)
-        B_ = sum(B*delta_y0)
-        A = crit_gas.Q.dot(x)/crit_gas.a_m
-        A_ = sum(A*delta_y0)
-        
-        a_ = delta_y0.transpose().dot(crit_gas.Q.dot(delta_y0))/crit_gas.a_m
-        
-        
-        #for i in range(len(delta_y0)):
-        #    F = R*crit_gas.T*(delta_y0[i]/x[i]+F[1]*self.b_bar[i])
-        #    d2fdxdx.append(F)
-            
-        t1 = -sum(delta_y0**3/x**2)+3*N_*(B_*F[1])**2+2*(B_*F[1])**3
-        t2 = 3*B_**2*(2*A_-B_)*(F[3]+F[6])-2*B_**3*F[4]-3*B_*a_*F[6]
-        
-        Cf = R*crit_gas.T*t1+crit_gas.a_m/(crit_gas.b_m)*t2
-        Cf = [Cf]
-        
-        d2fdxdx = mat_Q.dot(delta_y0)
-        
-        Cf.append(1 - sum(delta_y0**2))
-        
-        for i in d2fdxdx:
-            Cf.append(i)
-        
-        return Cf
-    
-    
     def critical_case(self, T0, V0):
         
         V_solver = lambda V: self.critical_case_V(T0, V, False)
@@ -247,30 +192,20 @@ class gc_eos_class:
     def evaluate_eos_P(self):
 
         self.evaluate_par_a()
-        
-        crit_gas = self.copy_change_conditions(T0, None, V0, 'gas')
-
-        K = crit_gas.Veos/self.b_m
-
-        Tr = self.T/crit_gas.T
-        
-        alpha = 1 + K*(1 - (self.Tr)**0.5)
 
         V_eos = self.V + self.delta_vm
 
-        return self.T*R/(V_eos-self.b_m) - self.a_m/(V_eos**2 + 2*V_eos*self.b_m - self.b_m**2)
+        return self.T*R/(V_eos-self.b_m) - self.a_m/(V_eos**2 + V_eos*self.b_m)
     
     def evaluate_der_eos_P(self):
         
         self.evaluate_der_a()
         
-        self.dPdT = R/(self.Veos-self.b_m) - \
-                    self.der_a/(self.Veos**2 + 2*self.Veos*self.b_m - self.b_m**2)
+        self.dPdT = R/(self.Veos-self.b_m)
         
         self.dPdV = -R*self.T/(self.Veos-self.b_m)**2 + \
-                    self.a_m/(self.Veos**2 + 2*self.Veos*self.b_m - self.b_m**2)**2*\
-                    2*(self.Veos + self.b_m)
-        
+                    self.a_m * (self.b_m  + 2*self.Veos)/(self.Veos**2 + self.b_m*self.Veos)**2
+    
     def evaluate_der_rho(self):
         
         self.evaluate_der_eos_P()
@@ -283,7 +218,7 @@ class gc_eos_class:
         
     def evaluate_eos_V_gas(self, Z):
 
-        self.V = self.T*Z*R/self.P + self.delta_vm
+        self.V = self.T*Z*R/self.P + self.delta_vm 
         self.evaluate_par_a()
 
         beta = self.b_m*self.P/self.T/R
@@ -301,7 +236,7 @@ class gc_eos_class:
 
         return Z - beta - (Z**2 + 2*Z*beta - beta**2)*(1 + beta - Z)/q/beta
 
-    def pr_parameters(self):
+    def soave_parameters(self):
 
         self.b = [R*sp.Tc*0.07780/sp.Pc for sp in self.mixture.list_of_species]
 
@@ -374,17 +309,6 @@ class gc_eos_class:
             / 2**1.5*log((self.Zeos+beta*(1+2**.5))/(self.Zeos+beta*(1-2**.5)))
         
         return exp(ln_phi_c_i)
-
-    def evaluate_der_fugacity_coef(self):
-
-        beta = self.b_m*self.P/self.T/R
-        q = self.a_m/self.b_m/self.T/R
-
-        d_ln_phi_c_i_dz = array(self.b_bar)/self.b_m - 1/(self.Z-beta) \
-            + q*(1 + self.a_bar/self.a_m - array(self.b_bar)/self.b_m) \
-            / (self.Z**2+2*beta*self.Z-beta**2)
-
-        return d_ln_phi_c_i_dz
     
     def ci_ideal(self):
         
@@ -509,3 +433,4 @@ class gc_eos_class:
                 - q/2**1.5*log((self.Zeos+beta*(1+2**.5))/(self.Zeos+beta*(1-2**.5)))
 
         return exp(ln_phi) 
+
