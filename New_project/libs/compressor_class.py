@@ -8,10 +8,10 @@ import numpy as np
 
 class CompressorClass:
     def __init__(self, N=0):
-        self.Dh1 = 0.032*0.9
-        self.Dt1 = 0.074*0.9
-        self.Dt2 = 0.128*0.8
-        self.Dh2 = 0.128*0.8
+        self.Dh1 = 0.032
+        self.Dt1 = 0.074
+        self.Dt2 = 0.128
+        self.Dh2 = 0.128
         self.li = 0.053
         self.ld = 0.053
         self.B1b = 0.61

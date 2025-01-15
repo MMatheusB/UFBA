@@ -50,7 +50,7 @@ class plenum:
         
         ddot_m = self.A1/self.Lc*(P2-Pp)
         
-        cte = self.Vpp*gas.mixture.MM_m 
+        cte = self.Vpp*self.gas.mixture.MM_m 
         
         dot_m_valve = self.valve.evaluate_flow(alpha,Pp-P_out)
         
