@@ -190,7 +190,7 @@ class gc_eos_class:
         return Z - beta + (Z**2 + 2*Z*beta - beta**2)*(1 + beta - Z)/q/beta
 
     def evaluate_eos_P(self):
-
+        ##revisada
         self.evaluate_par_a()
 
         V_eos = self.V + self.delta_vm
@@ -198,10 +198,10 @@ class gc_eos_class:
         return self.T*R/(V_eos-self.b_m) - self.a_m/(V_eos**2 + V_eos*self.b_m)
     
     def evaluate_der_eos_P(self):
-        
+        #revisada, falta descobrir oq é dadt
         self.evaluate_der_a()
         
-        self.dPdT = R/(self.Veos-self.b_m)
+        self.dPdT = R/(self.Veos-self.b_m) - 1/(self.Veos**2 + self.Veos*self.b_m)
         
         self.dPdV = -R*self.T/(self.Veos-self.b_m)**2 + \
                     self.a_m * (self.b_m  + 2*self.Veos)/(self.Veos**2 + self.b_m*self.Veos)**2
@@ -273,7 +273,7 @@ class gc_eos_class:
     def evaluate_der_sec_a(self):
         
         A_c = array([[(i*j)**0.5 for i in self.a_c] for j in self.a_c])
-        
+        ## linha 188 do outro arquivo.
         der_sec_A = [[0.25*self.T**-1.5*((1+self.kappa[i])*self.kappa[j]/self.mixture.list_Tc[j]**0.5 +
                                          (1+self.kappa[j])*self.kappa[i]/self.mixture.list_Tc[i]**0.5) \
                       for i in range(len(self.mixture.x))]
@@ -333,26 +333,21 @@ class gc_eos_class:
         self.Cpt = self.Cvt - self.T*(self.dPdT**2)/self.dPdV
     
     def h_gas(self):
-        
+        #revisado parcialmente
         hi = self.mixture.evaluate_enthalpy_ig(self.T)
         
         self.evaluate_der_a()
-        
-        hr = self.P*self.Veos - R*self.T - (self.a_m - self.der_a*self.T)/(2*2**0.5*self.b_m)\
-                                           *log((self.Veos + self.b_m*(1+2**0.5))/
-                                                (self.Veos + self.b_m*(1-2**0.5)))
-        
+        ## linha 291
+        hr = self.P*self.Veos - R*self.T - (self.a_m - self.der_a*self.T)*(1/self.b_m)*(np.log(1 + self.b_m/self.Veos))
         self.h = hr + hi;
     
     def s_gas(self):
-        
+        #revisado parcialmente
         si = self.mixture.evaluate_entropy_ig(self.T)
         
         self.evaluate_der_a()
-        
-        sr = R*log((self.Veos-self.b_m)*self.P/R/self.T) + self.der_a/(2*self.b_m*2**0.5)\
-                                                       *log((self.Veos + self.b_m*(1+2**0.5))\
-                                                           /(self.Veos + self.b_m*(1-2**0.5)))
+        #linha 305
+        sr = R*log((self.Veos-self.b_m)*self.P/(R*self.T)) - self.der_a*(1/self.b_m)* np.log(1 + self.b_m/self.Veos)
         
         self.s = sr + si - R*log(self.P)
         
