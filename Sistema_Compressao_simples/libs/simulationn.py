@@ -69,7 +69,7 @@ class Simulation:
             self.N_values.append(N_value)
 
             rhs = ca.vertcat((self.A1 / self.Lc) * ((lut(ca.vertcat(N, x[0])) * self.P1) - x[1]) * 1e3,
-                             (self.C**2) / 2 * (x[0] - alpha * self.kv * np.sqrt(x[1] * 1000 - self.P_out * 1000)))
+                             ((self.C**2) / 2) * (x[0] - alpha * self.kv * np.sqrt(x[1] * 1000 - self.P_out * 1000)))
             
             ode = {'x': x, 'ode': rhs, 'p': p}
 
