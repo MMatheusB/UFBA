@@ -70,9 +70,59 @@ class plenum:
         
         return [ddot_m, dot_Tp, dot_Vp] + alg
         
+
+    def simulate_plenum():
+        # Variáveis de estado
+        x = MX.sym("x", 3)  # [dot_m, Tp, Vp]
         
+        # Variáveis algébricas
+        z = MX.sym("z", 11)  # [Pp, P2, Timp, Vimp, Tdif, Vdif, T2s, V2s, T2, V2, V1]
         
+        # Variáveis de controle
+        u = MX.sym("u", 5)  # [P1, T1, N, alpha, P_out]
         
+
+        gas = ...  
+        compression = ... 
+        valve_system = valve(kv=1, Cv=1)
+        
+        # Criar o plenum
+        my_plenum = plenum(gas, compression, valve_system, Vpp=1, Lc=1, A1=1)
+        
+        # Avaliar as equações DAE
+        dae_rhs = my_plenum.evaluate_dae(0, x, z, u)
+        
+        f_x = vertcat(*dae_rhs[:3]) 
+        g_z = vertcat(*dae_rhs[3:])  
+        
+        dae = {'x': x, 'z': z, 'p': u, 'ode': f_x, 'alg': g_z}
+        
+        # Configurar o integrador
+        opts = {'tf': 1.0}  
+        integrator = integrator('integrator', 'idas', dae, opts)
+        
+        # Condições iniciais
+        x0 = np.array([0, 300, 1])  
+        z0 = np.zeros(11)  
+        u0 = np.array([1, 300, 3000, 0.5, 1])  
+        
+        # Simular
+        results = []
+        for t in np.linspace(0, 10, 100):  
+            res = integrator(x0=x0, z0=z0, p=u0)
+            x0 = res['xf']  
+            z0 = res['zf']  
+            results.append((t, x0, z0))
+        
+        return results
+
+# Executar a simulação
+    simulation_results = simulate_plenum()
+
+# Processar e visualizar os resultados
+    for time, state, algebraic in simulation_results:
+        print(f"Time: {time}, States: {state}, Algebraic: {algebraic}")
+
         
         
         
