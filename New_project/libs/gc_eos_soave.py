@@ -78,6 +78,7 @@ class gc_eos_class:
         self.rho = 1/self.V
         self.mass_rho = self.mixture.MM_m/self.V
         
+
         
     
     def critical_case_T(self,T0,V0,F,B,eval):
@@ -168,7 +169,7 @@ class gc_eos_class:
     
 
     def evaluate_eos_T_gas(self, Z):
-
+        #depois muda
         self.T = self.P*self.V/Z[0]/R
         self.evaluate_par_a()
 
@@ -179,7 +180,7 @@ class gc_eos_class:
         return Z - 1 - beta + q*beta*(Z-beta)/(Z**2 + 2*Z*beta - beta**2)
 
     def evaluate_eos_T_liq(self, Z):
-
+        #depois muda
         self.T = self.P*(self.Veos)/Z[0]/R
         self.evaluate_par_a()
 
