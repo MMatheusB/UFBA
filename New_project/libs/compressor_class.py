@@ -68,8 +68,8 @@ class CompressorClass:
     
     def losses_incdif(self,m,fluid):
            
-        rooimp = fluid.mixture.MM_m/fluid.V;
-        Ahid = 0.5*(self.sigma*self.U2 - 1/np.tan(self.a2b)*m/rooimp/self.A1)**2;
+        rooimp = fluid.mixture.MM_m/fluid.V
+        Ahid = 0.5*(self.sigma*self.U2 - 1/np.tan(self.a2b)*m/rooimp/self.A1)**2
         
         return Ahid
     
@@ -88,9 +88,9 @@ class CompressorClass:
     
     def perdas_fricimp(self,fluid,vis_model,m):
             
-        return self.friction(fluid,vis_model,self.li,m,1);
+        return self.friction(fluid,vis_model,self.li,m,1)
         
     def perdas_fricdif(self,fluid,vis_model,m):
         
-        return self.friction(fluid,vis_model,self.ld,m,1);
+        return self.friction(fluid,vis_model,self.ld,m,1)
         
