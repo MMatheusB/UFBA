@@ -30,18 +30,19 @@ class viscosity:
         
         Fp = [0 for i in range(Pr.shape[0])]
         for i in range(Tr.shape[0]):
-            Fp[i] = ca.if_else(
-                ca.logic_and(self.dipr[i] >= 0, self.dipr[i] < 0.022), 1,
-                ca.if_else(
-                    ca.logic_and(self.dipr[i] >= 0.022, self.dipr[i] < 0.075),
-                    1 + 30.55 * ((0.292 - self.mixture.list_Zc[i])**1.72),
-                    ca.if_else(
-                        self.dipr[i] >= 0.075,
-                        1 + 30.55 * ((0.292 - self.mixture.list_Zc[i])**1.72) * ca.fabs(0.96 + 0.1 * Tr[i] - 0.7),
-                        0
-                    )
-                )
-            )
+            Fp[i] = 1
+            # Fp[i] = ca.if_else(
+            #     ca.logic_and(self.dipr[i] >= 0, self.dipr[i] < 0.022), 1,
+            #     ca.if_else(
+            #         ca.logic_and(self.dipr[i] >= 0.022, self.dipr[i] < 0.075),
+            #         1 + 30.55 * ((0.292 - self.mixture.list_Zc[i])**1.72),
+            #         ca.if_else(
+            #             self.dipr[i] >= 0.075,
+            #             1 + 30.55 * ((0.292 - self.mixture.list_Zc[i])**1.72) * ca.fabs(0.96 + 0.1 * Tr[i] - 0.7),
+            #             0
+            #         )
+            #     )
+            # )
         
         Fpm = sum(array(self.mixture.x) * array(Fp))
         Trm = T / self.Tcm
