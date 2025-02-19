@@ -444,8 +444,8 @@ class compression:
         G2 = self.suction_fluid.copy_change_conditions(T2, None, V2, 'gas')
         G2s = self.suction_fluid.copy_change_conditions(T2s, None, V2s, 'gas')
 
-        G1.suction_fluid.h_gas()
-        G1.suction_fluid.s_gas()
+        G1.h_gas()
+        G1.s_gas()
 
         G2.h_gas()
         G2.s_gas()

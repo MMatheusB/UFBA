@@ -96,7 +96,7 @@ class gc_eos_class:
                 par_1 = 1/sum(x)*(delta/x[i]+(B[i]+B[j])*F[1]+B[i]*B[j]*F[1]**2)
                 par_2 = (B[i]*B[j]-A[i]*B[j]-A[j]*B[i])*F[6]
                 par_3 = crit_gas.a_m/(self.b_m*R*T0*sum(x))*(B[i]*B[j]*F[3]-crit_gas.Q[i][j]/crit_gas.a_m*F[5]+par_2);
-                mat_Q[i][j] = (par_1+par_3)*T0/100;
+                mat_Q[i][j] = (par_1+par_3)*T0/100
         if eval:
             return mat_Q
         else:
