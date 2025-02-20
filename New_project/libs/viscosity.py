@@ -94,7 +94,7 @@ class viscosity:
                 1
             )
         )
-        
+
         Y = Z2 / Z1
         
         Fqm = 1

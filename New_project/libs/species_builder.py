@@ -82,10 +82,18 @@ class Mixture:
         self.w = [i/sum(w_x) for i in w_x]
 
     def evaluate_cp_ig(self,T):
-        return sum(array(self.x)*array([float(species.evaluate_cp_ig(T)) for species in self.list_of_species]))
+        # sum(array(self.x)*array([float(species.evaluate_cp_ig(T)) for species in self.list_of_species]))
+        value = 0
+        for i in range(len(self.x)):
+            value += self.x[i]*self.list_of_species[i].evaluate_cp_ig(T)
+        return value
 
     def evaluate_enthalpy_ig(self,T):
-        return sum(array(self.x)*array([float(species.evaluate_enthalpy_ig(T)) for species in self.list_of_species]))
+        #sum(array(self.x)*array([float(species.evaluate_enthalpy_ig(T)) for species in self.list_of_species]))
+        value = 0
+        for i in range(len(self.x)):
+            value += self.x[i]*self.list_of_species[i].evaluate_enthalpy_ig(T)
+        return value
 
     def evaluate_pvap(self,T):
         return [float(species.evaluate_pvap(T)) for species in self.list_of_species]
@@ -97,8 +105,12 @@ class Mixture:
         self.entropy_ig_fun = [species.entropy_ig_fun for species in self.list_of_species]
 
     def evaluate_entropy_ig(self,T):
-        return sum(array(self.x)*array([float(species.evaluate_entropy_ig(T)) for species in self.list_of_species]))
-
+        # sum(array(self.x)*array([float(species.evaluate_entropy_ig(T)) for species in self.list_of_species]))
+        value = 0
+        for i in range(len(self.x)):
+            value += self.x[i]*self.list_of_species[i].evaluate_entropy_ig(T)
+        return value
+    
     def copy_and_change_composition(self,x):
         names = list(self.dict_composition.keys())
         dict_composition_new = {names[i]: x[i] for i in range(len(names))}

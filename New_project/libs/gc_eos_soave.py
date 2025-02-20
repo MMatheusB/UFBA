@@ -170,7 +170,8 @@ class gc_eos_class:
 
     def evaluate_eos_T_gas(self, Z):
         #depois muda
-        self.T = self.P*self.V/Z[0]/R
+        Z = Z[0]
+        self.T = self.P*self.V/Z/R
         self.evaluate_par_a()
 
         beta = self.b_m*self.P/self.T/R
@@ -293,12 +294,13 @@ class gc_eos_class:
         self.Q = array([[(self.a[i]*self.a[j])**0.5*(1-self.Aij[i][j]) for i in range(len(self.a))]
                         for j in range(len(self.a))])
         x = array(self.mixture.x)
-        self.a_m = x.dot(self.Q.dot(x.transpose()))
+
+        self.a_m = x.dot(self.Q.squeeze().dot(x.transpose()))
         self.b_m = sum(array(self.b)*x)
 
         self.b_bar = array(self.b)
 
-        self.a_bar = 2*self.Q.dot(x.transpose())-self.a_m
+        self.a_bar = 2*self.Q.squeeze().dot(x.transpose())-self.a_m
 
     def evaluate_fugacity_coef(self):
         #nao achei no outro
@@ -370,7 +372,7 @@ class gc_eos_class:
 
         beta = self.b_m*self.P/self.T/R
         q = self.a_m/self.b_m/self.T/R
-
+        
         return roots([1, (self.u-1)*beta-1, (q-self.u+(self.w-self.u)*beta)*beta, -(self.w*beta**3+self.w*beta**2+q*beta**2)])
 
 

@@ -198,6 +198,7 @@ class compression:
         Ahii = self.compressor.losses_incimp(m, self.suction_fluid)
 
         if self.compressible:
+            
             var = fsolve(lambda var: self.imp_dif(var, m, W, l, Gi, Ahii, Co1, Co2, C0), var)
             var = array(var) * Yo
             Timp, Vimp, Cimp = var
@@ -239,14 +240,14 @@ class compression:
         PMt = self.suction_fluid.mixture.MM_m
         P2 = self.suction_fluid.P * (1 + eta * W / 1000 * PMt / self.suction_fluid.Cpt / self.suction_fluid.T) ** (k / (k - 1))
         V2s = self.suction_fluid.V * (self.suction_fluid.P / P2) ** (1 / k)
-        G2s = self.suction_fluid.copy_change_conditions(None,P2,V2s,'gas')
+        T2s = 0.85*P2*V2s/R
+        
+        G2s = self.suction_fluid.copy_change_conditions(T2s,P2,None,'gas')
         T2s = G2s.T
         T2 = T2s + (1 - eta) * W / 1000 * PMt / self.suction_fluid.Cpt
         V2 = T2 * R / P2
-
-        G2s = self.suction_fluid.copy_change_conditions(92+273.15,46000,None,'gas')
-
-        var = [G2s.T, G2s.V, G2s.T, G2s.V]
+        G2 = self.suction_fluid.copy_change_conditions(T2,P2,None,'gas')
+        var = [G2.T, G2.V, G2s.T, G2s.V]
 
         var = fsolve(lambda var: self.thermal(var, W / 1000 * PMt, eta), var)
 
@@ -350,7 +351,7 @@ class compression:
 
         T = var[0]*self.suction_fluid.T
         V = var[1]*self.suction_fluid.V
-        C2 = var[2]*C0/2;
+        C2 = var[2]*C0/2
 
         rho0 = Gi.mixture.MM_m/Gi.V
 
@@ -375,11 +376,12 @@ class compression:
         Aht = (G.h - Gi.h)*1000/G.mixture.MM_m
 
         a1 = ((C2**2 - C1**2)/2 + Aht - W)/C0**2
+
         a2 = ((Ca2*rho)**2*log(V/Gi.V) + (Co2**2 - Co1**2)/2*rho**2 +
               SrhodP + loss - W*rho**2)/C0**2/rho0**2
         a3 = (C2**2 - Ca2**2 - Co2**2)/C0**2
-
-        return array([a1,a2,a3])
+        
+        return [a1,a2,a3]
 
     def imp_dif_dae(self,var,m,W,l,Gi,Ahi,Co1,Co2,C0):
 
@@ -412,7 +414,7 @@ class compression:
         a2 = ((Ca2*rho)**2*log(V/Gi.V) + (Co2**2 - Co1**2)/2*rho**2 +
               SrhodP + loss - W*rho**2)/C0**2/rho0**2
 
-        return array([a1,a2])
+        return [a1,a2]
 
     def thermal(self,var, W, eta):
 
@@ -435,7 +437,7 @@ class compression:
         a3 = G2.h - G2s.h - W*(1-eta)
         a4 = G2.P - G2s.P
 
-        return array([a1,a2,a3,a4])
+        return [a1,a2,a3,a4]
 
     def thermal_dae(self,var, W, eta, G1):
 
@@ -458,7 +460,7 @@ class compression:
         a3 = G2.h - G2s.h - W*(1-eta)
         a4 = G2.P - G2s.P
 
-        return array([a1,a2,a3,a4])
+        return [a1,a2,a3,a4]
 
     def plot_map(self):
 
