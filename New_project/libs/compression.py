@@ -160,7 +160,6 @@ class compression:
 
         psur = argmax(Phi[i])
         msu0 = M[i][psur]
-        print(psur,msu0)
         Gi1 = self.suction_fluid.copy_change_conditions(self.Timp[i][psur], None, self.Vimp[i][psur],'gas')
 
         result = minimize(lambda m: -self.character_phi(m, N[i], Gi1), msu0)

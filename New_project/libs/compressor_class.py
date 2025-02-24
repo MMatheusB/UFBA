@@ -80,7 +80,6 @@ class CompressorClass:
         Re = self.U2 * self.b / visc
         f = (-1.8 * np.log10(6.9 / Re + ((self.E / self.D) / 3.7) ** 1.1)) ** -2
         Ahf = f * l / (2 * self.D * (roo * self.A1 * np.sin(self.B1b)) ** 2) * m ** 2 * factor
-        print([visc])
         return Ahf
 
     def compute_efficiency(self, Ah_loss):
