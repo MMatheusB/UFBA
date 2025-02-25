@@ -8,6 +8,7 @@ from numpy import array, zeros, log, exp, argmax
 from scipy.optimize import fsolve, minimize
 from matplotlib.pyplot import plot, figure
 from matplotlib.ticker import AutoMinorLocator, ScalarFormatter
+from casadi import *
 
 def config_plot(axes):
     """
@@ -191,7 +192,6 @@ class compression:
 
         C0 = (Ca1**2 + Co2**2)**0.5
         Yo = array([self.suction_fluid.T, self.suction_fluid.V, C0/2])
-
         var = array([Gi_1.T, Gi_1.V, C0]) / Yo
         l = self.compressor.li
         Ahii = self.compressor.losses_incimp(m, self.suction_fluid)
@@ -263,7 +263,7 @@ class compression:
 
         PHI = [Ahid, Ahfd, Ahii, Ahfi]
 
-        return Phi, eta, Mach, Gimp, G2, Gdif, PHI #, G2s, Cimp, Cdifs, C2, C2s
+        return Phi, eta, Mach, Gimp, G2, Gdif, PHI, G2s #, Cimp, Cdifs, C2, C2s
 
     def character_dae(self,z,u):
 
@@ -378,9 +378,9 @@ class compression:
 
         a2 = ((Ca2*rho)**2*log(V/Gi.V) + (Co2**2 - Co1**2)/2*rho**2 +
               SrhodP + loss - W*rho**2)/C0**2/rho0**2
-        a3 = (C2**2 - Ca2**2 - Co2**2)/C0**2
         
-        return [a1,a2,a3]
+        a3 = (C2**2 - Ca2**2 - Co2**2)/C0**2
+        return [a1.item(),a2.item(),a3.item()]
 
     def imp_dif_dae(self,var,m,W,l,Gi,Ahi,Co1,Co2,C0):
 
@@ -436,7 +436,7 @@ class compression:
         a3 = G2.h - G2s.h - W*(1-eta)
         a4 = G2.P - G2s.P
 
-        return [a1,a2,a3,a4]
+        return [a1.item(),a2.item(),a3.item(),a4.item()]
 
     def thermal_dae(self,var, W, eta, G1):
 

@@ -373,7 +373,7 @@ class gc_eos_class:
         beta = self.b_m*self.P/self.T/R
         q = self.a_m/self.b_m/self.T/R
         
-        return roots([1, (self.u-1)*beta-1, (q-self.u+(self.w-self.u)*beta)*beta, -(self.w*beta**3+self.w*beta**2+q*beta**2)])
+        return roots([1, ((self.u-1)*beta-1).item(), ((q-self.u+(self.w-self.u)*beta)*beta).item(), (-(self.w*beta**3+self.w*beta**2+q*beta**2)).item()])
 
 
     def int_rhodP(self, g01):
