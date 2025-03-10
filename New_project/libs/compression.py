@@ -245,11 +245,13 @@ class compression:
         T2 = T2s + (1 - eta) * W / 1000 * PMt / self.suction_fluid.Cpt
         V2 = T2 * R / P2
         G2 = self.suction_fluid.copy_change_conditions(T2,P2,None,'gas')
-        var = [G2.T, G2.V, G2s.T, G2s.V]
+        var = [G2s.T, G2s.V, G2.T, G2.V]
 
         var = fsolve(lambda var: self.thermal(var, W / 1000 * PMt, eta), var)
 
-        T2, V2, T2s, V2s = var
+        print(self.thermal(var, W / 1000 * PMt, eta))
+
+        T2s, V2s, T2, V2 = var
         C2 = Ca1
         C2s = Ca1
         G2 = self.suction_fluid.copy_change_conditions(T2, None, V2, 'gas')
@@ -413,7 +415,7 @@ class compression:
 
     def thermal(self,var, W, eta):
 
-        T2, V2, T2s, V2s = var
+        T2s, V2s, T2, V2 = var
 
         G2 = self.suction_fluid.copy_change_conditions(T2, None, V2, 'gas')
         G2s = self.suction_fluid.copy_change_conditions(T2s, None, V2s, 'gas')
@@ -427,16 +429,16 @@ class compression:
         G2s.h_gas()
         G2s.s_gas()
 
-        a1 = G2s.h - self.suction_fluid.h - W*eta
-        a2 = G2s.s - self.suction_fluid.s
-        a3 = G2.h - G2s.h - W*(1-eta)
-        a4 = G2.P - G2s.P
+        a1 = (G2s.h - self.suction_fluid.h - W*eta)/W
+        a2 = (G2s.s - self.suction_fluid.s)/self.suction_fluid.s
+        a3 = (G2.h - G2s.h - W*(1-eta))/W
+        a4 = (G2.P - G2s.P)/self.suction_fluid.P
 
         return [a1[0][0],a2[0][0],a3[0][0],a4]
 
     def thermal_dae(self,var, W, eta, G1):
 
-        T2, V2, T2s, V2s = var
+        T2s, V2s, T2, V2 = var
 
         G2 = self.suction_fluid.copy_change_conditions(T2, None, V2, 'gas')
         G2s = self.suction_fluid.copy_change_conditions(T2s, None, V2s, 'gas')

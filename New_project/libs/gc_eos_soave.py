@@ -329,7 +329,7 @@ class gc_eos_class:
 
         # Cv_real = Cv_ideal - T*\int_V^Inf(d2PdT2)dV
         #linha 345
-        self.Cvt = self.cvi + self.T*self.der_sec_a/(2*2**0.5*self.b_m)*log((self.Veos - self.b_m*(1+2**0.5))/(self.Veos - self.b_m*(1-2**0.5)))
+        self.Cvt = self.cvi + self.T*self.der_sec_a/self.b_m*(np.log(1 + self.b_m/self.Veos))
 
         # Cp_real = Cv_real - T*(dPdT)^2/dPdV
         #linha 349
