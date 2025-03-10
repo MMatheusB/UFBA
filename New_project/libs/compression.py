@@ -240,7 +240,6 @@ class compression:
         P2 = self.suction_fluid.P * (1 + eta * W / 1000 * PMt / self.suction_fluid.Cpt / self.suction_fluid.T) ** (k / (k - 1))
         V2s = self.suction_fluid.V * (self.suction_fluid.P / P2) ** (1 / k)
         T2s = 0.85*P2*V2s/R
-        
         G2s = self.suction_fluid.copy_change_conditions(T2s,P2,None,'gas')
         T2s = G2s.T
         T2 = T2s + (1 - eta) * W / 1000 * PMt / self.suction_fluid.Cpt
@@ -263,7 +262,7 @@ class compression:
 
         PHI = [Ahid, Ahfd, Ahii, Ahfi]
 
-        return Phi, eta, Mach, Gimp, G2, Gdif, PHI, G2s #, Cimp, Cdifs, C2, C2s
+        return Phi, eta, Mach, Gimp, G2, Gdif, PHI, G2s, k #, Cimp, Cdifs, C2, C2s
 
     def character_dae(self,z,u):
 
@@ -375,12 +374,10 @@ class compression:
         Aht = (G.h - Gi.h)*1000/G.mixture.MM_m
 
         a1 = ((C2**2 - C1**2)/2 + Aht - W)/C0**2
-
         a2 = ((Ca2*rho)**2*log(V/Gi.V) + (Co2**2 - Co1**2)/2*rho**2 +
               SrhodP + loss - W*rho**2)/C0**2/rho0**2
-        
         a3 = (C2**2 - Ca2**2 - Co2**2)/C0**2
-        return [a1.item(),a2.item(),a3.item()]
+        return [a1[0][0],a2,a3]
 
     def imp_dif_dae(self,var,m,W,l,Gi,Ahi,Co1,Co2,C0):
 
@@ -412,8 +409,7 @@ class compression:
         a1 = ((Ca2**2 + Co2**2 - C1**2)/2 + Aht - W)/C0**2
         a2 = ((Ca2*rho)**2*log(V/Gi.V) + (Co2**2 - Co1**2)/2*rho**2 +
               SrhodP + loss - W*rho**2)/C0**2/rho0**2
-
-        return [a1,a2]
+        return [a1[0][0],a2]
 
     def thermal(self,var, W, eta):
 
@@ -436,7 +432,7 @@ class compression:
         a3 = G2.h - G2s.h - W*(1-eta)
         a4 = G2.P - G2s.P
 
-        return [a1.item(),a2.item(),a3.item(),a4.item()]
+        return [a1[0][0],a2[0][0],a3[0][0],a4]
 
     def thermal_dae(self,var, W, eta, G1):
 
@@ -458,8 +454,7 @@ class compression:
         a2 = G2s.s - G1.s
         a3 = G2.h - G2s.h - W*(1-eta)
         a4 = G2.P - G2s.P
-
-        return [a1,a2,a3,a4]
+        return [a1[0][0],a2[0][0],a3[0][0],a4]
 
     def plot_map(self):
 
