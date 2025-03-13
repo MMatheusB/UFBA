@@ -273,7 +273,7 @@ class gc_eos_class:
         self.der_a = x.dot(Q.dot(x.transpose()))
 
     def evaluate_der_sec_a(self):
-        #olhada depois
+        #revisada
         A_c = array([[(i*j)**0.5 for i in self.a_c] for j in self.a_c])
         ## linha 188 do outro arquivo.
         der_sec_A = [[0.25*self.T**-1.5*((1+self.kappa[i])*self.kappa[j]/self.mixture.list_Tc[j]**0.5 +
@@ -288,7 +288,7 @@ class gc_eos_class:
         self.der_sec_a = x.dot(Q.dot(x.transpose()))
 
     def evaluate_par_a(self):
-        #parece estar ok
+        #revisada
         self.evaluate_a()
 
         self.Q = array([[(self.a[i]*self.a[j])**0.5*(1-self.Aij[i][j]) for i in range(len(self.a))]
@@ -303,7 +303,7 @@ class gc_eos_class:
         self.a_bar = 2*self.Q.squeeze().dot(x.transpose())-self.a_m
 
     def evaluate_fugacity_coef(self):
-        #nao achei no outro
+        #!!!!
         beta = self.b_m*self.P/self.T/R
         q = self.a_m/self.b_m/self.T/R
 
@@ -314,7 +314,7 @@ class gc_eos_class:
         return exp(ln_phi_c_i)
 
     def ci_ideal(self):
-        #tenho q dar uma olhada depois
+        #revisada
         self.cpi = self.mixture.evaluate_cp_ig(self.T)
 
         self.cvi = self.cpi-R
@@ -336,7 +336,7 @@ class gc_eos_class:
         self.Cpt = self.Cvt - self.T*(self.dPdT**2)/self.dPdV
 
     def h_gas(self):
-        #revisado parcialmente
+        #revisada
         hi = self.mixture.evaluate_enthalpy_ig(self.T)
 
         self.evaluate_der_a()
@@ -345,7 +345,7 @@ class gc_eos_class:
         self.h = hr + hi;
 
     def s_gas(self):
-        #revisado parcialmente
+        #revisada
         si = self.mixture.evaluate_entropy_ig(self.T)
 
         self.evaluate_der_a()
@@ -355,13 +355,13 @@ class gc_eos_class:
         self.s = sr + si - R*log(self.P)
 
     def sound_speed(self):
-        #revisado parcialmente
+        #revisada
         self.ci_real()
 
         self.evaluate_der_eos_P()
 
-        rhoeos = 1/self.Veos;
-        #linha 327 verificar o cv_real se ta certo.
+        rhoeos = 1/self.Veos
+        #linha 327 
         c2 = R*self.T/((1 - rhoeos* self.b_m)**2) - self.a_m*rhoeos*(2 + rhoeos * self.b_m)/((1 + rhoeos* self.b_m)**2) + (self.T/(self.Cvt * (rhoeos)**2)) * ((R * rhoeos/(1 - rhoeos*self.b_m) - (rhoeos ** 2) * self.der_a / (1 + rhoeos * self.b_m)) ** 2)
 
         return (c2*1000/self.mixture.MM_m)**0.5
@@ -371,43 +371,21 @@ class gc_eos_class:
         self.evaluate_par_a()
 
         beta = self.b_m*self.P/self.T/R
+        
         q = self.a_m/self.b_m/self.T/R
         
         return roots([1, ((self.u-1)*beta-1).item(), ((q-self.u+(self.w-self.u)*beta)*beta).item(), (-(self.w*beta**3+self.w*beta**2+q*beta**2)).item()])
 
 
     def int_rhodP(self, g01):
-        #nao entendi muito bem
-        A = -R * self.T / self.b_m**2 * (
-            (self.V / (self.b_m - self.V)-g01.V / (self.b_m - g01.V)) -
-            log((self.b_m - self.V)/(self.b_m - g01.V)) + log(self.V/g01.V))
-
-        tanh = 0.5 * log((self.V + self.b_m * (1 + 2**0.5)) / (self.V + self.b_m * (1 - 2**0.5)))
-        tanhg01 = 0.5 * log((g01.V + self.b_m * (1 + 2**0.5)) / (g01.V + self.b_m * (1 - 2**0.5)))
-
-        B = self.a_m * (
-            (
-                2 * self.b_m * (2 * self.b_m + self.V) / (self.b_m**2 - 2 * self.b_m * self.V - self.V**2)
-                - 2 * log(-self.b_m**2 + 2 * self.b_m * self.V + self.V**2)
-                + 3 * 2**0.5 * tanh
-                + 4 * log(self.V)
-            ) / (2 * self.b_m**3)
-            - (
-                2 * self.b_m * (2 * self.b_m + g01.V) / (self.b_m**2 - 2 * self.b_m * g01.V - g01.V**2)
-                - 2 * log(-self.b_m**2 + 2 * self.b_m * g01.V + g01.V**2)
-                + 3 * 2**0.5 * tanhg01
-                + 4 * log(g01.V)
-            ) / (2 * self.b_m**3)
-        )
-
-        rodV = A + B
-
-        A1 = (1 / self.V) * (R / (self.V - self.b_m)) * (self.T - g01.T)
-        B1 = -(1 / self.V) * (1 / (self.V * (self.V + self.b_m) + self.b_m * (self.V - self.b_m))) * (self.a_m - g01.a_m)
-
-        rodT = A1 + B1
-
-        rodP = rodV + rodT
+        #Revisada, linha 353
+        
+        part1 = R * self.T/(self.b_m**2)*(log((1 - self.b_m/self.V)/(1 - self.b_m/g01.V)) + self.b_m * ((self.V - self.b_m)**-1 - (g01.V - self.b_m)**-1))
+        
+        part2 = self.a_m/(2*self.b_m**3)*(self.b_m**2*(self.V**-2 - g01.V**-2) + 2*self.b_m*((self.V + self.b_m)**-1 - (g01.V + self.b_m)**-1) - 2*log((1 + self.b_m/self.V)/(1 + self.b_m/g01.V)))
+        
+        rodP = part1 + part2
+        
         return rodP
 
 

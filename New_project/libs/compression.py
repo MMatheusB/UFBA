@@ -249,8 +249,6 @@ class compression:
 
         var = fsolve(lambda var: self.thermal(var, W / 1000 * PMt, eta), var)
 
-        print(self.thermal(var, W / 1000 * PMt, eta))
-
         T2s, V2s, T2, V2 = var
         C2 = Ca1
         C2s = Ca1
