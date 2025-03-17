@@ -5,15 +5,15 @@ Created on Thu Dec 19 17:08:19 2024
 @author: Rodrigo Meira
 """
 
-from eos_database import *
-from compressor_class import *
-from compression import *
-from gc_eos_soave import *
+from libs.eos_database import *
+from libs.compressor_class import *
+from libs.compression import *
+from libs.gc_eos_soave import *
 from casadi import *
 import numpy as np
 from scipy.optimize import fsolve
 import matplotlib.pyplot as plt
-from viscosity import *
+from libs.viscosity import *
 
 class valve:
 

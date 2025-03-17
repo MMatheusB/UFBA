@@ -5,7 +5,7 @@ Created on Mon May 20 22:29:39 2024
 @author: Rodrigo Meira
 """
 
-from eos_database import *
+from libs.eos_database import *
 from casadi import *
 from numpy import exp, log, array, roots
 from scipy.optimize import fsolve

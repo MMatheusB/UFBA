@@ -4,12 +4,12 @@ Created on Thu Jun 27 01:30:58 2024
 
 @author: Rodrigo Meira
 """
-from eos_database import *
+from libs.eos_database import *
 from casadi import *
 from numpy import exp, log, array, roots, zeros, linalg
 from math import isnan
 from scipy.optimize import fsolve
-from species_builder import R, Species, Mixture
+from libs.species_builder import R, Species, Mixture
 from matplotlib.pyplot import plot, figure
 from matplotlib.ticker import AutoMinorLocator, ScalarFormatter
 import scipy.linalg as la
