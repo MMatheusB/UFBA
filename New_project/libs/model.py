@@ -47,9 +47,9 @@ class MyModel(nn.Module):
         # Limitando os valores dentro do intervalo permitido
         clamped_output = torch.clamp(desnormalized_output, min=self.y_min, max=self.y_max)
         
-        return clamped_output
+        return desnormalized_output
     
-    def train_model(self, model, train_loader, val_loader, lr, epochs, optimizers, patience, factor):
+    def train_model(self, model, train_loader, val_loader, lr, epochs, optimizers, patience, factor, gas):
         optimizer = optimizers(model.parameters(), lr=lr)
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor = factor, patience = patience, verbose=True)
 
@@ -72,16 +72,23 @@ class MyModel(nn.Module):
                             1e-7 * torch.mean((y_true[:, 3] - y_pred[:, 3]) ** 2) + \
                             1e-7 * torch.mean((y_true[:, 4] - y_pred[:, 4]) ** 2) + \
                             1e-4 *  torch.mean((y_true[:, 11] - y_pred[:, 11]) ** 2)
-                soma_ode = torch.zeros(2, dtype=torch.float32)
+                soma_ode = torch.zeros(3, dtype=torch.float32)
                 loss_physics_z = 0
-                m_t = (11 * y_true[:, 0] - 18 * inputs[:, -2, 0] + 9 * inputs[:, -3, 0] - 2 * inputs[:, 0, 0]) / (6 * self.dt)
-                t_t = (11 * y_true[:, 1] - 18 * inputs[:, -2, 1] + 9 * inputs[:, -2, 1] - 2 * inputs[:, -2, 1]) / (6 * self.dt)
                 
+                m_t = (11 * y_true[:, 0] - 18 * inputs[:, 2, 0] + 9 * inputs[:, 1, 0] - 2 * inputs[:, 0, 0]) / (6 * self.dt)
+                t_t = (11 * y_true[:, 1] - 18 * inputs[:, 2, 1] + 9 * inputs[:, 1, 1] - 2 * inputs[:, 0, 1]) / (6 * self.dt)
+                P_t = (11 * y_true[:, 3] - 18 * inputs[:, 2, 2] + 9 * inputs[:, 1, 2] - 2 * inputs[:, 0, 2]) / (6 * self.dt)
+                dP_dV = torch.zeros(inputs.shape[0], dtype=torch.float32)
+                dP_dT = torch.zeros(inputs.shape[0], dtype=torch.float32)
                 for i in range(inputs.shape[0]):
+                    gas = gas.copy_change_conditions(y_pred[i, 1].detach().numpy(), None, y_pred[i, 2].detach().numpy(), 'gas')
+                    gas.evaluate_der_eos_P()
+                    dP_dV[i] = gas.dPdT
+                    dP_dT[i] = gas.dPdV
                     u0 = [4500, 300, inputs[i, -1, -1], inputs[i, -1, -2], 5000]
                     x0 = [y_pred[i, 0].detach().numpy(), y_pred[i, 1].detach().numpy(), y_pred[i, 2].detach().numpy()]
                     z0 = [y_pred[i, 3].detach().numpy(), y_pred[i, 4].detach().numpy(), y_pred[i, 5].detach().numpy(), y_pred[i, 6].detach().numpy(), y_pred[i,7].detach().numpy(),
-                          y_pred[i, 8].detach().numpy(), y_pred[i, 0].detach().numpy(), y_pred[i, 10].detach().numpy(),y_pred[i, 11].detach().numpy(), y_pred[i, 12].detach().numpy(),
+                          y_pred[i, 8].detach().numpy(), y_pred[i, 9].detach().numpy(), y_pred[i, 10].detach().numpy(),y_pred[i, 11].detach().numpy(), y_pred[i, 12].detach().numpy(),
                           y_pred[i, 13].detach().numpy()]
                     u0 = np.array(u0)
                     x0 = np.array(x0)
@@ -90,11 +97,12 @@ class MyModel(nn.Module):
                     alg = torch.tensor(alg, dtype=torch.float32)
                     ode = torch.tensor(ode, dtype=torch.float32)
                     loss_physics_z += (torch.mean(alg**2))
-                    soma_ode += ode[:2]
-
+                    soma_ode += ode
+                dVp_dt = (P_t - dP_dT*t_t)/dP_dV 
                 loss_physics_x_mt = torch.mean((soma_ode[0] - m_t)**2)
                 loss_physics_t_t = torch.mean((soma_ode[1] - t_t)**2)
-                loss_physics_x = loss_physics_x_mt + loss_physics_t_t
+                loss_physics_Vp = torch.mean(((soma_ode[2] - dVp_dt)**2))
+                loss_physics_x = loss_physics_x_mt + loss_physics_t_t + loss_physics_Vp
                 loss_physics = loss_physics_x + loss_physics_z
                 loss = loss_data + loss_physics
                 loss.backward()

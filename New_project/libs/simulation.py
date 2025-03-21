@@ -120,8 +120,8 @@ class Simulation:
 
         self.x_min = self.x_train.amin(dim=(0, 1), keepdim=True)
         self.x_max = self.x_train.amax(dim=(0, 1), keepdim=True)
-        self.y_min = self.y_train.amin(dim=(0, 1), keepdim=True)
-        self.y_max = self.y_train.amax(dim=(0, 1), keepdim=True)
+        self.y_min = self.y_train.amin(dim=(0), keepdim=True)
+        self.y_max = self.y_train.amax(dim=(0), keepdim=True)
 
         return x_values, z_values, time_steps, alpha_values, N_values, self.x_train, self.y_train, self.x_min, self.x_max, self.y_min, self.y_max
 

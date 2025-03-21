@@ -351,7 +351,6 @@ class gc_eos_class:
         self.evaluate_der_a()
         #linha 305
         sr = R*log((self.Veos-self.b_m)*self.P/(R*self.T)) - self.der_a*(1/self.b_m)* np.log(1 + self.b_m/self.Veos)
-
         self.s = sr + si - R*log(self.P)
 
     def sound_speed(self):
