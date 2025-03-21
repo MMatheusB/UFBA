@@ -72,9 +72,9 @@ class MyModel(nn.Module):
                             1e-7 * torch.mean((y_true[:, 3] - y_pred[:, 3]) ** 2) + \
                             1e-7 * torch.mean((y_true[:, 4] - y_pred[:, 4]) ** 2) + \
                             1e-4 *  torch.mean((y_true[:, 11] - y_pred[:, 11]) ** 2)
-                soma_ode = torch.zeros(3, dtype=torch.float32)
-                loss_physics_z = 0
-                
+                soma_ode = torch.zeros(inputs.shape[0], 3, dtype=torch.float32)
+                loss_physics_z = torch.zeros((inputs.shape[0], 11), dtype=torch.float32)
+
                 m_t = (11 * y_true[:, 0] - 18 * inputs[:, 2, 0] + 9 * inputs[:, 1, 0] - 2 * inputs[:, 0, 0]) / (6 * self.dt)
                 t_t = (11 * y_true[:, 1] - 18 * inputs[:, 2, 1] + 9 * inputs[:, 1, 1] - 2 * inputs[:, 0, 1]) / (6 * self.dt)
                 P_t = (11 * y_true[:, 3] - 18 * inputs[:, 2, 2] + 9 * inputs[:, 1, 2] - 2 * inputs[:, 0, 2]) / (6 * self.dt)
@@ -96,14 +96,14 @@ class MyModel(nn.Module):
                     ode, alg = self.plenum.evaluate_dae(None, x0, z0, u0)
                     alg = torch.tensor(alg, dtype=torch.float32)
                     ode = torch.tensor(ode, dtype=torch.float32)
-                    loss_physics_z += (torch.mean(alg**2))
-                    soma_ode += ode
+                    loss_physics_z[i] = alg
+                    soma_ode[i] = ode
                 dVp_dt = (P_t - dP_dT*t_t)/dP_dV 
-                loss_physics_x_mt = torch.mean((soma_ode[0] - m_t)**2)
-                loss_physics_t_t = torch.mean((soma_ode[1] - t_t)**2)
-                loss_physics_Vp = torch.mean(((soma_ode[2] - dVp_dt)**2))
+                loss_physics_x_mt = torch.mean((soma_ode[:, 0] - m_t)**2)
+                loss_physics_t_t = torch.mean((soma_ode[:, 1] - t_t)**2)
+                loss_physics_Vp = torch.mean(((soma_ode[:, 2] - dVp_dt)**2))
                 loss_physics_x = loss_physics_x_mt + loss_physics_t_t + loss_physics_Vp
-                loss_physics = loss_physics_x + loss_physics_z
+                loss_physics = loss_physics_x + torch.mean(loss_physics_z**2)
                 loss = loss_data + loss_physics
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(self.parameters(), 1.0)  # Gradient clipping
@@ -111,6 +111,7 @@ class MyModel(nn.Module):
 
                 total_loss += loss_data.item()
                 total_loss_physics += loss_physics.item() 
+                print(loss_data.item(), loss_physics_x, torch.mean(loss_physics_z**2))
             
             # Atualizar o scheduler
             scheduler.step(total_loss / len(train_loader))
