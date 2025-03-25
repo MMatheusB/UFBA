@@ -451,10 +451,10 @@ class compression:
         G2s.h_gas()
         G2s.s_gas()
 
-        a1 = G2s.h - G1.h - W*eta
-        a2 = G2s.s - G1.s
-        a3 = G2.h - G2s.h - W*(1-eta)
-        a4 = G2.P - G2s.P
+        a1 = (G2s.h - G1.h - W*eta)/W
+        a2 = (G2s.s - G1.s)/G1.s
+        a3 = (G2.h - G2s.h - W*(1-eta))/W
+        a4 = (G2.P - G2s.P)/G1.P
         return [a1[0][0],a2[0][0],a3[0][0],a4]
 
     def plot_map(self):

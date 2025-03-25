@@ -2,6 +2,7 @@ import time
 import torch
 import torch.nn as nn
 import numpy as np
+from scipy.optimize import fsolve
 
 class MyModel(nn.Module):
     def __init__(self, units, dt, x_max, x_min, y_min, y_max, plenum):
@@ -21,7 +22,7 @@ class MyModel(nn.Module):
             batch_first=True,
             bidirectional=False,
             bias=True,
-            num_layers= 2
+            num_layers= 1
         )
         
         self.dense_layers = nn.Sequential(
@@ -35,6 +36,34 @@ class MyModel(nn.Module):
     
     def desnormalize(self, inputs, y_min, y_max):
         return ((inputs + 1) / 2) * (y_max - y_min) + y_min
+    
+    def system_residuals(self, y, u0, plenum_sys):
+    # Separa as variáveis
+        x = y[:3]
+        z = y[3:]
+    
+    # Substitua as expressões abaixo pelas suas equações do modelo em estado estacionário.
+        ode_sym, alg_sym = plenum_sys.evaluate_dae(None, x, z, u0)
+    
+        res_ode = np.array([ode_sym[i].item() for i in range(3)])
+    
+    # Calcula os resíduos das equações algébricas
+        res_alg = np.array([alg_sym[i] for i in range(11)])
+
+        res = np.concatenate((res_ode, res_alg))
+        return res
+
+    def compute_steady_state(self, u0, plenum_sys, x0, z0):
+    # Vetor inicial concatenado
+        y0 = np.array(x0 + z0)
+    
+    # Chama o fsolve para encontrar os zeros da função de resíduos
+        sol = fsolve(self.system_residuals, y0, args=(u0, plenum_sys))
+    
+    # Separa a solução em x e z
+        x_ss = sol[:3]
+        z_ss = sol[3:]
+        return x_ss, z_ss
     
     def forward(self, inputs):
         rnn_inputs = self.normalize(inputs, self.x_min, self.x_max)
@@ -79,53 +108,35 @@ class MyModel(nn.Module):
                 P_t = (11 * y_true[:, 3] - 18 * inputs[:, 2, 2] + 9 * inputs[:, 1, 2] - 2 * inputs[:, 0, 2]) / (6 * self.dt)
                 dP_dV = torch.zeros(inputs.shape[0], dtype=torch.float32)
                 dP_dT = torch.zeros(inputs.shape[0], dtype=torch.float32)
-                alg1 = torch.zeros(inputs.shape[0], dtype=torch.float32)
-                alg2 = torch.zeros(inputs.shape[0], dtype=torch.float32)
-                alg3 = torch.zeros(inputs.shape[0], dtype=torch.float32)
-                alg4 = torch.zeros(inputs.shape[0], dtype=torch.float32)
-                alg5 = torch.zeros(inputs.shape[0], dtype=torch.float32)
-                alg6 = torch.zeros(inputs.shape[0], dtype=torch.float32)
-                alg7 = torch.zeros(inputs.shape[0], dtype=torch.float32)
-                alg8 = torch.zeros(inputs.shape[0], dtype=torch.float32)
-                alg9 = torch.zeros(inputs.shape[0], dtype=torch.float32)
-                alg10 = torch.zeros(inputs.shape[0], dtype=torch.float32)
-                alg11 = torch.zeros(inputs.shape[0], dtype=torch.float32)
+                Vp = torch.zeros(inputs.shape[0], dtype=torch.float32)
                 for i in range(inputs.shape[0]):
                     gas = gas.copy_change_conditions(y_pred[i, 1].detach().numpy(), None, y_pred[i, 2].detach().numpy(), 'gas')
                     gas.evaluate_der_eos_P()
+                    Vp[i] = gas.V
                     dP_dV[i] = gas.dPdV
                     dP_dT[i] = gas.dPdT
                     u0 = [4500, 300, inputs[i, -1, -1], inputs[i, -1, -2], 5000]
                     x0 = [y_pred[i, 0].detach().numpy(), y_pred[i, 1].detach().numpy(), y_pred[i, 2].detach().numpy()]
-                    z0 = [y_pred[i, 3].detach().numpy(), y_pred[i, 4].detach().numpy(), y_pred[i, 5].detach().numpy(), y_pred[i, 6].detach().numpy(), y_pred[i,7].detach().numpy(),
-                          y_pred[i, 8].detach().numpy(), y_pred[i, 9].detach().numpy(), y_pred[i, 10].detach().numpy(),y_pred[i, 11].detach().numpy(), y_pred[i, 12].detach().numpy(),
-                          y_pred[i, 13].detach().numpy()]
+                    z0 = [y_true[i, 3].detach().numpy(), y_true[i, 4].detach().numpy(), y_true[i, 5].detach().numpy(), y_true[i, 6].detach().numpy(), y_true[i,7].detach().numpy(),
+                          y_true[i, 8].detach().numpy(), y_true[i, 9].detach().numpy(), y_true[i, 10].detach().numpy(),y_true[i, 11].detach().numpy(), y_true[i, 12].detach().numpy(),
+                          y_true[i, 13].detach().numpy()]
                     u0 = np.array(u0)
                     x0 = np.array(x0)
                     z0 = np.array(z0)
                     ode, alg = self.plenum.evaluate_dae(None, x0, z0, u0)
-                    alg = torch.tensor(alg, dtype=torch.float32)
                     ode = torch.tensor(ode, dtype=torch.float32)
-                    alg1[i] = alg[0]
-                    alg2[i] = alg[1]
-                    alg3[i] = alg[2]
-                    alg4[i] = alg[3]
-                    alg5[i] = alg[4]
-                    alg6[i] = alg[5]
-                    alg7[i] = alg[6]
-                    alg8[i] = alg[7]
-                    alg9[i] = alg[8]
-                    alg10[i] = alg[9]
-                    alg11[i] = alg[10]
                     soma_ode[i] = ode
+                    x_ss, z_ss = self.compute_steady_state(u0, self.plenum, x0, z0)
+
+                    
                 dVp_dt = (P_t - dP_dT*t_t)/dP_dV 
                 loss_physics_x_mt = torch.mean((soma_ode[:, 0] - m_t)**2)
                 loss_physics_t_t = torch.mean((soma_ode[:, 1] - t_t)**2)
                 loss_physics_Vp = torch.mean(((soma_ode[:, 2] - dVp_dt)**2))
-                loss_physics_x = loss_physics_x_mt + loss_physics_t_t + loss_physics_Vp
+                loss_physics_x = loss_physics_x_mt + loss_physics_t_t + 1e7*loss_physics_Vp
                 loss_physics_z = torch.mean(alg1**2) + torch.mean(alg2**2) + torch.mean(alg3**2) + torch.mean(alg4**2) + \
                                  torch.mean(alg5**2) + torch.mean(alg6**2) + torch.mean(alg7**2) + torch.mean(alg8**2) + \
-                                 torch.mean(alg9**2) + torch.mean(alg10**2) + torch.mean(alg11**2)
+                                 torch.mean(alg9**2)+ torch.mean(alg10**2)+ torch.mean(alg11**2)
                 loss_physics = loss_physics_x + loss_physics_z
                 loss = loss_data + loss_physics
                 loss.backward()
@@ -134,10 +145,9 @@ class MyModel(nn.Module):
 
                 total_loss += loss_data.item()
                 total_loss_physics += loss_physics.item() 
-                print(torch.mean(alg1**2),torch.mean(alg2**2),torch.mean(alg3**2),torch.mean(alg4**2),\
-                                 torch.mean(alg5**2),torch.mean(alg6**2),torch.mean(alg7**2),torch.mean(alg8**2),\
+                print(torch.mean(alg1**2),torch.mean(alg2**2),torch.mean(alg3**2),torch.mean(alg4**2),
+                                 torch.mean(alg5**2),torch.mean(alg6**2),torch.mean(alg7**2),torch.mean(alg8**2),
                                  torch.mean(alg9**2),torch.mean(alg10**2),torch.mean(alg11**2))
-            
             # Atualizar o scheduler
             scheduler.step(total_loss / len(train_loader))
 

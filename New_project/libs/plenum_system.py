@@ -71,37 +71,19 @@ class plenum:
         dot_Vp = -Vp**2 / cte * (dot_m - dot_m_valve)
         dot_Tp = (dot_m * (gas_2.h - gas_p.h) + Tp * gas_p.dPdT * Vp * (dot_m - dot_m_valve)) * Vp / (cte * gas_p.Cvt)
 
-        a1 = Pp - gas_p.P
-        a2 = P2 - gas_2.P
+        a1 = (Pp - gas_p.P)/P1
+        a2 = (P2 - gas_2.P)/P1
         a3, a4, a5, a6, a7, a8, a9, a10, a11 = self.compression.character_dae(
             [Timp, Vimp, Tdif, Vdif, T2s, V2s, T2, V2, V1],
             [N, dot_m, P1, T1])
 
+        
+
+        a11 = a11/P1
+
         alg = [a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11]
 
         return [ddot_m, dot_Tp[0][0], dot_Vp], alg
-    
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     
