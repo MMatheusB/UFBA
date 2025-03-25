@@ -55,7 +55,7 @@ class MyModel(nn.Module):
 
     def compute_steady_state(self, u0, plenum_sys, x0, z0):
     # Vetor inicial concatenado
-        y0 = np.array(x0 + z0)
+        y0 = np.concatenate((x0, z0))
     
     # Chama o fsolve para encontrar os zeros da função de resíduos
         sol = fsolve(self.system_residuals, y0, args=(u0, plenum_sys))
@@ -102,6 +102,17 @@ class MyModel(nn.Module):
                             1e-7 * torch.mean((y_true[:, 4] - y_pred[:, 4]) ** 2) + \
                             1e-4 *  torch.mean((y_true[:, 11] - y_pred[:, 11]) ** 2)
                 soma_ode = torch.zeros(inputs.shape[0], 3, dtype=torch.float32)
+                alg1 = torch.zeros(inputs.shape[0], dtype=torch.float32)
+                alg2 = torch.zeros(inputs.shape[0], dtype=torch.float32)
+                alg3 = torch.zeros(inputs.shape[0], dtype=torch.float32)
+                alg4 = torch.zeros(inputs.shape[0], dtype=torch.float32)
+                alg5 = torch.zeros(inputs.shape[0], dtype=torch.float32)
+                alg6 = torch.zeros(inputs.shape[0], dtype=torch.float32)
+                alg7 = torch.zeros(inputs.shape[0], dtype=torch.float32)
+                alg8 = torch.zeros(inputs.shape[0], dtype=torch.float32)
+                alg9 = torch.zeros(inputs.shape[0], dtype=torch.float32)
+                alg10 = torch.zeros(inputs.shape[0], dtype=torch.float32)
+                alg11 = torch.zeros(inputs.shape[0], dtype=torch.float32)
 
                 m_t = (11 * y_true[:, 0] - 18 * inputs[:, 2, 0] + 9 * inputs[:, 1, 0] - 2 * inputs[:, 0, 0]) / (6 * self.dt)
                 t_t = (11 * y_true[:, 1] - 18 * inputs[:, 2, 1] + 9 * inputs[:, 1, 1] - 2 * inputs[:, 0, 1]) / (6 * self.dt)
@@ -112,7 +123,7 @@ class MyModel(nn.Module):
                 for i in range(inputs.shape[0]):
                     gas = gas.copy_change_conditions(y_pred[i, 1].detach().numpy(), None, y_pred[i, 2].detach().numpy(), 'gas')
                     gas.evaluate_der_eos_P()
-                    Vp[i] = gas.V
+                    Vp[i] = gas.V.item()
                     dP_dV[i] = gas.dPdV
                     dP_dT[i] = gas.dPdT
                     u0 = [4500, 300, inputs[i, -1, -1], inputs[i, -1, -2], 5000]
@@ -127,6 +138,17 @@ class MyModel(nn.Module):
                     ode = torch.tensor(ode, dtype=torch.float32)
                     soma_ode[i] = ode
                     x_ss, z_ss = self.compute_steady_state(u0, self.plenum, x0, z0)
+                    alg1[i] = z_ss[0]
+                    alg2[i] = z_ss[1]
+                    alg3[i] = z_ss[2]
+                    alg4[i] = z_ss[3]
+                    alg5[i] = z_ss[4]
+                    alg6[i] = z_ss[5]
+                    alg7[i] = z_ss[6]
+                    alg8[i] = z_ss[7]
+                    alg9[i] = z_ss[8]
+                    alg10[i] = z_ss[9]
+                    alg11[i] = z_ss[10]
 
                     
                 dVp_dt = (P_t - dP_dT*t_t)/dP_dV 
@@ -134,9 +156,9 @@ class MyModel(nn.Module):
                 loss_physics_t_t = torch.mean((soma_ode[:, 1] - t_t)**2)
                 loss_physics_Vp = torch.mean(((soma_ode[:, 2] - dVp_dt)**2))
                 loss_physics_x = loss_physics_x_mt + loss_physics_t_t + 1e7*loss_physics_Vp
-                loss_physics_z = torch.mean(alg1**2) + torch.mean(alg2**2) + torch.mean(alg3**2) + torch.mean(alg4**2) + \
-                                 torch.mean(alg5**2) + torch.mean(alg6**2) + torch.mean(alg7**2) + torch.mean(alg8**2) + \
-                                 torch.mean(alg9**2)+ torch.mean(alg10**2)+ torch.mean(alg11**2)
+                loss_physics_z = torch.mean((alg1 - y_pred[:, 3])**2) + torch.mean((alg2 -  - y_pred[:, 4])**2) + torch.mean((alg3 - y_pred[:, 5])**2) + torch.mean((alg4 -  - y_pred[:, 6])**2) + \
+                                 torch.mean((alg5 - y_pred[:, 7])**2) + torch.mean((alg6 - y_pred[:, 8])**2) + torch.mean((alg7 - y_pred[:, 9])**2) + torch.mean((alg8 - y_pred[:, 10])**2) + \
+                                 torch.mean((alg9 - y_pred[:, 11])**2) + torch.mean((alg10 - y_pred[:, 12])**2) + torch.mean((alg11 - y_pred[:, 13])**2)
                 loss_physics = loss_physics_x + loss_physics_z
                 loss = loss_data + loss_physics
                 loss.backward()
@@ -145,9 +167,9 @@ class MyModel(nn.Module):
 
                 total_loss += loss_data.item()
                 total_loss_physics += loss_physics.item() 
-                print(torch.mean(alg1**2),torch.mean(alg2**2),torch.mean(alg3**2),torch.mean(alg4**2),
-                                 torch.mean(alg5**2),torch.mean(alg6**2),torch.mean(alg7**2),torch.mean(alg8**2),
-                                 torch.mean(alg9**2),torch.mean(alg10**2),torch.mean(alg11**2))
+                print(torch.mean((alg1 - y_pred[:, 3])**2),torch.mean((alg2 -  - y_pred[:, 4])**2),torch.mean((alg3 - y_pred[:, 5])**2),torch.mean((alg4 -  - y_pred[:, 6])**2),
+                                 torch.mean((alg5 - y_pred[:, 7])**2),torch.mean((alg6 - y_pred[:, 8])**2),torch.mean((alg7 - y_pred[:, 9])**2),torch.mean((alg8 - y_pred[:, 10])**2),
+                                 torch.mean((alg9 - y_pred[:, 11])**2),torch.mean((alg10 - y_pred[:, 12])**2),torch.mean((alg11 - y_pred[:, 13])**2))
             # Atualizar o scheduler
             scheduler.step(total_loss / len(train_loader))
 
