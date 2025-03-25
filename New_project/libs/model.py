@@ -156,7 +156,7 @@ class MyModel(nn.Module):
                 loss_physics_t_t = torch.mean((soma_ode[:, 1] - t_t)**2)
                 loss_physics_Vp = torch.mean(((soma_ode[:, 2] - dVp_dt)**2))
                 loss_physics_x = loss_physics_x_mt + loss_physics_t_t + 1e7*loss_physics_Vp
-                loss_physics_z = torch.mean((alg1 - y_pred[:, 3])**2) + torch.mean((alg2 -  - y_pred[:, 4])**2) + torch.mean((alg3 - y_pred[:, 5])**2) + torch.mean((alg4 -  - y_pred[:, 6])**2) + \
+                loss_physics_z = 1e-4 * torch.mean((alg1 - y_pred[:, 3])**2) + 1e-8 * torch.mean((alg2 -  - y_pred[:, 4])**2) + torch.mean((alg3 - y_pred[:, 5])**2) + torch.mean((alg4 -  - y_pred[:, 6])**2) + \
                                  torch.mean((alg5 - y_pred[:, 7])**2) + torch.mean((alg6 - y_pred[:, 8])**2) + torch.mean((alg7 - y_pred[:, 9])**2) + torch.mean((alg8 - y_pred[:, 10])**2) + \
                                  torch.mean((alg9 - y_pred[:, 11])**2) + torch.mean((alg10 - y_pred[:, 12])**2) + torch.mean((alg11 - y_pred[:, 13])**2)
                 loss_physics = loss_physics_x + loss_physics_z
@@ -167,9 +167,7 @@ class MyModel(nn.Module):
 
                 total_loss += loss_data.item()
                 total_loss_physics += loss_physics.item() 
-                print(torch.mean((alg1 - y_pred[:, 3])**2),torch.mean((alg2 -  - y_pred[:, 4])**2),torch.mean((alg3 - y_pred[:, 5])**2),torch.mean((alg4 -  - y_pred[:, 6])**2),
-                                 torch.mean((alg5 - y_pred[:, 7])**2),torch.mean((alg6 - y_pred[:, 8])**2),torch.mean((alg7 - y_pred[:, 9])**2),torch.mean((alg8 - y_pred[:, 10])**2),
-                                 torch.mean((alg9 - y_pred[:, 11])**2),torch.mean((alg10 - y_pred[:, 12])**2),torch.mean((alg11 - y_pred[:, 13])**2))
+                print(loss_physics_z)
             # Atualizar o scheduler
             scheduler.step(total_loss / len(train_loader))
 
