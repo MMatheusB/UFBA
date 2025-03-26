@@ -122,8 +122,9 @@ class MyModel(nn.Module):
                 Vp = torch.zeros(inputs.shape[0], dtype=torch.float32)
                 for i in range(inputs.shape[0]):
                     gas = gas.copy_change_conditions(y_pred[i, 1].detach().numpy(), None, y_pred[i, 2].detach().numpy(), 'gas')
+                    gas2 = gas.copy_change_conditions(y_pred[i, 1].detach().numpy(), y_pred[i, 3].detach().numpy(), None , 'gas')
                     gas.evaluate_der_eos_P()
-                    Vp[i] = gas.V.item()
+                    Vp[i] = gas2.V.item()
                     dP_dV[i] = gas.dPdV
                     dP_dT[i] = gas.dPdT
                     u0 = [4500, 300, inputs[i, -1, -1], inputs[i, -1, -2], 5000]
@@ -155,13 +156,13 @@ class MyModel(nn.Module):
                 loss_physics_x_mt = torch.mean((soma_ode[:, 0] - m_t)**2)
                 loss_physics_t_t = torch.mean((soma_ode[:, 1] - t_t)**2)
                 loss_physics_Vp = torch.mean(((soma_ode[:, 2] - dVp_dt)**2))
-                loss_physics_x = loss_physics_x_mt + loss_physics_t_t + loss_physics_Vp
+                loss_physics_x = loss_physics_x_mt + loss_physics_t_t + loss_physics_Vp + 1e4* torch.mean((Vp - y_pred[:, 2])**2)
                 loss_physics_z = 1e-4 * torch.mean((alg1 - y_pred[:, 3])**2) + 1e-7 * torch.mean((alg2 - y_pred[:, 4])**2) + torch.mean((alg3 - y_pred[:, 5])**2) + 1e2*torch.mean((alg4 - y_pred[:, 6])**2) + \
                                  torch.mean((alg5 - y_pred[:, 7])**2) + torch.mean((alg6 - y_pred[:, 8])**2) + torch.mean((alg7 - y_pred[:, 9])**2) + torch.mean((alg8 - y_pred[:, 10])**2) + \
                                  torch.mean((alg9 - y_pred[:, 11])**2) + torch.mean((alg10 - y_pred[:, 12])**2) + torch.mean((alg11 - y_pred[:, 13])**2)
                 loss_physics = loss_physics_x + loss_physics_z
                 loss =  loss_data + loss_physics
-                loss.backward()  # Gradient clipping
+                loss.backward()  
                 optimizer.step()
 
                 total_loss += loss_data.item()
