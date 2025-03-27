@@ -96,8 +96,8 @@ class MyModel(nn.Module):
             for inputs, y_true in train_loader:
                 optimizer.zero_grad()
                 y_pred = self(inputs)
-                loss_data =  torch.mean((y_true[:, 0] - y_pred[:, 0]) ** 2) + \
-                            1e-3  * torch.mean((y_true[:, 1] - y_pred[:, 1]) ** 2) + \
+                loss_data =  1e2 * torch.mean((y_true[:, 0] - y_pred[:, 0]) ** 2) + \
+                             1e1 * torch.mean((y_true[:, 1] - y_pred[:, 1]) ** 2) + \
                             1e-7 * torch.mean((y_true[:, 3] - y_pred[:, 3]) ** 2) + \
                             1e-7 * torch.mean((y_true[:, 4] - y_pred[:, 4]) ** 2) + \
                             1e-4 *  torch.mean((y_true[:, 11] - y_pred[:, 11]) ** 2)
@@ -139,6 +139,7 @@ class MyModel(nn.Module):
                     ode = torch.tensor(ode, dtype=torch.float32)
                     soma_ode[i] = ode
                     x_ss, z_ss = self.compute_steady_state(u0, self.plenum, x0, z0)
+                    z_ss = torch.tensor(z_ss, dtype=torch.float32)
                     alg1[i] = z_ss[0]
                     alg2[i] = z_ss[1]
                     alg3[i] = z_ss[2]
@@ -156,8 +157,8 @@ class MyModel(nn.Module):
                 loss_physics_x_mt = torch.mean((soma_ode[:, 0] - m_t)**2)
                 loss_physics_t_t = torch.mean((soma_ode[:, 1] - t_t)**2)
                 loss_physics_Vp = torch.mean(((soma_ode[:, 2] - dVp_dt)**2))
-                loss_physics_x = loss_physics_x_mt + loss_physics_t_t + loss_physics_Vp + 1e4* torch.mean((Vp - y_pred[:, 2])**2)
-                loss_physics_z = 1e-4 * torch.mean((alg1 - y_pred[:, 3])**2) + 1e-7 * torch.mean((alg2 - y_pred[:, 4])**2) + torch.mean((alg3 - y_pred[:, 5])**2) + 1e2*torch.mean((alg4 - y_pred[:, 6])**2) + \
+                loss_physics_x = 1e-1 * (loss_physics_x_mt + loss_physics_t_t + loss_physics_Vp) + 1e4* torch.mean((Vp - y_pred[:, 2])**2)
+                loss_physics_z = 1e-3 * torch.mean((alg1 - y_pred[:, 3])**2) + 1e-6 * torch.mean((alg2 - y_pred[:, 4])**2) + torch.mean((alg3 - y_pred[:, 5])**2) + 1e1*torch.mean((alg4 - y_pred[:, 6])**2) + \
                                  torch.mean((alg5 - y_pred[:, 7])**2) + torch.mean((alg6 - y_pred[:, 8])**2) + torch.mean((alg7 - y_pred[:, 9])**2) + torch.mean((alg8 - y_pred[:, 10])**2) + \
                                  torch.mean((alg9 - y_pred[:, 11])**2) + torch.mean((alg10 - y_pred[:, 12])**2) + torch.mean((alg11 - y_pred[:, 13])**2)
                 loss_physics = loss_physics_x + loss_physics_z
