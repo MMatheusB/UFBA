@@ -168,7 +168,6 @@ class MyModel(nn.Module):
 
                 total_loss += loss_data.item()
                 total_loss_physics += loss_physics.item() 
-                print(loss_data, loss_physics_z, loss_physics_x_mt, loss_physics_t_t, loss_physics_Vp, torch.mean((Vp - y_pred[:, 2])**2))
             # Atualizar o scheduler
             scheduler.step(total_loss / len(train_loader))
 
