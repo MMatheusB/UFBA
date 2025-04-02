@@ -6,6 +6,7 @@ from scipy.optimize import fsolve
 from joblib import Parallel, delayed
 from functools import partial
 
+
 class MyModel(nn.Module):
     def __init__(self, units, dt, x_max, x_min, y_min, y_max, plenum):
         self.x_max = x_max
@@ -14,7 +15,7 @@ class MyModel(nn.Module):
         self.y_max = y_max
         self.plenum = plenum
         self.dt = dt
-        self.coeff = torch.tensor([11, -18, 9, -2], dtype=torch.float32) / (6 * dt)  # Pré-calcular coeficientes
+        self.coeff = torch.tensor([11, -18, 9, -2], dtype=torch.float32) / (6 * dt)
         
         super(MyModel, self).__init__()
         
@@ -39,18 +40,15 @@ class MyModel(nn.Module):
     def desnormalize(self, inputs, y_min, y_max):
         return ((inputs + 1) / 2) * (y_max - y_min) + y_min
     
-    def system_residuals(self, y, u0, plenum_sys):
-        x = y[:3]
-        z = y[3:]
-        ode_sym, alg_sym = plenum_sys.evaluate_dae(None, x, z, u0)
-        res_ode = np.array([ode_sym[i].item() for i in range(3)])
-        res_alg = np.array([alg_sym[i] for i in range(11)])
-        return np.concatenate((res_ode, res_alg))
+    def system_residuals(self, z, x0, u0, plenum_sys):
+        """Calcula apenas os resíduos algébricos, mantendo x0 fixo"""
+        _, alg_sym = plenum_sys.evaluate_dae(None, x0, z, u0)
+        return np.array([alg_sym[i] for i in range(11)])  # Retorna apenas as equações algébricas
 
     def compute_steady_state(self, u0, plenum_sys, x0, z0):
-        y0 = np.concatenate((x0, z0))
-        sol = fsolve(self.system_residuals, y0, args=(u0, plenum_sys))
-        return sol[:3], sol[3:]
+        """Calcula apenas o estado estacionário das variáveis algébricas"""
+        sol = fsolve(self.system_residuals, z0, args=(x0, u0, plenum_sys))
+        return x0, sol  # Retorna x0 (fixo) e z calculado
     
     @staticmethod
     def _process_steady_state(args, plenum_sys, self):
@@ -142,7 +140,7 @@ class MyModel(nn.Module):
                 # Processamento paralelo das propriedades do gás
                 Vp, dP_dV, dP_dT = self.process_gas_batch(y_pred, inputs, gas)
                 
-                # Cálculo do estado estacionário em paralelo
+                # Cálculo do estado estacionário em paralelo (apenas para z)
                 with torch.no_grad():
                     u0_batch = np.stack([
                         np.array([4500, 300, inputs[i, -1, -1].item(), 
@@ -178,6 +176,7 @@ class MyModel(nn.Module):
                     5e4 * torch.mean((Vp - y_pred[:, 2])**2)
                 )
                 
+                # Perdas físicas para as variáveis algébricas
                 loss_physics_z = (
                     1e-3 * torch.mean((z_ss[:, 0] - y_pred[:, 3])**2) +
                     1e-6 * torch.mean((z_ss[:, 1] - y_pred[:, 4])**2) +

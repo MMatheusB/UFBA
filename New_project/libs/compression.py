@@ -284,7 +284,7 @@ class compression:
         var = array([Gi_1.T, Gi_1.V, C0]) / Yo
         l = self.compressor.li
         Ahii = self.compressor.losses_incimp(m, self.suction_fluid)
-        breakpoint()
+        
         var = fsolve(lambda var: self.imp_dif(var, m, W, l, Gi, Ahii, Co1, Co2, C0), var)
         var = array(var) * Yo
         Timp, Vimp, Cimp = var
