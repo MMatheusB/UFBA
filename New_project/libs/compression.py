@@ -9,7 +9,7 @@ from scipy.optimize import fsolve, minimize
 from matplotlib.pyplot import plot, figure
 from matplotlib.ticker import AutoMinorLocator, ScalarFormatter
 from casadi import *
-import pdb
+import pdb; 
 
 def config_plot(axes):
     """
@@ -265,6 +265,81 @@ class compression:
 
         return Phi, eta, Mach, Gimp, G2, Gdif, PHI, G2s, k #, Cimp, Cdifs, C2, C2s
 
+    def character_ann(self, m, N , P1, T1, Gi_1):
+
+        self.set_suction_fluid(self,self.suction_fluid.copy_change_conditions(T1, P1, None, 'gas'))
+
+        self.compressor.update_speed(N)
+        W = self.compressor.Ah_ideal
+
+        # Impeller
+        Co1 = 0
+        Co2 = self.compressor.Ca2
+        Gi = self.suction_fluid
+
+        Ca1 = m * Gi.V / self.suction_fluid.mixture.MM_m / self.compressor.A1
+
+        C0 = (Ca1**2 + Co2**2)**0.5
+        Yo = array([self.suction_fluid.T, self.suction_fluid.V, C0/2])
+        var = array([Gi_1.T, Gi_1.V, C0]) / Yo
+        l = self.compressor.li
+        Ahii = self.compressor.losses_incimp(m, self.suction_fluid)
+        breakpoint()
+        var = fsolve(lambda var: self.imp_dif(var, m, W, l, Gi, Ahii, Co1, Co2, C0), var)
+        var = array(var) * Yo
+        Timp, Vimp, Cimp = var
+        Gimp = self.suction_fluid.copy_change_conditions(Timp, None, Vimp, 'gas')
+
+        Ahfi = self.compressor.perdas_fricimp(Gimp,self.vis_model, m)
+
+
+        # Diffuser
+        Co1 = self.compressor.Ca2
+        Co2 = self.compressor.Ca2
+        Gi = Gimp
+
+        l = self.compressor.ld
+        Ahid = self.compressor.losses_incdif(m, Gimp)
+
+        var = array([Timp*1.5, Vimp*0.8, var[2]]) / Yo
+        var = fsolve(lambda var: self.imp_dif(var, m, 0, l, Gi, Ahid, Co1, Co2, C0), var)
+
+        var = array(var) * Yo
+
+        Tdif, Vdif, Cdifs = var
+        Gdif = self.suction_fluid.copy_change_conditions(Tdif, None, Vdif, 'gas')
+
+        Ahfd = self.compressor.perdas_fricdif(Gdif, self.vis_model, m)
+        Gi_2 = Gdif
+
+        # Pressure Ratio
+        eta = (W - Ahid - Ahfd - Ahii - Ahfi) / W - 0.065
+
+        self.suction_fluid.ci_real()
+        k = self.suction_fluid.Cpt / self.suction_fluid.Cvt
+        R = 8.314472
+        PMt = self.suction_fluid.mixture.MM_m
+        P2 = self.suction_fluid.P * (1 + eta * W / 1000 * PMt / self.suction_fluid.Cpt / self.suction_fluid.T) ** (k / (k - 1))
+        V2s = self.suction_fluid.V * (self.suction_fluid.P / P2) ** (1 / k)
+        T2s = 0.85*P2*V2s/R
+        G2s = self.suction_fluid.copy_change_conditions(T2s,P2,None,'gas')
+        T2s = G2s.T
+        T2 = T2s + (1 - eta) * W / 1000 * PMt / self.suction_fluid.Cpt
+        V2 = T2 * R / P2
+        G2 = self.suction_fluid.copy_change_conditions(T2,P2,None,'gas')
+        var = [G2s.T, G2s.V, G2.T, G2.V]
+
+        var = fsolve(lambda var: self.thermal(var, W / 1000 * PMt, eta), var)
+
+        T2s, V2s, T2, V2 = var
+        C2 = Ca1
+        C2s = Ca1
+        G2 = self.suction_fluid.copy_change_conditions(T2, None, V2, 'gas')
+        G2s = self.suction_fluid.copy_change_conditions(T2s, None, V2s, 'gas')
+
+        return G2.P, Timp, Vimp, Tdif, Vdif, T2s, V2s, T2, V2, self.suction_fluid.V
+
+
     def character_dae(self,z,u):
 
         Timp, Vimp, Tdif, Vdif, T2s, V2s, T2, V2, V1 = z
@@ -378,6 +453,7 @@ class compression:
         a2 = ((Ca2*rho)**2*log(V/Gi.V) + (Co2**2 - Co1**2)/2*rho**2 +
               SrhodP + loss - W*rho**2)/C0**2/rho0**2
         a3 = (C2**2 - Ca2**2 - Co2**2)/C0**2
+        
         return [a1[0][0],a2,a3]
 
     def imp_dif_dae(self,var,m,W,l,Gi,Ahi,Co1,Co2,C0):
