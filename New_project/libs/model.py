@@ -118,7 +118,7 @@ class MyModel(nn.Module):
                     1e2 * torch.mean((y_true[:, 1] - y_pred[:, 1]) ** 2) +
                     1e-5 * torch.mean((y_true[:, 3] - y_pred[:, 3]) ** 2) +
                     1e-5 * torch.mean((y_true[:, 4] - y_pred[:, 4]) ** 2) +
-                    1e-4 * torch.mean((y_true[:, 11] - y_pred[:, 11]) ** 2)
+                    1e2 * torch.mean((y_true[:, 11] - y_pred[:, 11]) ** 2)
                 )
                 
                 # Cálculo das derivadas temporais (vetorizado)
@@ -178,15 +178,15 @@ class MyModel(nn.Module):
                 
                 # Perdas físicas para as variáveis algébricas
                 loss_physics_z = (
-                    1e-6 * torch.mean((z_ss[:, 0] - y_pred[:, 3])**2) +
-                    1e-6 * torch.mean((z_ss[:, 1] - y_pred[:, 4])**2) +
+                    1e-7 * torch.mean((z_ss[:, 0] - y_pred[:, 3])**2) +
+                    1e-7 * torch.mean((z_ss[:, 1] - y_pred[:, 4])**2) +
                     torch.mean((z_ss[:, 2] - y_pred[:, 5])**2) +
                     1e2 * torch.mean((z_ss[:, 3] - y_pred[:, 6])**2) +
                     1e2 * torch.mean((z_ss[:, 4] - y_pred[:, 7])**2) +
                     1e2 * torch.mean((z_ss[:, 5] - y_pred[:, 8])**2) +
                     1e2 * torch.mean((z_ss[:, 6] - y_pred[:, 9])**2) +
                     1e2 * torch.mean((z_ss[:, 7] - y_pred[:, 10])**2) +
-                    1e2 * torch.mean((z_ss[:, 8] - y_pred[:, 11])**2) +
+                    1e0 * torch.mean((z_ss[:, 8] - y_pred[:, 11])**2) +
                     1e2 * torch.mean((z_ss[:, 9] - y_pred[:, 12])**2) +
                     1e2 * torch.mean((z_ss[:, 10] - y_pred[:, 13])**2)
                 )
