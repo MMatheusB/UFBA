@@ -113,7 +113,7 @@ class MyModel(nn.Module):
                 y_pred = self(inputs)
                 
                 # Loss de dados
-                loss_data = (
+                loss_data = 2*(
                     1e2 * torch.mean((y_true[:, 0] - y_pred[:, 0]) ** 2) +
                     1e2 * torch.mean((y_true[:, 1] - y_pred[:, 1]) ** 2) +
                     1e-5 * torch.mean((y_true[:, 3] - y_pred[:, 3]) ** 2) +
@@ -177,7 +177,7 @@ class MyModel(nn.Module):
                 )
                 
                 # Perdas físicas para as variáveis algébricas
-                loss_physics_z = (
+                loss_physics_z = 1e-4*(
                     1e-7 * torch.mean((z_ss[:, 0] - y_pred[:, 3])**2) +
                     1e-7 * torch.mean((z_ss[:, 1] - y_pred[:, 4])**2) +
                     torch.mean((z_ss[:, 2] - y_pred[:, 5])**2) +
