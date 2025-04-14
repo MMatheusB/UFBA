@@ -9,6 +9,8 @@ from functools import partial
 
 class MyModel(nn.Module):
     def __init__(self, units, dt, x_max, x_min, y_min, y_max, plenum):
+        super(MyModel, self).__init__()
+
         self.x_max = x_max
         self.x_min = x_min
         self.y_min = y_min
@@ -17,9 +19,7 @@ class MyModel(nn.Module):
         self.dt = dt
         self.coeff = torch.tensor([11, -18, 9, -2], dtype=torch.float32) / (6 * dt)
         
-        super(MyModel, self).__init__()
-        
-        self.rnn_layer = nn.LSTM(
+        self.encoder = nn.LSTM(
             input_size=7,
             hidden_size=units,
             batch_first=True,
@@ -27,12 +27,23 @@ class MyModel(nn.Module):
             bias=True,
             num_layers=1
         )
-        
+
+        # O decoder vai receber apenas um passo (input dummy ou zero) e o estado final do encoder
+        self.decoder_input = nn.Parameter(torch.zeros(1, 1, units))  # shape: [batch, seq=1, features]
+
+        self.decoder = nn.LSTM(
+            input_size=units,
+            hidden_size=units,
+            batch_first=True,
+            num_layers=1
+        )
+
         self.dense_layers = nn.Sequential(
             nn.Linear(units, 64),
             nn.Tanh(),
             nn.Linear(64, 14),
         )
+
     
     def normalize(self, inputs, x_min, x_max):
         return 2 * (inputs - x_min) / (x_max - x_min) - 1
@@ -84,10 +95,19 @@ class MyModel(nn.Module):
     
     def forward(self, inputs):
         rnn_inputs = self.normalize(inputs, self.x_min, self.x_max)
-        rnn_output, _ = self.rnn_layer(rnn_inputs)
-        dense_output = self.dense_layers(rnn_output[:, -1, :])
-        desnormalized_output = self.desnormalize(dense_output, self.y_min, self.y_max)
-        return torch.clamp(desnormalized_output, min=self.y_min, max=self.y_max)
+
+        # Encoder: processa a sequência
+        _, (hidden, cell) = self.encoder(rnn_inputs)
+
+        # Decoder: usa input fixo (pode ser zero ou aprendido)
+        decoder_input = self.decoder_input.expand(inputs.size(0), 1, -1)  # mesma batch size
+        decoder_output, _ = self.decoder(decoder_input, (hidden, cell))
+
+        # Dense layers para gerar a saída final
+        output = self.dense_layers(decoder_output[:, 0, :])
+        desnormalized_output = self.desnormalize(output, self.y_min, self.y_max)
+        return desnormalized_output
+
     
     def train_model(self, model, train_loader, val_loader, lr, epochs, optimizers, patience, factor, gas):
         optimizer = optimizers(model.parameters(), lr=lr)
