@@ -84,45 +84,6 @@ class MyModel(nn.Module):
         return (torch.tensor(Vp, dtype=torch.float32), 
                 torch.tensor(dP_dV, dtype=torch.float32), 
                 torch.tensor(dP_dT, dtype=torch.float32))
-    
-    def generate_free_inputs(self, initial_input, steps=None):
-        """
-        Gera entradas em modo livre (autoregressivo) para o professor forcing.
-        A lógica é:
-          - A entrada da rede tem 7 features.
-          - Os 5 primeiros são referentes às variáveis que o modelo prevê (usando índices [0], [1], [3], [4] e [11]),
-            enquanto os 2 últimos (índices 5 e 6) são controles constantes, extraídos da entrada original.
-        """
-        # initial_input: tensor de shape (batch, seq_len, 7)
-        batch = initial_input.size(0)
-        if steps is None:
-            steps = initial_input.size(1)
-        # Extraímos os controles (supondo que eles estejam nas colunas 5 e 6)
-        control = initial_input[:, 0, 5:]  # shape: (batch, 2)
-        # Usamos o último instante da entrada teacher-forcing como ponto de partida
-        current_input = initial_input[:, -1, :].clone()  # shape: (batch, 7)
-        free_inputs = [current_input]
-        
-        with torch.no_grad():
-            for _ in range(steps - 1):
-                # A entrada para o modelo deve ter 7 features
-                pred = self(current_input.unsqueeze(1))  # pred shape: (batch, 14)
-                # Constrói nova entrada usando os outputs relevantes:
-                # new_input[0] = pred[:, 0]
-                # new_input[1] = pred[:, 1]
-                # new_input[2] = pred[:, 3]
-                # new_input[3] = pred[:, 4]
-                # new_input[4] = pred[:, 11]
-                # new_input[5:7] = controle constante (do input original)
-                new_input = torch.cat([
-                    pred[:, [0, 1, 3, 4, 11]],  # shape: (batch, 5)
-                    control                     # shape: (batch, 2)
-                ], dim=1)  # new_input shape: (batch, 7)
-                free_inputs.append(new_input)
-                current_input = new_input
-        
-        # Retorna a sequência de entradas em free run (batch, steps, 7)
-        return torch.stack(free_inputs, dim=1)
 
     def train_model(self, model, train_loader, val_loader, lr, epochs, optimizers, patience, factor, gas):
         optimizer = optimizers(model.parameters(), lr=lr)
@@ -152,30 +113,13 @@ class MyModel(nn.Module):
                 y_pred_teacher = self(inputs)  # saída com teacher forcing (batch, 14)
                 
                 # ============================
-                # Passagem Free-Running (autoregressivo)
-                # ============================
-                # Gera entradas free-running com o mesmo número de steps que a sequência original
-                free_inputs = self.generate_free_inputs(inputs, steps=inputs.size(1))  # shape: (batch, seq_len, 7)
-                y_pred_free = self(free_inputs)  # saída free-run (batch, 14)
-                
-                # ============================
-                # Loss do Professor Forcing
-                # Penalizamos a diferença entre a saída teacher forced e a free-run para os índices relevantes
-                # ============================
-                indices = [0, 1, 3, 4, 11]
-                prof_loss = 0.0
-                for i in indices:
-                    prof_loss += nn.functional.mse_loss(y_pred_teacher[:, i], y_pred_free[:, i])
-                prof_loss = prof_loss / len(indices)
-                
-                # ============================
                 # Loss de dados (já presente)
                 # ============================
                 loss_data = 2*(
                     1e2 * torch.mean((y_true[:, 0] - y_pred_teacher[:, 0]) ** 2) +
                     1e2 * torch.mean((y_true[:, 1] - y_pred_teacher[:, 1]) ** 2) +
-                    1e-5 * torch.mean((y_true[:, 3] - y_pred_teacher[:, 3]) ** 2) +
-                    1e-5 * torch.mean((y_true[:, 4] - y_pred_teacher[:, 4]) ** 2) +
+                    1e-3 * torch.mean((y_true[:, 3] - y_pred_teacher[:, 3]) ** 2) +
+                    1e-2 * torch.mean((y_true[:, 4] - y_pred_teacher[:, 4]) ** 2) +
                     1e2 * torch.mean((y_true[:, 11] - y_pred_teacher[:, 11]) ** 2)
                 )
                 
@@ -243,6 +187,8 @@ class MyModel(nn.Module):
                 )
                 
                 loss_physics_z = 1e-3*(
+                    torch.mean((z_ss[:, 0] - y_pred_teacher[:, 3])**2) +
+                    torch.mean((z_ss[:, 1] - y_pred_teacher[:, 4])**2) +
                     torch.mean((z_ss[:, 2] - y_pred_teacher[:, 5])**2) +
                     1e2 * torch.mean((z_ss[:, 3] - y_pred_teacher[:, 6])**2) +
                     1e2 * torch.mean((z_ss[:, 4] - y_pred_teacher[:, 7])**2) +
@@ -259,7 +205,7 @@ class MyModel(nn.Module):
                 # ============================
                 # Loss total: dados + físicas + professor forcing
                 # ============================
-                loss = loss_data + loss_physics + alpha * prof_loss
+                loss = loss_data + loss_physics
                 loss.backward()
                 optimizer.step()
                 
@@ -267,7 +213,7 @@ class MyModel(nn.Module):
                 total_loss_physics += loss_physics.item()
                 
                 print(f"Batch {batch_idx} completed in {time.time() - start_time:.2f}s | "
-                      f"Data: {loss_data.item():.4f} | Phys: {loss_physics.item():.4f} | Prof: {prof_loss.item():.4f}")
+                      f"Data: {loss_data.item():.4f} | Phys: {loss_physics.item():.4f}")
 
             scheduler.step(total_loss / len(train_loader))
             train_loss_values.append(total_loss / len(train_loader))
