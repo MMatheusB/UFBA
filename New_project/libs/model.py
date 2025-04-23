@@ -118,8 +118,8 @@ class MyModel(nn.Module):
                 loss_data = 2*(
                     1e2 * torch.mean((y_true[:, 0] - y_pred_teacher[:, 0]) ** 2) +
                     1e2 * torch.mean((y_true[:, 1] - y_pred_teacher[:, 1]) ** 2) +
-                    1e-3 * torch.mean((y_true[:, 3] - y_pred_teacher[:, 3]) ** 2) +
-                    1e-2 * torch.mean((y_true[:, 4] - y_pred_teacher[:, 4]) ** 2) +
+                    5*1e-2 * torch.mean((y_true[:, 3] - y_pred_teacher[:, 3]) ** 2) +
+                    5*1e-2 * torch.mean((y_true[:, 4] - y_pred_teacher[:, 4]) ** 2) +
                     1e2 * torch.mean((y_true[:, 11] - y_pred_teacher[:, 11]) ** 2)
                 )
                 
