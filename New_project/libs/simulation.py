@@ -16,6 +16,7 @@ import numpy as np
 from scipy.optimize import fsolve
 import matplotlib.pyplot as plt
 import torch
+import time as tp
 
 
 class Simulation:
@@ -83,7 +84,7 @@ class Simulation:
         N_values = []
         
         time = 0
-        
+        tm1 = tp.time()
         for i in range(self.nAlphas):
             self.u0[3] = self.alphas[i]  # Atualiza a abertura da válvula
             self.u0[2] = self.N_RotS[i]
@@ -101,7 +102,8 @@ class Simulation:
                 
                 self.RNN_train.append(np.concatenate((x_ss.flatten(), z_ss.flatten(), [self.u0[3], self.u0[2]])))
                 time += self.dt
-        
+        tm2 = tp.time()
+        tempo = tm2 - tm1
         x_values = np.array(x_values)
         z_values = np.array(z_values)
         alpha_values = np.array(alpha_values)
@@ -123,5 +125,5 @@ class Simulation:
         self.y_min = self.y_train.amin(dim=(0), keepdim=True)
         self.y_max = self.y_train.amax(dim=(0), keepdim=True)
 
-        return x_values, z_values, time_steps, alpha_values, N_values, self.x_train, self.y_train, self.x_min, self.x_max, self.y_min, self.y_max
+        return x_values, z_values, time_steps, alpha_values, N_values, self.x_train, self.y_train, self.x_min, self.x_max, self.y_min, self.y_max, tempo
 
