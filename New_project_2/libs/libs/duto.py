@@ -26,7 +26,8 @@ class duto:
     def evaluate_dae(self, t, x, z, u):
         """
         Aqui eu devo calcular as variaveis diferenciais, sendo elas,
-        Temperatura, Volume especifico, velocidade.
+        Temperatura, Volume especifico, velocidade,
+        a pressao vai ser calculada via PVT.
         """
         T, V, w = x
         gas2 = self.gas.copy_change_conditions(T, None, V, 'gas') # calculando o P via PVT.
@@ -42,8 +43,8 @@ class duto:
 
         q = self.q_solo(rho, T) #calor.
 
-        dT_dt = f * w**2 * w / (2 * self.D * Cv) + q / Cv #Temperatura e coisas.
-        dV_dt = 0 # Nao sei
-        dw_dt = f * w * w / (2 * self.D) # Velocidade, utilizar para calcular a vazao no futuro.
+        dT_dt = f * w**2 * abs(w) / (2 * self.D * Cv) + q / Cv #Temperatura e coisas.
+        dV_dt = 0 # constante?
+        dw_dt = f * w * abs(w) / (2 * self.D) # Velocidade, utilizar para calcular a vazao no futuro.
 
-        return np.array([dT_dt, dV_dt, dw_dt])
+        return dT_dt, dV_dt, dw_dt
