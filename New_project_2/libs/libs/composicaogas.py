@@ -5,17 +5,17 @@ from libs.species_builder import R, Species, Mixture
 from libs.eos_database import *
 from libs.gc_eos_soave import *
 
-def sub_vis_chung(T, V, obj):
+def sub_vis_chung(T, V, gas):
 
-    V = V * 1e3  # converte de m³/mol para cm³/mol
+    V = V * 1e3  
 
-    # Preciso descobrir quem e o obj
-    Tc = obj['Tc']      
-    Vc = obj['Vc']      
-    w = obj['w']        
-    PM = obj['PM']      
-    dip = obj['dip']    
-    x = obj['x']        
+
+    Tc = gas.Tc     
+    Vc = gas.Vc
+    w = [sp.omega for sp in gas.mixture.list_of_species]       
+    PM = [sp.MM_m for sp in gas.mixture.list_of_species]      
+    dip = [0 for sp in gas.mixture.list_of_species]
+    x = [sp.x for sp in gas.mixture.list_of_species]     
 
     # Valores especificos do método de Chung
     ai = np.array([6.324, 1.210e-3, 5.283, 6.623, 19.745, -1.9, 24.275, 0.7972, -0.2382, 0.06863])
@@ -76,17 +76,17 @@ def sub_vis_chung(T, V, obj):
     return eta_m, Tc_m, Vc_m, PM_m, y_m, G1_m, dip_rm, w_m, dip_m
 
 
-def coef_con_ter(obj, G):
-    # Cálculo da capacidade calorífica (cv) em G.ci_real(obj)
-    _, Cvt = G.ci_real()  # Cvt em J/(kmol·K)
+def coef_con_ter(gas):
 
-    eta_m, Tc_m, Vc_m, PM_m, y_m, G1_m, dip_rm, w_m, dip_m = sub_vis_chung(G.T, G.V, obj)
+    _, Cvt = gas.ci_real() 
 
-    Tr = G.T / Tc_m
+    eta_m, Tc_m, Vc_m, PM_m, y_m, G1_m, dip_rm, w_m, dip_m = sub_vis_chung(gas.T, gas.V, gas)
+
+    Tr = gas.T / Tc_m
 
     q = 3.586e-3 * (Tc_m / PM_m)**0.5 / (Vc_m**(2/3))
 
-    # Coeficientes Chung para condutividade térmica
+    # Coeficientes Chung
     abcd = np.array([
         [2.4166,   0.74824,  -0.91858, 121.72],
         [-0.50924, -1.5094, -49.991,   69.983],
@@ -97,17 +97,15 @@ def coef_con_ter(obj, G):
         [91.089, 128.11,   -54.217,   523.81]
     ])
 
-    # B1 a B7 são ajustados com base em w_m e dip_rm
     B = [abcd[i, 0] + abcd[i, 1] * w_m + abcd[i, 2] * dip_rm**4 for i in range(7)]
 
-    # Cálculo de G2_m (correção da densidade)
     G2_m = (
         B[0]/y_m * (1 - np.exp(-B[3]*y_m)) +
         B[1]*G1_m*np.exp(B[4]*y_m) +
         B[2]*G1_m
     ) / (B[0]*B[3] + B[1] + B[2])
 
-    # Correção por grau de liberdade (phi)
+
     alpha = Cvt/R - 1.5
     beta = 0.7862 - 0.7109*w_m + 1.3168*w_m**2
     zeta = 2 + 10.5*Tr**2
@@ -115,7 +113,7 @@ def coef_con_ter(obj, G):
     Phi = 1 + alpha * (0.215 + 0.28288*alpha + 1.061*beta + 0.26665*zeta) / \
           (0.6366 + beta*zeta + 1.061*alpha*beta)
 
-    # Condutividade térmica final (W/m.K)
+    
     kappa = (
         31.2 * eta_m * Phi / (PM_m * 1e-3) * (1/G2_m + B[5]*y_m) +
         q * B[6] * y_m**2 * Tr**0.5 * G2_m
