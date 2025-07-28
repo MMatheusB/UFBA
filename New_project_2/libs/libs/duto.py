@@ -9,12 +9,10 @@ from libs.composicaogas import *
 
 
 class duto:
-    def _init_(self, gas, Lc, A1, D, T_solo):
+    def _init_(self, gas, Lc, D, T_solo):
         self.gas = gas
         self.Lc = Lc
-        self.A1 = A1
         self.D = D
-        self.T_solo = T_solo
         self.e_D = 1.5 * 1e-6 #m
         self.k_solo = 0.89 # w / (m*K)
         self.T_solo = 15 # C
