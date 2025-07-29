@@ -9,7 +9,7 @@ from libs.composicaogas import *
 
 
 class duto:
-    def _init_(self, gas, Lc, D, T_solo):
+    def __init__(self, gas, Lc, D):
         self.gas = gas
         self.Lc = Lc
         self.D = D
@@ -30,8 +30,22 @@ class duto:
         h_t = (kappa/self.D)*(1/8)* ((1.82*np.log(10)*((Re - 1.64)**(-2))*(Re - 1000)*P_r)/(1.07 + 12.7*(1.82*np.log(10)*((Re - 1.64)**(-1))*(P_r**(2/3) - 1))))
         return h_t
 
+    def derivada_lagrange(x, f, i):
+        n = len(x)
+        df_dx = 0.0
 
-    def evaluate_dae(self, t, x, z, u):
+        for j in range(n):
+            if j == i:
+                continue
+            prod = 1.0 / (x[i] - x[j])
+            for k in range(n):
+                if k != i and k != j:
+                    prod *= (x[i] - x[k]) / (x[j] - x[k])
+            df_dx += f[j] * prod
+
+        return df_dx
+
+    def evaluate_dae(self, t, y):
         """
         Aqui eu devo calcular as variaveis diferenciais, sendo elas,
         Temperatura, Volume especifico, velocidade,
@@ -39,41 +53,40 @@ class duto:
         lembretes:
                T, P são perturbações do sistema <= [  |  | | | |  |  ] => vazão volumetrica é perturbação do sistema no final do duto, com ela calcula-se o omega direto
         """
-        T, V, w = x
-        gas2 = self.gas.copy_change_conditions(T, None, V, 'gas') # calculando o P via PVT.
-        rho = 1 / V
-        
-        Cv = self.gas.cvT #cv_real ou seria o ci_real? perguntar.
-        
-        mu = viscosity.evaluate_viscosity(T, gas2.P.item()) #viscosidate? para calcular o numero de reynolds.
-
-        Re = rho * w * (self.D / mu) #numero de reynolds, verificar se a equacao ta certa.
-
-        f = self.fator_friccao(Re) #fator de friccao.
-
-        kappa = coef_con_ter(gas2)
-
-        h_t = self.coef_cov_fluid(kappa, mu, Re, gas2)
-
-        U = 1/((1/h_t) + (self.D/2*self.k_solo)*(np.arccosh(2*self.z_solo/self.D)))
-
-        q = self.q_solo(rho, T, U) #calor.
-
-        dT_dx = 0
-        dV_dx = 0
-        dw_dt = 0
-
+        T = y[0::3]
+        V = y[1::3]
+        w = y[2::3]
+        dTdt = np.zeros_like(T)
+        dVdt = np.zeros_like(V)
+        dwdt = np.zeros_like(w)
         for i in range(len(self.l)):
-            prod_x = 1
-            for k in range(len(self.l)):
-                if k != i:
-                    prod_x *= (self.l - self.l[k])/(self.l[i] - self.l[k]) 
-            dT_dx += T*(prod_x)
-            dV_dx += V*(prod_x)
-            dw_dt += w *(prod_x)
+            dT_dx = self.derivada_lagrange(self.l, T_array, i)
+            dV_dx = self.derivada_lagrange(self.l, V_array, i)
+            dw_dx = self.derivada_lagrange(self.l, w_array, i)
+            gas2 = self.gas.copy_change_conditions(T, None, V, 'gas') # calculando o P via PVT.
+            rho = 1 / V
+        
+            Cv = self.gas.cvT #cv_real ou seria o ci_real? perguntar.
+        
+            mu = viscosity.evaluate_viscosity(T, gas2.P.item()) #viscosidate? para calcular o numero de reynolds.
 
-        dT_dt = (f * w**2 * abs(w) / (2 * self.D * Cv)) + q / Cv #Temperatura e coisas.
-        dV_dt = 0 
-        dw_dt = f * w * abs(w) / (2 * self.D) # Velocidade, utilizar para calcular a vazao no futuro.
+            Re = rho * w * (self.D / mu) #numero de reynolds, verificar se a equacao ta certa.
+
+            f = self.fator_friccao(Re) #fator de fricção.
+
+            kappa = coef_con_ter(gas2)
+
+            h_t = self.coef_cov_fluid(kappa, mu, Re, gas2)
+
+            U = 1/((1/h_t) + (self.D/2*self.k_solo)*(np.arccosh(2*self.z_solo/self.D)))
+
+            q = self.q_solo(rho, T, U) #calor.
+
+            v_kg = V/gas2.mixture.MM_m
+
+
+            dT_dt = (-w*dT_dx -T*((v_kg*gas2.dPdT)/Cv)) + (f * w**2 * abs(w) / (2 * self.D * Cv)) + q / Cv #mudar o V*
+            dV_dt = (-w * dV_dx) + dw_dx*V
+            dw_dt = ((-v_kg*gas2.dPdT*dT_dx) + (-v_kg*gas2.dPdV*dT_dx) + (-(w**2))) + (f * w * abs(w) / (2 * self.D)) # Velocidade, utilizar para calcular a vazão no futuro.
 
         return dT_dt, dV_dt, dw_dt
