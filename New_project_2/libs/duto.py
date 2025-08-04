@@ -23,7 +23,7 @@ class duto:
         return (1/ (-4 * np.log((self.e_D / 3.7) - (5.02/ Re) * (np.log((self.e_D/ 3.7) - (5.02/Re) * (np.log((self.e_D / 3.7) + (13/Re))))))))**2
     
     def q_solo(self, Rho, T, U): 
-        return (1/Rho) * (4*self.U/ self. D) * (T - self.T_solo)
+        return (1/Rho) * (4*U/ self. D) * (T - self.T_solo)
 
     def coef_cov_fluid(self, kappa, mu, Re, gas):
         P_r = (gas.Cpt*mu)/kappa
@@ -56,20 +56,32 @@ class duto:
         T = y[0::3]
         V = y[1::3]
         w = y[2::3]
+        
+        # => [condições de contorno] <=
+        #T_in, P_in => entrada =>  [ | | | |]
+        
+        T[0] = 300.0
+        P_init = 4500
+        gas_init = self.gas.copy_change_conditions(T[0], P_init, None, 'gas')
+        V[0] = gas_init.V.item()     # Volume específico de entrada    
+        
+        #saída [ | | | | |] => saída => Q_out  
+        Q_out = 0.05  # [m³/s] <- substitua por seu valor real
+        A = np.pi * (self.D**2) / 4  # Área da seção transversal do duto
+        w[-1] = Q_out / A
+
         dTdt = np.zeros_like(T)
         dVdt = np.zeros_like(V)
         dwdt = np.zeros_like(w)
+        
         for i in range(len(self.l)):
-            dT_dx = self.derivada_lagrange(self.l, T_array, i)
-            dV_dx = self.derivada_lagrange(self.l, V_array, i)
-            dw_dx = self.derivada_lagrange(self.l, w_array, i)
-            gas2 = self.gas.copy_change_conditions(T, None, V, 'gas') # calculando o P via PVT.
-            rho = 1 / V
+            gas2 = self.gas.copy_change_conditions(T[i], None, V[i], 'gas')
+            
+            rho = 1 / V[i]
         
-            Cv = self.gas.cvT #cv_real ou seria o ci_real? perguntar.
-        
-            mu = viscosity.evaluate_viscosity(T, gas2.P.item()) #viscosidate? para calcular o numero de reynolds.
-
+            Cv = gas2.Cvt #cv_real ou seria o ci_real? perguntar.
+            
+            mu = viscosity.evaluate_viscosity(T[i], gas2.P.item())
             Re = rho * w * (self.D / mu) #numero de reynolds, verificar se a equacao ta certa.
 
             f = self.fator_friccao(Re) #fator de fricção.
@@ -80,13 +92,21 @@ class duto:
 
             U = 1/((1/h_t) + (self.D/2*self.k_solo)*(np.arccosh(2*self.z_solo/self.D)))
 
-            q = self.q_solo(rho, T, U) #calor.
+            q = self.q_solo(rho, T[i], U) #calor.
 
-            v_kg = V/gas2.mixture.MM_m
+            v_kg = V[i]/gas2.mixture.MM_m
 
+            dT_dx = self.derivada_lagrange(self.l, T, i)
+            dV_dx = self.derivada_lagrange(self.l, V, i)
+            dw_dx = self.derivada_lagrange(self.l, w, i)
 
-            dT_dt = (-w*dT_dx -T*((v_kg*gas2.dPdT)/Cv)) + (f * w**2 * abs(w) / (2 * self.D * Cv)) + q / Cv #mudar o V*
-            dV_dt = (-w * dV_dx) + dw_dx*V
-            dw_dt = ((-v_kg*gas2.dPdT*dT_dx) + (-v_kg*gas2.dPdV*dT_dx) + (-(w**2))) + (f * w * abs(w) / (2 * self.D)) # Velocidade, utilizar para calcular a vazão no futuro.
-
-        return dT_dt, dV_dt, dw_dt
+            dTdt[i] = (-w[i]*dT_dx -T[i]*((v_kg*gas2.dPdT)/Cv)) + (f * w[i]**2 * abs(w[i]) / (2 * self.D * Cv)) + q / Cv #mudar o V*
+            dVdt[i] = (-w[i] * dV_dx) + dw_dx*V[i]
+            dwdt[i] = ((-v_kg*gas2.dPdT*dT_dx) + (-v_kg*gas2.dPdV*dT_dx) + (-(w[i]**2))) + (f * w[i] * abs(w[i]) / (2 * self.D)) # Velocidade, utilizar para calcular a vazão no futuro.
+        
+        dydt = np.empty_like(y)
+        dydt[0::3] = dTdt
+        dydt[1::3] = dVdt
+        dydt[2::3] = dwdt
+        
+        return dydt
