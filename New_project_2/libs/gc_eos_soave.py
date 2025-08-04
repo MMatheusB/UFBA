@@ -342,7 +342,7 @@ class gc_eos_class:
         self.evaluate_der_a()
         ## linha 291
         hr = self.P*self.Veos - R*self.T - (self.a_m - self.der_a*self.T)*(1/self.b_m)*(np.log(1 + self.b_m/self.Veos))
-        self.h = hr + hi;
+        self.h = hr + hi
 
     def s_gas(self):
         #revisada

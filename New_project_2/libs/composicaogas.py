@@ -75,10 +75,12 @@ def sub_vis_chung(T, V, gas):
 
     return eta_m, Tc_m, Vc_m, PM_m, y_m, G1_m, dip_rm, w_m, dip_m
 
-
+#mixture.tcm e mixture.Vcm
 def coef_con_ter(gas):
+    
+    gas.ci_ideal()
 
-    _, Cvt = gas.ci_real() 
+    Cvt = gas.Cvt 
 
     eta_m, Tc_m, Vc_m, PM_m, y_m, G1_m, dip_rm, w_m, dip_m = sub_vis_chung(gas.T, gas.V, gas)
 

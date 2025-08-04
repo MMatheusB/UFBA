@@ -9,7 +9,8 @@ from libs.composicaogas import *
 
 
 class duto:
-    def __init__(self, gas, Lc, D):
+    def __init__(self, gas, visc, Lc, D):
+        self.visc = visc
         self.gas = gas
         self.Lc = Lc
         self.D = D
@@ -78,10 +79,10 @@ class duto:
             gas2 = self.gas.copy_change_conditions(T[i], None, V[i], 'gas')
             
             rho = 1 / V[i]
-        
+            gas2.ci_real()
             Cv = gas2.Cvt #cv_real ou seria o ci_real? perguntar.
             
-            mu = viscosity.evaluate_viscosity(T[i], gas2.P.item())
+            mu = self.visc.evaluate_viscosity(T[i], gas2.P.item())
             Re = rho * w * (self.D / mu) #numero de reynolds, verificar se a equacao ta certa.
 
             f = self.fator_friccao(Re) #fator de fricção.
