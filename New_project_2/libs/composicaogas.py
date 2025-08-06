@@ -10,12 +10,12 @@ def sub_vis_chung(T, V, gas):
     V = V * 1e3  
 
 
-    Tc = gas.Tc     
-    Vc = gas.Vc
-    w = [sp.omega for sp in gas.mixture.list_of_species]       
-    PM = [sp.MM_m for sp in gas.mixture.list_of_species]      
-    dip = [0 for sp in gas.mixture.list_of_species]
-    x = [sp.x for sp in gas.mixture.list_of_species]     
+    Tc = np.array([sp.Tc for sp in gas.mixture.list_of_species])
+    Vc = np.array([sp.Vc for sp in gas.mixture.list_of_species])
+    w = np.array([sp.omega for sp in gas.mixture.list_of_species])       
+    PM = np.sum([species.x*species.MM for species in gas.mixture.list_of_species])
+    dip = np.array([0 for sp in gas.mixture.list_of_species])
+    x = np.array([sp.x for sp in gas.mixture.list_of_species])  
 
     # Valores especificos do método de Chung
     ai = np.array([6.324, 1.210e-3, 5.283, 6.623, 19.745, -1.9, 24.275, 0.7972, -0.2382, 0.06863])

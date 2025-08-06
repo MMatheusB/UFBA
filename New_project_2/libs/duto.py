@@ -21,7 +21,8 @@ class duto:
         self.l = [0, 0.15*self.Lc, 0.30*self.Lc, 0.40*self.Lc, 0.50*self.Lc, 0.60*self.Lc, 0.70*self.Lc, 0.85*self.Lc, self.Lc]
 
     def fator_friccao(self, Re): 
-        return (1/ (-4 * np.log((self.e_D / 3.7) - (5.02/ Re) * (np.log((self.e_D/ 3.7) - (5.02/Re) * (np.log((self.e_D / 3.7) + (13/Re))))))))**2
+        print(Re)
+        return (1/ (-16 * np.log(self.e_D / 3.7 - 5.02/ Re * np.log(self.e_D/ 3.7 - 5.02/Re * np.log(self.e_D / 3.7 + 13/Re)))))**2
     
     def q_solo(self, Rho, T, U): 
         return (1/Rho) * (4*U/ self. D) * (T - self.T_solo)
@@ -31,7 +32,7 @@ class duto:
         h_t = (kappa/self.D)*(1/8)* ((1.82*np.log(10)*((Re - 1.64)**(-2))*(Re - 1000)*P_r)/(1.07 + 12.7*(1.82*np.log(10)*((Re - 1.64)**(-1))*(P_r**(2/3) - 1))))
         return h_t
 
-    def derivada_lagrange(x, f, i):
+    def derivada_lagrange(self, x, f, i):
         n = len(x)
         df_dx = 0.0
 
@@ -62,7 +63,7 @@ class duto:
         #T_in, P_in => entrada =>  [ | | | |]
         
         T[0] = 300.0
-        P_init = 4500
+        P_init = 7500
         gas_init = self.gas.copy_change_conditions(T[0], P_init, None, 'gas')
         V[0] = gas_init.V.item()     # Volume específico de entrada    
         
@@ -77,13 +78,13 @@ class duto:
         
         for i in range(len(self.l)):
             gas2 = self.gas.copy_change_conditions(T[i], None, V[i], 'gas')
-            
-            rho = 1 / V[i]
+            v_kg = V[i]/gas2.mixture.MM_m
+            rho = 1 / v_kg
             gas2.ci_real()
-            Cv = gas2.Cvt #cv_real ou seria o ci_real? perguntar.
+            Cv = gas2.Cvt.item() #cv_real ou seria o ci_real? perguntar.
             
             mu = self.visc.evaluate_viscosity(T[i], gas2.P.item())
-            Re = rho * w * (self.D / mu) #numero de reynolds, verificar se a equacao ta certa.
+            Re = rho * w[i] * (self.D / mu) #numero de reynolds, verificar se a equacao ta certa.
 
             f = self.fator_friccao(Re) #fator de fricção.
 
@@ -95,7 +96,6 @@ class duto:
 
             q = self.q_solo(rho, T[i], U) #calor.
 
-            v_kg = V[i]/gas2.mixture.MM_m
 
             dT_dx = self.derivada_lagrange(self.l, T, i)
             dV_dx = self.derivada_lagrange(self.l, V, i)
@@ -103,7 +103,7 @@ class duto:
 
             dTdt[i] = (-w[i]*dT_dx -T[i]*((v_kg*gas2.dPdT)/Cv)) + (f * w[i]**2 * abs(w[i]) / (2 * self.D * Cv)) + q / Cv #mudar o V*
             dVdt[i] = (-w[i] * dV_dx) + dw_dx*V[i]
-            dwdt[i] = ((-v_kg*gas2.dPdT*dT_dx) + (-v_kg*gas2.dPdV*dT_dx) + (-(w[i]**2))) + (f * w[i] * abs(w[i]) / (2 * self.D)) # Velocidade, utilizar para calcular a vazão no futuro.
+            dwdt[i] = ((-v_kg*gas2.dPdT.item()*dT_dx) + (-v_kg*gas2.dPdV.item()*dT_dx) + (-(w[i]**2))) + (f * w[i] * abs(w[i]) / (2 * self.D)) # Velocidade, utilizar para calcular a vazão no futuro.
         
         dydt = np.empty_like(y)
         dydt[0::3] = dTdt
@@ -111,3 +111,37 @@ class duto:
         dydt[2::3] = dwdt
         
         return dydt
+    def estacionario(self, x, y):
+        T, V, w = y
+        gas2 = self.gas.copy_change_conditions(T, None, V, 'gas')
+        v_kg = V/gas2.mixture.MM_m
+        gas2.ci_real()
+        Cv = gas2.Cvt.item()
+        mu = self.visc.evaluate_viscosity(T, gas2.P.item())
+        rho = 1/v_kg
+        Re = rho * w * (self.D / mu) #numero de reynolds, verificar se a equacao ta certa.
+        f = self.fator_friccao(Re)
+        kappa = coef_con_ter(gas2)
+
+        h_t = self.coef_cov_fluid(kappa, mu, Re, gas2)
+
+        U = 1/((1/h_t) + (self.D/2*self.k_solo)*(np.arccosh(2*self.z_solo/self.D)))
+
+        q = self.q_solo(rho, T, U) 
+        
+        matrix_a = np.array([
+            [-w, 0, -T*(v_kg*gas2.dPdT/Cv)],
+            [0, -2, V],
+            [-V*gas2.dPdT, -V*gas2.dPdV, -w]
+        ])
+        matrix_b = np.array([
+            [f * w**2 * abs(w) / (2 * self.D * Cv) + q / Cv],
+            [0],
+            [(f * w * abs(w) / (2 * self.D))]
+        ])
+
+        result = np.linalg.inv(matrix_a)@matrix_b
+        dTdx = result[0]
+        dVdx = result[1]
+        dwdx = result[2]
+        return [dTdx, dVdx, dwdx]
