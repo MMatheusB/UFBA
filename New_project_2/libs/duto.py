@@ -67,7 +67,7 @@ class duto:
         gas_init = self.gas.copy_change_conditions(T[0], P_init, None, 'gas')
         V[0] = gas_init.V.item()     # Volume específico de entrada    
         
-        #saída [ | | | | |] => saída => Q_out  
+        #saída [ | | | | |] => saída =>  
         Q_out = 0.05  # [m³/s] <- substitua por seu valor real
         A = np.pi * (self.D**2) / 4  # Área da seção transversal do duto
         w[-1] = Q_out / A
@@ -112,36 +112,42 @@ class duto:
         
         return dydt
     def estacionario(self, x, y):
-        T, V, w = y
+        T, V, w = map(float, y)  # garante que T, V, w são floats puros
+    
         gas2 = self.gas.copy_change_conditions(T, None, V, 'gas')
-        v_kg = V/gas2.mixture.MM_m
+        v_kg = float(V / gas2.mixture.MM_m)
         gas2.ci_real()
-        Cv = gas2.Cvt.item()
-        mu = self.visc.evaluate_viscosity(T, gas2.P.item())
-        rho = 1/v_kg
-        Re = rho * w * (self.D / mu) #numero de reynolds, verificar se a equacao ta certa.
+    
+        Cv = float(gas2.Cvt)  # força para float
+        mu = float(self.visc.evaluate_viscosity(T, float(gas2.P)))
+        rho = 1.0 / v_kg
+        Re = rho * w * (self.D / mu)
         f = self.fator_friccao(Re)
-        kappa = coef_con_ter(gas2)
-
+        kappa = float(coef_con_ter(gas2))
+    
         h_t = self.coef_cov_fluid(kappa, mu, Re, gas2)
-
-        U = 1/((1/h_t) + (self.D/2*self.k_solo)*(np.arccosh(2*self.z_solo/self.D)))
-
-        q = self.q_solo(rho, T, U) 
-        
+        U = 1.0 / ((1.0 / h_t) + (self.D / (2 * self.k_solo)) * (np.arccosh(2 * self.z_solo / self.D)))
+        q = self.q_solo(rho, T, U)
+    
+        dPdT = float(gas2.dPdT)
+        dPdV = float(gas2.dPdV)
+    
         matrix_a = np.array([
-            [-w, 0, -T*(v_kg*gas2.dPdT/Cv)],
-            [0, -2, V],
-            [-V*gas2.dPdT, -V*gas2.dPdV, -w]
-        ])
+        [-w, 0.0, -T * (v_kg * dPdT / Cv)],
+        [0.0, -w, V],
+        [-v_kg * dPdT, -v_kg * dPdV, -w]
+        ], dtype=float)
+    
         matrix_b = np.array([
-            [f * w**2 * abs(w) / (2 * self.D * Cv) + q / Cv],
-            [0],
-            [(f * w * abs(w) / (2 * self.D))]
-        ])
+        [f * w**2 * abs(w) / (2 * self.D * Cv) + q / Cv],
+        [0.0],
+        [f * w * abs(w) / (2 * self.D)]
+        ], dtype=float)
+    
+        result = np.linalg.inv(matrix_a) @ matrix_b
+    
+        dTdx = float(result[0].item())
+        dVdx = float(result[1].item())
+        dwdx = float(result[2].item())
 
-        result = np.linalg.inv(matrix_a)@matrix_b
-        dTdx = result[0]
-        dVdx = result[1]
-        dwdx = result[2]
-        return [dTdx, dVdx, dwdx]
+        return dTdx, dVdx, dwdx
