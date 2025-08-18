@@ -21,16 +21,15 @@ class duto:
         self.l = [0, 0.15*self.Lc, 0.30*self.Lc, 0.40*self.Lc, 0.50*self.Lc, 0.60*self.Lc, 0.70*self.Lc, 0.85*self.Lc, self.Lc]
 
     def fator_friccao(self, Re): 
-        print(Re)
-        return (1/ (-16 * np.log(self.e_D / 3.7 - 5.02/ Re * np.log(self.e_D/ 3.7 - 5.02/Re * np.log(self.e_D / 3.7 + 13/Re)))))**2
+        return float((1/ (-16 * np.log(self.e_D / 3.7 - 5.02/ Re * np.log(self.e_D/ 3.7 - 5.02/Re * np.log(self.e_D / 3.7 + 13/Re)))))**2)
     
     def q_solo(self, Rho, T, U): 
-        return (1/Rho) * (4*U/ self. D) * (T - self.T_solo)
+        return float((1/Rho) * (4*U/ self. D) * (T - self.T_solo))
 
     def coef_cov_fluid(self, kappa, mu, Re, gas):
         P_r = (gas.Cpt*mu)/kappa
         h_t = (kappa/self.D)*(1/8)* ((1.82*np.log(10)*((Re - 1.64)**(-2))*(Re - 1000)*P_r)/(1.07 + 12.7*(1.82*np.log(10)*((Re - 1.64)**(-1))*(P_r**(2/3) - 1))))
-        return h_t
+        return float(h_t)
 
     def derivada_lagrange(self, x, f, i):
         n = len(x)
@@ -145,7 +144,6 @@ class duto:
         ], dtype=float)
     
         result = np.linalg.inv(matrix_a) @ matrix_b
-    
         dTdx = float(result[0].item())
         dVdx = float(result[1].item())
         dwdx = float(result[2].item())
