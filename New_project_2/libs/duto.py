@@ -31,20 +31,17 @@ class duto:
         h_t = (kappa/self.D)*(1/8)* ((1.82*np.log(10)*((Re - 1.64)**(-2))*(Re - 1000)*P_r)/(1.07 + 12.7*(1.82*np.log(10)*((Re - 1.64)**(-1))*(P_r**(2/3) - 1))))
         return float(h_t)
 
-    def derivada_lagrange(self, x, f, i):
-        n = len(x)
-        df_dx = 0.0
+    def derivada_centrada(self, x, f, i):
+        if i == 0:
+        # Derivada pra frente
+            return (f[1] - f[0]) / (x[1] - x[0])
+        elif i == len(x) - 1:
+        # Derivada pra trás
+            return (f[-1] - f[-2]) / (x[-1] - x[-2])
+        else:
+        # Derivada central
+            return (f[i+1] - f[i-1]) / (x[i+1] - x[i-1])
 
-        for j in range(n):
-            if j == i:
-                continue
-            prod = 1.0 / (x[i] - x[j])
-            for k in range(n):
-                if k != i and k != j:
-                    prod *= (x[i] - x[k]) / (x[j] - x[k])
-            df_dx += f[j] * prod
-
-        return df_dx
 
     def evaluate_dae(self, t, y):
         """
@@ -57,19 +54,7 @@ class duto:
         T = y[0::3]
         V = y[1::3]
         w = y[2::3]
-        
-        # => [condições de contorno] <=
-        #T_in, P_in => entrada =>  [ | | | |]
-        
-        T[0] = 300.0
-        P_init = 7500
-        gas_init = self.gas.copy_change_conditions(T[0], P_init, None, 'gas')
-        V[0] = gas_init.V.item()     # Volume específico de entrada    
-        
-        #saída [ | | | | |] => saída =>  
-        Q_out = 0.05  # [m³/s] <- substitua por seu valor real
-        A = np.pi * (self.D**2) / 4  # Área da seção transversal do duto
-        w[-1] = Q_out / A
+
 
         dTdt = np.zeros_like(T)
         dVdt = np.zeros_like(V)
@@ -94,15 +79,33 @@ class duto:
             U = 1/((1/h_t) + (self.D/2*self.k_solo)*(np.arccosh(2*self.z_solo/self.D)))
 
             q = self.q_solo(rho, T[i], U) #calor.
+            dPdT = float(gas2.dPdT)
+            dPdV = float(gas2.dPdV)
 
+            dT_dx = self.derivada_centrada(self.l, T, i)
+            dV_dx = self.derivada_centrada(self.l, V, i)
+            dw_dx = self.derivada_centrada(self.l, w, i)
+            
+            matrix_dx = [[dT_dx],
+                         [dV_dx],
+                         [dw_dx]]
+            matrix_a = np.array([
+            [-w[i], 0.0, -T[i] * (v_kg * dPdT / Cv)],
+            [0.0, -w[i], V[i]],
+            [-v_kg * dPdT, -v_kg * dPdV, -w[i]]
+            ], dtype=float)
+    
+            matrix_b = np.array([
+            [f * w[i]**2 * abs(w[i]) / (2 * self.D * Cv) + q / Cv],
+            [0.0],
+            [f * w[i] * abs(w[i]) / (2 * self.D)]
+            ], dtype=float)
 
-            dT_dx = self.derivada_lagrange(self.l, T, i)
-            dV_dx = self.derivada_lagrange(self.l, V, i)
-            dw_dx = self.derivada_lagrange(self.l, w, i)
+            result = (matrix_a @ matrix_dx) + matrix_b
 
-            dTdt[i] = (-w[i]*dT_dx -T[i]*((v_kg*gas2.dPdT)/Cv)) + (f * w[i]**2 * abs(w[i]) / (2 * self.D * Cv)) + q / Cv #mudar o V*
-            dVdt[i] = (-w[i] * dV_dx) + dw_dx*V[i]
-            dwdt[i] = ((-v_kg*gas2.dPdT.item()*dT_dx) + (-v_kg*gas2.dPdV.item()*dT_dx) + (-(w[i]**2))) + (f * w[i] * abs(w[i]) / (2 * self.D)) # Velocidade, utilizar para calcular a vazão no futuro.
+            dTdt[i] = result[0] 
+            dVdt[i] = result[1]
+            dwdt[i] = result[2]
         
         dydt = np.empty_like(y)
         dydt[0::3] = dTdt
@@ -117,7 +120,7 @@ class duto:
         v_kg = float(V / gas2.mixture.MM_m)
         gas2.ci_real()
     
-        Cv = float(gas2.Cvt)  # força para float
+        Cv = float(gas2.Cvt)  
         mu = float(self.visc.evaluate_viscosity(T, float(gas2.P)))
         rho = 1.0 / v_kg
         Re = rho * w * (self.D / mu)
