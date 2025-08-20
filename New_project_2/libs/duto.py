@@ -21,25 +21,22 @@ class duto:
         self.l = [0, 0.15*self.Lc, 0.30*self.Lc, 0.40*self.Lc, 0.50*self.Lc, 0.60*self.Lc, 0.70*self.Lc, 0.85*self.Lc, self.Lc]
 
     def fator_friccao(self, Re): 
-        return float((1/ (-16 * np.log(self.e_D / 3.7 - 5.02/ Re * np.log(self.e_D/ 3.7 - 5.02/Re * np.log(self.e_D / 3.7 + 13/Re)))))**2)
+        return float((1/ (-16 * np.log10(self.e_D / 3.7 - 5.02/ Re * np.log10(self.e_D/ 3.7 - 5.02/Re * np.log10(self.e_D / 3.7 + 13/Re)))))**2)
     
     def q_solo(self, Rho, T, U): 
         return float((1/Rho) * (4*U/ self. D) * (T - self.T_solo))
 
     def coef_cov_fluid(self, kappa, mu, Re, gas):
         P_r = (gas.Cpt*mu)/kappa
-        h_t = (kappa/self.D)*(1/8)* ((1.82*np.log(10)*((Re - 1.64)**(-2))*(Re - 1000)*P_r)/(1.07 + 12.7*(1.82*np.log(10)*((Re - 1.64)**(-1))*(P_r**(2/3) - 1))))
+        h_t = (kappa/self.D)*(1/8)* ((1.82*np.log10((Re - 1.64)**(-2))*(Re - 1000)*P_r)/(1.07 + 12.7*(1.82*np.log10((Re - 1.64)**(-1))*(P_r**(2/3) - 1))))
         return float(h_t)
 
     def derivada_centrada(self, x, f, i):
         if i == 0:
-        # Derivada pra frente
             return (f[1] - f[0]) / (x[1] - x[0])
         elif i == len(x) - 1:
-        # Derivada pra trás
             return (f[-1] - f[-2]) / (x[-1] - x[-2])
         else:
-        # Derivada central
             return (f[i+1] - f[i-1]) / (x[i+1] - x[i-1])
 
 
@@ -89,20 +86,21 @@ class duto:
             matrix_dx = [[dT_dx],
                          [dV_dx],
                          [dw_dx]]
+            
             matrix_a = np.array([
             [-w[i], 0.0, -T[i] * (v_kg * dPdT / Cv)],
             [0.0, -w[i], V[i]],
-            [-v_kg * dPdT, -v_kg * dPdV, -w[i]]
+            [-v_kg * dPdT*1000, -v_kg * dPdV*1000, -w[i]]
             ], dtype=float)
     
             matrix_b = np.array([
-            [f * w[i]**2 * abs(w[i]) / (2 * self.D * Cv) + q / Cv],
+            [f * w[i]**2 * abs(w[i]) / (2 * self.D * Cv*1000) + q / Cv],
             [0.0],
             [f * w[i] * abs(w[i]) / (2 * self.D)]
             ], dtype=float)
 
             result = (matrix_a @ matrix_dx) + matrix_b
-
+            print(result)
             dTdt[i] = result[0] 
             dVdt[i] = result[1]
             dwdt[i] = result[2]
@@ -130,7 +128,17 @@ class duto:
         h_t = self.coef_cov_fluid(kappa, mu, Re, gas2)
         U = 1.0 / ((1.0 / h_t) + (self.D / (2 * self.k_solo)) * (np.arccosh(2 * self.z_solo / self.D)))
         q = self.q_solo(rho, T, U)
-    
+        
+        print(Cv, '=> Cv')
+        print(mu, '=> mu')
+        print(rho, '=> rho')
+        print(Re, '=> Re')
+        print(f, '=> f')
+        print(kappa, '=> kappa')
+        print(h_t, '=> h_t')
+        print(U, '=> U')
+        print(q, '=> q')
+        
         dPdT = float(gas2.dPdT)
         dPdV = float(gas2.dPdV)
     
