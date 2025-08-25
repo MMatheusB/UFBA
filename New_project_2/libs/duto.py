@@ -21,14 +21,16 @@ class duto:
         self.l = [0, 0.15*self.Lc, 0.30*self.Lc, 0.40*self.Lc, 0.50*self.Lc, 0.60*self.Lc, 0.70*self.Lc, 0.85*self.Lc, self.Lc]
 
     def fator_friccao(self, Re): 
-        return float((1/ (-16 * np.log10(self.e_D / 3.7 - 5.02/ Re * np.log10(self.e_D/ 3.7 - 5.02/Re * np.log10(self.e_D / 3.7 + 13/Re)))))**2)
+        return float(-16 * np.log10(self.e_D / 3.7 - 5.02/ Re * np.log10(self.e_D/ 3.7 - 5.02/Re * np.log10(self.e_D / 3.7 + 13/Re)))**(-2))
     
     def q_solo(self, Rho, T, U): 
         return float((1/Rho) * (4*U/ self. D) * (T - self.T_solo))
 
     def coef_cov_fluid(self, kappa, mu, Re, gas):
         P_r = (gas.Cpt*mu)/kappa
-        h_t = (kappa/self.D)*(1/8)* ((1.82*np.log10((Re - 1.64)**(-2))*(Re - 1000)*P_r)/(1.07 + 12.7*(1.82*np.log10((Re - 1.64)**(-1))*(P_r**(2/3) - 1))))
+        ft = (1.82*np.log10(Re) - 1.64)**(-2)
+        Nu = (ft/8)*(Re - 1000)*P_r/(1.07 + 12.7*((ft/8)**(0.5))*(P_r**(2/3) - 1))
+        h_t = Nu*kappa/self.D
         return float(h_t)
 
     def derivada_centrada(self, x, f, i):
@@ -60,7 +62,7 @@ class duto:
         for i in range(len(self.l)):
             gas2 = self.gas.copy_change_conditions(T[i], None, V[i], 'gas')
             v_kg = V[i]/gas2.mixture.MM_m
-            rho = 1 / v_kg
+            rho = gas2.mixture.MM_m / v_kg
             gas2.ci_real()
             Cv = gas2.Cvt.item() #cv_real ou seria o ci_real? perguntar.
             
@@ -100,7 +102,6 @@ class duto:
             ], dtype=float)
 
             result = (matrix_a @ matrix_dx) + matrix_b
-            print(result)
             dTdt[i] = result[0] 
             dVdt[i] = result[1]
             dwdt[i] = result[2]
@@ -120,7 +121,7 @@ class duto:
     
         Cv = float(gas2.Cvt)  
         mu = float(self.visc.evaluate_viscosity(T, float(gas2.P)))
-        rho = 1.0 / v_kg
+        rho = gas2.mixture.MM_m / v_kg
         Re = rho * w * (self.D / mu)
         f = self.fator_friccao(Re)
         kappa = float(coef_con_ter(gas2))
@@ -128,30 +129,21 @@ class duto:
         h_t = self.coef_cov_fluid(kappa, mu, Re, gas2)
         U = 1.0 / ((1.0 / h_t) + (self.D / (2 * self.k_solo)) * (np.arccosh(2 * self.z_solo / self.D)))
         q = self.q_solo(rho, T, U)
-        
-        print(Cv, '=> Cv')
-        print(mu, '=> mu')
-        print(rho, '=> rho')
-        print(Re, '=> Re')
-        print(f, '=> f')
-        print(kappa, '=> kappa')
-        print(h_t, '=> h_t')
-        print(U, '=> U')
-        print(q, '=> q')
+
         
         dPdT = float(gas2.dPdT)
         dPdV = float(gas2.dPdV)
     
         matrix_a = np.array([
-        [-w, 0.0, -T * (v_kg * dPdT / Cv)],
-        [0.0, -w, V],
-        [-v_kg * dPdT, -v_kg * dPdV, -w]
+            [-w, 0.0, -T * (v_kg * dPdT / Cv)],
+            [0.0, -w, V],
+            [-v_kg * dPdT*1000, -v_kg * dPdV*1000, -w]
         ], dtype=float)
     
         matrix_b = np.array([
-        [f * w**2 * abs(w) / (2 * self.D * Cv) + q / Cv],
-        [0.0],
-        [f * w * abs(w) / (2 * self.D)]
+            [f * w**2 * abs(w) / (2 * self.D * Cv*1000) + q / Cv],
+            [0.0],
+            [f * w * abs(w) / (2 * self.D)]
         ], dtype=float)
     
         result = np.linalg.inv(matrix_a) @ matrix_b
