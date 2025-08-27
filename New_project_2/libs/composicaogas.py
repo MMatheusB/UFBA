@@ -78,7 +78,7 @@ def sub_vis_chung(T, V, gas):
 #mixture.tcm e mixture.Vcm
 def coef_con_ter(gas):
     
-    gas.ci_ideal()
+    gas.ci_real()
 
     Cvt = gas.Cvt 
 
