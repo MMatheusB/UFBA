@@ -14,6 +14,7 @@ from matplotlib.pyplot import plot, figure
 from matplotlib.ticker import AutoMinorLocator, ScalarFormatter
 import scipy.linalg as la
 from numpy.linalg import svd, det
+from builtins import sum
 
 class gc_eos_class:
 

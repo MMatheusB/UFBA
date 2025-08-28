@@ -4,6 +4,7 @@ from scipy.optimize import fsolve
 from libs.species_builder import R, Species, Mixture
 from libs.eos_database import *
 from libs.gc_eos_soave import *
+from builtins import sum
 
 def sub_vis_chung(T, V, gas):
 

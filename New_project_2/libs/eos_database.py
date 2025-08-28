@@ -6,7 +6,7 @@ Created on Mon Nov 11 15:49:34 2024
 """
 
 from casadi import *
-from numpy import exp, log, array, roots, isnan, fromstring
+from numpy import exp, log, array, roots, isnan, fromstring, sum
 from scipy.optimize import fsolve
 from libs.species_builder import R, Species, Mixture
 

@@ -9,6 +9,7 @@ from libs.eos_database import *
 from casadi import *
 from numpy import exp, log, array, roots
 from scipy.optimize import fsolve
+from builtins import sum
 
 R = 8.31446261815324
 
@@ -63,11 +64,12 @@ class Mixture:
     def __init__(self,list_of_species,dict_composition):
 
         sum_x = sum(dict_composition.values())
-
+        print(sum_x,[dict_composition[species.name] for species in list_of_species])
         [species.set_composition(dict_composition[species.name]/sum_x) for species in list_of_species]
         self.dict_composition = dict_composition
         self.list_of_species = list_of_species
         self.list_of_names = list(dict_composition.keys())
+        print([species.x for species in list_of_species])        
         self.MM_m = sum([species.x*species.MM for species in list_of_species])
         self.list_Pc = [species.Pc for species in list_of_species]
         self.list_Tc = [species.Tc for species in list_of_species]

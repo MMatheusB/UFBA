@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from libs.viscosity import *
 from libs.eos_database import *
 from libs.composicaogas import *
+from builtins import sum
 
 
 class duto:
@@ -16,18 +17,18 @@ class duto:
         self.D = D
         self.e_D = 1.5 * 1e-6 #m
         self.k_solo = 0.89 # w / (m*K)
-        self.T_solo = 15 # C
+        self.T_solo = 15 + 273.15# C
         self.z_solo = 2 # m
         self.l = [0, 0.15*self.Lc, 0.30*self.Lc, 0.40*self.Lc, 0.50*self.Lc, 0.60*self.Lc, 0.70*self.Lc, 0.85*self.Lc, self.Lc]
 
     def fator_friccao(self, Re): 
-        return float(-16 * np.log10(self.e_D / 3.7 - 5.02/ Re * np.log10(self.e_D/ 3.7 - 5.02/Re * np.log10(self.e_D / 3.7 + 13/Re)))**(-2))
+        return 0.25*float(-4 * np.log10(self.e_D / 3.7 / self.D - 5.02/ Re * np.log10(self.e_D/ 3.7 / self.D - 5.02/Re * np.log10(self.e_D / 3.7  / self.D + 13/Re))))**(-2)
     
     def q_solo(self, Rho, T, U): 
-        return float((1/Rho) * (4*U/ self. D) * (T - self.T_solo))
+        return float((1/Rho) * (4*U/ self. D) * (self.T_solo - T))
 
     def coef_cov_fluid(self, kappa, mu, Re, gas):
-        P_r = (gas.Cpt*mu)/kappa
+        P_r = (gas.Cpt*1000/gas.mixture.MM_m*mu)/kappa
         ft = (1.82*np.log10(Re) - 1.64)**(-2)
         Nu = (ft/8)*(Re - 1000)*P_r/(1.07 + 12.7*((ft/8)**(0.5))*(P_r**(2/3) - 1))
         h_t = Nu*kappa/self.D
@@ -112,6 +113,7 @@ class duto:
         dydt[2::3] = dwdt
         
         return dydt
+    
     def estacionario(self, x, y):
         T, V, w = map(float, y)  # garante que T, V, w são floats puros
     
@@ -119,9 +121,9 @@ class duto:
         v_kg = float(V / gas2.mixture.MM_m)
         gas2.ci_real()
     
-        Cv = float(gas2.Cvt)  
+        Cv = float(gas2.Cvt)/gas2.mixture.MM_m*1000
         mu = float(self.visc.evaluate_viscosity(T, float(gas2.P)))
-        rho = gas2.mixture.MM_m / v_kg
+        rho = 1 / v_kg
         Re = rho * w * (self.D / mu)
         f = self.fator_friccao(Re)
         kappa = float(coef_con_ter(gas2))
@@ -131,22 +133,22 @@ class duto:
         q = self.q_solo(rho, T, U)
 
         
-        dPdT = float(gas2.dPdT)
-        dPdV = float(gas2.dPdV)
+        dPdT = float(gas2.dPdT)*1000
+        dPdV = float(gas2.dPdV)*1000
     
         matrix_a = np.array([
             [-w, 0.0, -T * (v_kg * dPdT / Cv)],
             [0.0, -w, V],
-            [-v_kg * dPdT*1000, -v_kg * dPdV*1000, -w]
+            [-v_kg * dPdT, -v_kg * dPdV, -w]
         ], dtype=float)
-    
+
         matrix_b = np.array([
-            [f * w**2 * abs(w) / (2 * self.D * Cv*1000) + q / Cv],
+            [f * w**2 * abs(w) / (2 * self.D * Cv) + q / Cv],
             [0.0],
-            [f * w * abs(w) / (2 * self.D)]
+            [-f * w * abs(w) / (2 * self.D)]
         ], dtype=float)
-    
-        result = np.linalg.inv(matrix_a) @ matrix_b
+        
+        result = -np.linalg.inv(matrix_a) @ matrix_b
         dTdx = float(result[0].item())
         dVdx = float(result[1].item())
         dwdx = float(result[2].item())
