@@ -19,7 +19,8 @@ class duto:
         self.k_solo = 0.89 # w / (m*K)
         self.T_solo = 15 + 273.15# C
         self.z_solo = 2 # m
-        self.l = [0, 0.15*self.Lc, 0.30*self.Lc, 0.40*self.Lc, 0.50*self.Lc, 0.60*self.Lc, 0.70*self.Lc, 0.85*self.Lc, self.Lc]
+        self.l = [i*0.05*self.Lc for i in range(0,20)]
+        #[0, 0.1*self.Lc, 0.2*self.Lc, 0.30*self.Lc, 0.4*self.Lc, 0.5*self.Lc, 0.60*self.Lc, 0.70*self.Lc, 0.80*self.Lc, 0.9*self.Lc, self.Lc]
 
     def fator_friccao(self, Re): 
         return 0.25*float(-4 * np.log10(self.e_D / 3.7 / self.D - 5.02/ Re * np.log10(self.e_D/ 3.7 / self.D - 5.02/Re * np.log10(self.e_D / 3.7  / self.D + 13/Re))))**(-2)
@@ -35,12 +36,18 @@ class duto:
         return float(h_t)
 
     def derivada_centrada(self, x, f, i):
+
+        h = x[1] - x[0]  # assume espaçamento uniforme
+    
         if i == 0:
-            return (f[1] - f[0]) / (x[1] - x[0])
+        # progressiva de 3 pontos (ordem 2)
+            return (-3*f[0] + 4*f[1] - f[2]) / (2*h)
         elif i == len(x) - 1:
-            return (f[-1] - f[-2]) / (x[-1] - x[-2])
+        # regressiva de 3 pontos (ordem 2)
+            return (3*f[-1] - 4*f[-2] + f[-3]) / (2*h)
         else:
-            return (f[i+1] - f[i-1]) / (x[i+1] - x[i-1])
+        # centrada de 3 pontos (ordem 2)
+            return (f[i+1] - f[i-1]) / (2*h)
 
 
     def evaluate_dae(self, t, y):
@@ -59,13 +66,14 @@ class duto:
         dTdt = np.zeros_like(T)
         dVdt = np.zeros_like(V)
         dwdt = np.zeros_like(w)
-        
+
+        #no inicio a derivada de T, V é 0(no tempo)
         for i in range(len(self.l)):
             gas2 = self.gas.copy_change_conditions(T[i], None, V[i], 'gas')
             v_kg = V[i]/gas2.mixture.MM_m
-            rho = gas2.mixture.MM_m / v_kg
+            rho = 1 / v_kg
             gas2.ci_real()
-            Cv = gas2.Cvt.item() #cv_real ou seria o ci_real? perguntar.
+            Cv = float(gas2.Cvt)/gas2.mixture.MM_m*1000 #cv_real ou seria o ci_real? perguntar.
             
             mu = self.visc.evaluate_viscosity(T[i], gas2.P.item())
             Re = rho * w[i] * (self.D / mu) #numero de reynolds, verificar se a equacao ta certa.
@@ -78,9 +86,10 @@ class duto:
 
             U = 1/((1/h_t) + (self.D/2*self.k_solo)*(np.arccosh(2*self.z_solo/self.D)))
 
-            q = self.q_solo(rho, T[i], U) #calor.
-            dPdT = float(gas2.dPdT)
-            dPdV = float(gas2.dPdV)
+            q = self.q_solo(rho, T[i], U)
+             #calor.
+            dPdT = float(gas2.dPdT)*1000
+            dPdV = float(gas2.dPdV)*1000
 
             dT_dx = self.derivada_centrada(self.l, T, i)
             dV_dx = self.derivada_centrada(self.l, V, i)
@@ -93,13 +102,13 @@ class duto:
             matrix_a = np.array([
             [-w[i], 0.0, -T[i] * (v_kg * dPdT / Cv)],
             [0.0, -w[i], V[i]],
-            [-v_kg * dPdT*1000, -v_kg * dPdV*1000, -w[i]]
+            [-v_kg * dPdT, -v_kg * dPdV, -w[i]]
             ], dtype=float)
     
             matrix_b = np.array([
-            [f * w[i]**2 * abs(w[i]) / (2 * self.D * Cv*1000) + q / Cv],
+            [f * w[i]**2 * abs(w[i]) / (2 * self.D * Cv) + q / Cv],
             [0.0],
-            [f * w[i] * abs(w[i]) / (2 * self.D)]
+            [-f * w[i] * abs(w[i]) / (2 * self.D)]
             ], dtype=float)
 
             result = (matrix_a @ matrix_dx) + matrix_b
@@ -107,6 +116,11 @@ class duto:
             dVdt[i] = result[1]
             dwdt[i] = result[2]
         
+        
+        dTdt[0] = 0
+        dVdt[0] = 0
+        dwdt[-1] = 0
+
         dydt = np.empty_like(y)
         dydt[0::3] = dTdt
         dydt[1::3] = dVdt
