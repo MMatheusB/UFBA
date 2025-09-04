@@ -41,13 +41,13 @@ class duto:
     
         if i == 0:
         # progressiva de 3 pontos (ordem 2)
-            return (-3*f[0] + 4*f[1] - f[2]) / (2*h)
+            return (-3*f[0] + 4*f[1] - f[2]) / (x[2] - x[0])
         elif i == len(x) - 1:
         # regressiva de 3 pontos (ordem 2)
-            return (3*f[-1] - 4*f[-2] + f[-3]) / (2*h)
+            return (3*f[-1] - 4*f[-2] + f[-3]) / (x[-1] - x[-3])
         else:
         # centrada de 3 pontos (ordem 2)
-            return (f[i+1] - f[i-1]) / (2*h)
+            return (f[i+1] - f[i-1]) / (x[i+1] - x[i-1])
 
 
     def evaluate_dae(self, t, y):
@@ -66,7 +66,6 @@ class duto:
         dTdt = np.zeros_like(T)
         dVdt = np.zeros_like(V)
         dwdt = np.zeros_like(w)
-
         #no inicio a derivada de T, V é 0(no tempo)
         for i in range(len(self.l)):
             gas2 = self.gas.copy_change_conditions(T[i], None, V[i], 'gas')
@@ -87,7 +86,7 @@ class duto:
             U = 1/((1/h_t) + (self.D/2*self.k_solo)*(np.arccosh(2*self.z_solo/self.D)))
 
             q = self.q_solo(rho, T[i], U)
-             #calor.
+            #calor.
             dPdT = float(gas2.dPdT)*1000
             dPdV = float(gas2.dPdV)*1000
 
@@ -112,14 +111,20 @@ class duto:
             ], dtype=float)
 
             result = (matrix_a @ matrix_dx) + matrix_b
-            dTdt[i] = result[0] 
-            dVdt[i] = result[1]
-            dwdt[i] = result[2]
+            
+            if i==0:
+                dTdt[i] = 0
+                dVdt[i] = 0
+                dwdt[i] = result[0]
+            elif i== len(self.l) - 1:
+                dTdt[i] = result[0] 
+                dVdt[i] = result[1]
+                dwdt[i] = 0
+            else:
+                dTdt[i] = result[0] 
+                dVdt[i] = result[1]
+                dwdt[i] = result[2]
         
-        
-        dTdt[0] = 0
-        dVdt[0] = 0
-        dwdt[-1] = 0
 
         dydt = np.empty_like(y)
         dydt[0::3] = dTdt
