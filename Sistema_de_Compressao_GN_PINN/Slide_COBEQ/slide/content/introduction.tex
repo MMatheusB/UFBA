@@ -1,0 +1,43 @@
+\section{Introdução}
+
+\begin{frame}{Objetivo}
+    \frametitle{Motivação do Trabalho}
+    \begin{block}{Objetivo Principal}
+        Construir uma \textbf{PINN}(Physics Informed Neural Network) que modele o comportamento dinâmico de um sistema de compressão de gás natural.
+    \end{block}
+    \begin{block}{Especificações}
+        \begin{itemize}
+            \item Basear-se em equações físicas para maior precisão do modelo criado.
+            \item Comparar resultados com o integrador da biblioteca opensource casADi (IDAS).
+        \end{itemize}
+    \end{block}
+    \end{frame}
+
+\begin{frame}{Contexto Histórico do Tema na Indústria do Petróleo}
+    \begin{itemize}
+        \item \textbf{Importância do Transporte de Gás Natural}
+        \begin{itemize}
+            \item Movimento do gás até consumidores finais (áreas urbanas, indústrias e usinas). 
+            \item Processo crucial e com alto custo operacional. 
+        \end{itemize}
+
+        \item \textbf{Desafios nos Modelos Tradicionais} 
+        \begin{itemize}
+            \item Métodos numéricos possuem alto tempo computacional (\cite{MARFATIA2022100030}). 
+            \item Modelos aproximados sacrificam precisão para ganhar eficiência computacional. 
+        \end{itemize}
+
+        \item \textbf{Avanço com Redes Neurais} 
+        \begin{itemize}
+            \item Década de 90: Redes neurais começam a ganhar relevância no setor de petróleo e gás (\cite{Mohaghegh1996}). 
+            \item Melhor equilíbrio entre eficiência e precisão nos resultados. 
+        \end{itemize}
+
+        \item \textbf{Physics-Informed Neural Networks (PINNs)} 
+        \begin{itemize}
+            \item Introduzidas em 2017 (\cite{Raissi2017}). 
+            \item Integram dados experimentais e restrições físicas. 
+            \item Maior precisão e menor tempo computacional. 
+        \end{itemize}
+    \end{itemize}
+\end{frame}
