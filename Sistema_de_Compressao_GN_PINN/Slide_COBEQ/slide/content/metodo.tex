@@ -66,59 +66,51 @@
 
 
 
-\begin{frame}{Equações Diferenciais do Sistema por Meira et al. (2021)}
-    As equações diferenciais são dadas pelas seguintes expressões:
+\begin{frame}{Equações e Variáveis do Modelo de Meira et al. (2021)}
+    \scriptsize
+    \textbf{Equações diferenciais que descrevem a dinâmica do sistema:}
+
+    \begin{multicols}{2}
+    % Coluna da esquerda: equações
     \begin{align}
         \frac{d\dot{m}}{dt} &= \frac{A_1}{L_c}(P_2 - P_P) \tag{1} \\
         \frac{dV_P}{dt} &= -\frac{V_P^2}{v_{PM}} \left( \dot{m} - \alpha k_v \sqrt{P_P - P_{\text{out}}} \right) \tag{2} \\
-        \frac{dT_P}{dt} &= \frac{V_P \dot{m}}{v_P M} \left( \frac{h_c - h_p}{C_V} \right)
-        + \frac{R_a T_P}{C_V} \left[ T_P \left( \frac{\partial Z_P}{\partial T} \right)_{V_P} + Z_P \right]
-        \frac{V_P}{v_P M} \left( \dot{m} - \alpha k_v \sqrt{P_P - P_{\text{out}}} \right) \tag{3}
+        \frac{dT_P}{dt} &= 
+        \begin{aligned}[t]
+            &\frac{V_P \dot{m}}{v_P M} \left( \frac{h_c - h_p}{C_V} \right) + \\
+            + &\frac{R_a T_P}{C_V} \left[ T_P \left( \frac{\partial Z_P}{\partial T} \right)_{V_P} + Z_P \right]
+            \frac{V_P}{v_P M} \left( \dot{m} - \alpha k_v \sqrt{P_P - P_{\text{out}}} \right)
+        \end{aligned} \tag{3}
     \end{align}
 
-    \vspace{0.1cm}
-
-    \begin{itemize}
-        \item \( \dot{m} \): vazão mássica;
-        \item \( V_P \), \( T_P \), \( Z_P \): volume molar, temperatura e fator de compressibilidade do gás no plenum;
-        \item \( R_a \): constante dos gases ideais;
-        \item \( M \): massa molar da mistura;
-        \item \( h_1 \), \( h_p \), \( h_c \): entalpias na sucção, no vaso e na descarga, dependentes de \( T \), \( V \) e da composição;
-        \item \( C_V \): capacidade calorífica a volume constante.
-    \end{itemize}
-
-\end{frame}
-
-\begin{frame}{Variáveis Algébricas estimadas pelo Modelo Meira et al. (2021)}
-    \scriptsize
-    Além das equações diferenciais, o modelo estima 11 variáveis através das equações algébricas, correspondentes ao cálculo do mapa do compressor, da saída das condições do compressor e da equação de estado P(T,V)
-
-    \vspace{0.3cm}
-
-    \begin{multicols}{2}
-    \begin{itemize}
-        \item \( P_2 \): Pressão na saída do compressor
-        \item \( T_2 \): Temperatura na saída do compressor
-        \item \( V_2 \): Volume específico na saída do compressor
-        \item \( T_{2s} \): Temperatura em um estado intermediário hipotético após a compressão isentrópica
-        \item \( V_{2s} \): Volume específico em um estado intermediário hipotético após a compressão isentrópica
-        \item \( P_P \): Pressão no Plenum
-    \end{itemize}
-
     \columnbreak
-
-    \begin{itemize}
-        \item \( V_1 \): Volume específico na sucção
-        \item \( V_{imp} \): Volume específico no impelidor do compressor
-        \item \( T_{imp} \): Temperatura no impelidor do compressor
-        \item \( V_{dif} \): Volume específico no difusor do compressor
-        \item \( T_{dif} \): Temperatura no difusor do compressor
-    \end{itemize}
+    % Coluna da direita: itemize alinhado à direita usando minipage
+    \begin{minipage}{\linewidth}
+        \raggedleft
+        \textbf{Principais variáveis algébricas estimadas:}
+        \begin{itemize}
+            \item \( P_2 \), \( T_2 \), \( V_2 \): saída do compressor
+            \item \( T_{2s} \), \( V_{2s} \): pós-compressão isentrópica
+            \item \( V_1 \): sucção do compressor
+            \item \( V_{imp} \), \( T_{imp} \): impelidor
+            \item \( V_{dif} \), \( T_{dif} \): difusor
+            \item \( P_P \): pressão no plenum
+        \end{itemize}
+    \end{minipage}
     \end{multicols}
 
     \vspace{0.2cm}
+    \textbf{Símbolos:}
+    \begin{itemize}
+        \item \( \dot{m} \): vazão mássica; 
+        \( V_P \), \( T_P \), \( Z_P \): volume molar, temperatura e fator de compressibilidade no plenum;
+        \( R_a \): constante dos gases; 
+        \( M \): massa molar; 
+        \( h_c \), \( h_p \): entalpias; 
+        \( C_V \): calor específico a volume constante.
+    \end{itemize}
+\end{frame}
 
-    \end{frame}
 \begin{frame}{Estrutura da Rede Neural Proposta}
     \vspace{-0.3cm}
     \begin{figure}
@@ -127,33 +119,50 @@
         \caption{\small Diagrama da arquitetura da PINN.}
     \end{figure}
 \end{frame}
-\begin{frame}{Função de Loss}
-    \vspace{0.3cm}
-    A equação geral da função de perda é:
-    
-    \[
-    \text{Loss} = \frac{1}{N} \sum_{i=1}^{N} (\hat{y}_i^* - y_i^*)^2
-    + \frac{1}{N} \sum_{i=1}^{N} \left( \frac{d\hat{y}_{i,\text{num}}}{dt} - \frac{d\hat{y}_{i,\text{an}}}{dt} \right)^2
-    + \frac{1}{N} \sum_{i=1}^{N} (\hat{z}_i - z_i)^2
-    \]
+\begin{frame}{Função de Loss e Hiperparâmetros da Rede}
+    \begin{columns}[T]
+        % Coluna da esquerda - Função de perda
+        \begin{column}{0.55\textwidth}
+            \footnotesize
+            A equação geral da função de perda utilizada foi:
 
-    \vspace{0.2cm}
-    Onde:
-        \begin{itemize}
-        \item \( \hat{y} \): variáveis previstas pelas equações diferenciais (rede neural);
-        \item \( \hat{y}^* \): variáveis previstas mensuráveis (saída da rede);
-        \item \( \hat{z} \): variáveis algébricas previstas pela rede;
-        \item \( z \): variáveis algébricas calculadas pelo solver externo.
-     \end{itemize}
-\end{frame}
-\begin{frame}{Escolha dos Hiperparâmetros da rede}
-    \vspace{0.3cm}
-    \begin{itemize}
-        \item \textbf{Número de camadas(LSTM):} 1
-        \item \textbf{Taxa de aprendizado inicial (Learning Rate):} $1\cdot10^{-4}$
-        \item \textbf{Tamanho da amostra por iteração(Mini batch):} 64
-        \item \textbf{Número de neurônios na camada LSTM:} 128
-        \item \textbf{Número de épocas durante o treinamento:} 200
-        \item \textbf{Otimizador:} Adam
-    \end{itemize}
+            \[
+            \text{Loss} = \frac{1}{N} \sum_{i=1}^{N} (\hat{y}_i^* - y_i^*)^2
+            + \frac{1}{N} \sum_{i=1}^{N} \left( \frac{d\hat{y}_{i,\text{num}}}{dt} - \frac{d\hat{y}_{i,\text{an}}}{dt} \right)^2
+            + \frac{1}{N} \sum_{i=1}^{N} (\hat{z}_i - z_i)^2
+            \]
+
+            \vspace{0.2cm}
+            Onde:
+            \begin{itemize}
+                \item \( \hat{y}^* \): variáveis previstas mensuráveis (saída da rede);
+                \item \( y^* \): variáveis reais mensuráveis (target);
+                \item \( \hat{z} \): variáveis algébricas previstas pela rede;
+                \item \( z \): variáveis algébricas calculadas pelo solver extermp.
+            \end{itemize}
+        \end{column}
+
+        % Coluna da direita - Tabela de hiperparâmetros
+        \begin{column}{0.45\textwidth}
+            \vspace{2cm}
+            \begin{block}{\centering Hiperparâmetros do Modelo}
+                \footnotesize
+                \centering
+                \resizebox{\linewidth}{!}{%
+                    \begin{tabular}{p{3.6cm} p{2.4cm}}
+                        \toprule
+                        \textbf{Parâmetro} & \textbf{Valor} \\
+                        \midrule
+                        Nº de camadas (LSTM) & 1 \\
+                        Learning Rate inicial & $1 \cdot 10^{-4}$ \\
+                        Tamanho do mini batch & 64 \\
+                        Neurônios por camada & 128 \\
+                        Nº de épocas & 200 \\
+                        Otimizador & Adam \\
+                        \bottomrule
+                    \end{tabular}%
+                }
+            \end{block}
+        \end{column}
+    \end{columns}
 \end{frame}

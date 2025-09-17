@@ -1,43 +1,27 @@
 \section{Introdução}
 
-\begin{frame}{Objetivo}
-    \frametitle{Motivação do Trabalho}
-    \begin{block}{Objetivo Principal}
-        Construir uma \textbf{PINN}(Physics Informed Neural Network) que modele o comportamento dinâmico de um sistema de compressão de gás natural.
-    \end{block}
-    \begin{block}{Especificações}
-        \begin{itemize}
-            \item Basear-se em equações físicas para maior precisão do modelo criado.
-            \item Comparar resultados com o integrador da biblioteca opensource casADi (IDAS).
-        \end{itemize}
-    \end{block}
-    \end{frame}
-
-\begin{frame}{Contexto Histórico do Tema na Indústria do Petróleo}
+\begin{frame}{Contexto e Objetivo do Trabalho}
+    \scriptsize
+    \textbf{Contexto Histórico na Indústria do Petróleo:}
+    
     \begin{itemize}
-        \item \textbf{Importância do Transporte de Gás Natural}
-        \begin{itemize}
-            \item Movimento do gás até consumidores finais (áreas urbanas, indústrias e usinas). 
-            \item Processo crucial e com alto custo operacional. 
-        \end{itemize}
+        \item \textbf{Importância do Transporte de Gás Natural:}
+        movimentar o gás até consumidores finais (indústrias, usinas, centros urbanos) é um processo essencial, porém com alto custo operacional.
 
-        \item \textbf{Desafios nos Modelos Tradicionais} 
-        \begin{itemize}
-            \item Métodos numéricos possuem alto tempo computacional (\cite{MARFATIA2022100030}). 
-            \item Modelos aproximados sacrificam precisão para ganhar eficiência computacional. 
-        \end{itemize}
+        \item \textbf{Limitações dos Modelos Tradicionais:}
+        métodos numéricos apresentam elevado tempo computacional (\cite{MARFATIA2022100030}), enquanto modelos aproximados sacrificam precisão.
 
-        \item \textbf{Avanço com Redes Neurais} 
-        \begin{itemize}
-            \item Década de 90: Redes neurais começam a ganhar relevância no setor de petróleo e gás (\cite{Mohaghegh1996}). 
-            \item Melhor equilíbrio entre eficiência e precisão nos resultados. 
-        \end{itemize}
+        \item \textbf{Avanços com Redes Neurais:}
+        desde os anos 90, redes neurais têm sido aplicadas no setor (\cite{Mohaghegh1996}), buscando equilíbrio entre precisão e eficiência.
 
-        \item \textbf{Physics-Informed Neural Networks (PINNs)} 
-        \begin{itemize}
-            \item Introduzidas em 2017 (\cite{Raissi2017}). 
-            \item Integram dados experimentais e restrições físicas. 
-            \item Maior precisão e menor tempo computacional. 
-        \end{itemize}
+        \item \textbf{Physics-Informed Neural Networks (PINNs):}
+        propostas por \cite{Raissi2017}, integram dados experimentais às leis físicas, aumentando a precisão e reduzindo o tempo de simulação.
     \end{itemize}
+
+    \vspace{0.4cm}
+
+    \begin{block}{Objetivo Principal}
+        Construir uma \textbf{PINN} (Physics Informed Neural Network) que modele o comportamento dinâmico de um sistema de compressão de gás natural.
+    \end{block}
 \end{frame}
+
