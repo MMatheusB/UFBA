@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2025.9.16)  17 SEP 2025 13:35
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2025.9.16)  18 SEP 2025 12:39
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1235,86 +1235,125 @@ Package pdftex.def Info: template-COBEQ.pdf , page1 used on input line 23.
 
 
  <./template-COBEQ.pdf>] (./content/introduction.tex
-<template-COBEQ.pdf, id=93, page=2, 1445.4pt x 813.0375pt>
+<template-COBEQ.pdf, id=79, page=2, 1445.4pt x 813.0375pt>
 File: template-COBEQ.pdf Graphic file (type pdf)
 <use template-COBEQ.pdf, page 2>
-Package pdftex.def Info: template-COBEQ.pdf , page2 used on input line 26.
+Package pdftex.def Info: template-COBEQ.pdf , page2 used on input line 25.
 (pdftex.def)             Requested size: 455.23724pt x 256.07095pt.
  [2{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}{/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-t1.enc} <./template-COBEQ.pdf>]) (./content/metodo.tex
-<figures/compressao.png, id=114, 236.885pt x 133.49875pt>
+<figures/compressao.png, id=100, 329.73187pt x 194.22563pt>
 File: figures/compressao.png Graphic file (type png)
 <use figures/compressao.png>
-Package pdftex.def Info: figures/compressao.png  used on input line 13.
-(pdftex.def)             Requested size: 239.00558pt x 134.6982pt.
-File: template-COBEQ.pdf Graphic file (type pdf)
-<use template-COBEQ.pdf, page 2>
-Package pdftex.def Info: template-COBEQ.pdf , page2 used on input line 13.
-(pdftex.def)             Requested size: 455.23724pt x 256.07095pt.
- [3
+Package pdftex.def Info: figures/compressao.png  used on input line 45.
+(pdftex.def)             Requested size: 210.32207pt x 123.89201pt.
 
- <./figures/compressao.png>]
-LaTeX Font Info:    Trying to load font information for U+msa on input line 65.
- (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
+Overfull \hbox (19.12125pt too wide) in paragraph at lines 45--45
+ [] 
+ []
+
+LaTeX Font Info:    Trying to load font information for U+msa on input line 45.
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 65.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 45.
  (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-LaTeX Font Info:    Trying to load font information for OT1+mathkerncmss on input line 65.
+LaTeX Font Info:    Trying to load font information for OT1+mathkerncmss on input line 45.
  (/usr/share/texlive/texmf-dist/tex/latex/sansmathaccent/ot1mathkerncmss.fd
 File: ot1mathkerncmss.fd 2020/01/31 Fontinst v1.933 font definitions for OT1/mathkerncmss.
 )
-LaTeX Font Info:    Trying to load font information for TS1+cmss on input line 65.
- (/usr/share/texlive/texmf-dist/tex/latex/base/ts1cmss.fd
-File: ts1cmss.fd 2023/04/13 v2.5m Standard LaTeX font definitions
-)
+Overfull \vbox (2.93462pt too high) detected at line 45
+ []
+
 File: template-COBEQ.pdf Graphic file (type pdf)
 <use template-COBEQ.pdf, page 2>
-Package pdftex.def Info: template-COBEQ.pdf , page2 used on input line 65.
+Package pdftex.def Info: template-COBEQ.pdf , page2 used on input line 45.
 (pdftex.def)             Requested size: 455.23724pt x 256.07095pt.
- [4
+[3
 
-{/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-ts1.enc}]
-Overfull \hbox (67.61368pt too wide) detected at line 112
+ <./figures/compressao.png>]
+Overfull \hbox (67.61368pt too wide) detected at line 92
 []
  []
 
 File: template-COBEQ.pdf Graphic file (type pdf)
 <use template-COBEQ.pdf, page 2>
-Package pdftex.def Info: template-COBEQ.pdf , page2 used on input line 112.
+Package pdftex.def Info: template-COBEQ.pdf , page2 used on input line 92.
 (pdftex.def)             Requested size: 455.23724pt x 256.07095pt.
-[5
+[4
 
 ]
-<figures/PIRNN.png, id=150, 1366.10374pt x 420.57124pt>
+<figures/PIRNN.png, id=125, 1366.10374pt x 420.57124pt>
 File: figures/PIRNN.png Graphic file (type png)
 <use figures/PIRNN.png>
-Package pdftex.def Info: figures/PIRNN.png  used on input line 121.
+Package pdftex.def Info: figures/PIRNN.png  used on input line 101.
 (pdftex.def)             Requested size: 398.3386pt x 122.62994pt.
 File: template-COBEQ.pdf Graphic file (type pdf)
 <use template-COBEQ.pdf, page 2>
-Package pdftex.def Info: template-COBEQ.pdf , page2 used on input line 121.
+Package pdftex.def Info: template-COBEQ.pdf , page2 used on input line 101.
+(pdftex.def)             Requested size: 455.23724pt x 256.07095pt.
+ [5
+
+ <./figures/PIRNN.png>]
+Overfull \hbox (56.74509pt too wide) detected at line 148
+[] \OT1/cmr/m/n/9 = [] []([] \OMS/cmsy/m/n/9 ^^@ \OML/cmm/m/it/9 y[]\OT1/cmr/m/n/9 )[] + [] [] [][] + [] []([] \OMS/cmsy/m/n/9 ^^@ \OML/cmm/m/it/9 z[]\OT1/cmr/m/n/9 )[]
+ []
+
+LaTeX Font Info:    Trying to load font information for TS1+cmss on input line 148.
+(/usr/share/texlive/texmf-dist/tex/latex/base/ts1cmss.fd
+File: ts1cmss.fd 2023/04/13 v2.5m Standard LaTeX font definitions
+)
+File: template-COBEQ.pdf Graphic file (type pdf)
+<use template-COBEQ.pdf, page 2>
+Package pdftex.def Info: template-COBEQ.pdf , page2 used on input line 148.
 (pdftex.def)             Requested size: 455.23724pt x 256.07095pt.
  [6
 
- <./figures/PIRNN.png>]
-Overfull \hbox (56.74509pt too wide) detected at line 168
-[] \OT1/cmr/m/n/9 = [] []([] \OMS/cmsy/m/n/9 ^^@ \OML/cmm/m/it/9 y[]\OT1/cmr/m/n/9 )[] + [] [] [][] + [] []([] \OMS/cmsy/m/n/9 ^^@ \OML/cmm/m/it/9 z[]\OT1/cmr/m/n/9 )[]
+{/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-ts1.enc}]
+<figures/plot_1.png, id=146, 663.47874pt x 231.86626pt>
+File: figures/plot_1.png Graphic file (type png)
+<use figures/plot_1.png>
+Package pdftex.def Info: figures/plot_1.png  used on input line 184.
+(pdftex.def)             Requested size: 204.94736pt x 71.62305pt.
+
+Overfull \hbox (9.75926pt too wide) in paragraph at lines 184--184
+ [][] 
+ []
+
+<figures/plot_2.png, id=147, 336.50719pt x 170.88844pt>
+File: figures/plot_2.png Graphic file (type png)
+<use figures/plot_2.png>
+Package pdftex.def Info: figures/plot_2.png  used on input line 184.
+(pdftex.def)             Requested size: 177.2594pt x 90.01764pt.
+File: template-COBEQ.pdf Graphic file (type pdf)
+<use template-COBEQ.pdf, page 2>
+Package pdftex.def Info: template-COBEQ.pdf , page2 used on input line 184.
+(pdftex.def)             Requested size: 455.23724pt x 256.07095pt.
+[7
+
+ <./figures/plot_1.png> <./figures/plot_2.png>]
+<figures/hist.png, id=156, 1760.5775pt x 957.5775pt>
+File: figures/hist.png Graphic file (type png)
+<use figures/hist.png>
+Package pdftex.def Info: figures/hist.png  used on input line 192.
+(pdftex.def)             Requested size: 318.67209pt x 173.32086pt.
+
+Overfull \vbox (4.12218pt too high) detected at line 192
  []
 
 File: template-COBEQ.pdf Graphic file (type pdf)
 <use template-COBEQ.pdf, page 2>
-Package pdftex.def Info: template-COBEQ.pdf , page2 used on input line 168.
+Package pdftex.def Info: template-COBEQ.pdf , page2 used on input line 192.
 (pdftex.def)             Requested size: 455.23724pt x 256.07095pt.
-[7
+[8
 
-]) (./content/conclusion.tex
+ <./figures/hist.png>]) (./content/conclusion.tex
 File: template-COBEQ.pdf Graphic file (type pdf)
 <use template-COBEQ.pdf, page 2>
-Package pdftex.def Info: template-COBEQ.pdf , page2 used on input line 9.
+Package pdftex.def Info: template-COBEQ.pdf , page2 used on input line 13.
 (pdftex.def)             Requested size: 455.23724pt x 256.07095pt.
- [8
+ [9
 
 ])
 File: template-COBEQ.pdf Graphic file (type pdf)
@@ -1346,7 +1385,7 @@ File: template-COBEQ.pdf Graphic file (type pdf)
 <use template-COBEQ.pdf, page 3>
 Package pdftex.def Info: template-COBEQ.pdf , page3 used on input line 30.
 (pdftex.def)             Requested size: 455.25931pt x 256.08336pt.
- [9
+ [10
 
 
  <./template-COBEQ.pdf>]
@@ -1354,7 +1393,7 @@ File: template-COBEQ.pdf Graphic file (type pdf)
 <use template-COBEQ.pdf, page 2>
 Package pdftex.def Info: template-COBEQ.pdf , page2 used on input line 35.
 (pdftex.def)             Requested size: 455.23724pt x 256.07095pt.
- [10 </usr/share/texlive/texmf-dist/tex/latex/beamer/beamericonarticle.pdf>]
+ [11 </usr/share/texlive/texmf-dist/tex/latex/beamer/beamericonarticle.pdf>]
 \tf@nav=\write7
 \openout7 = `main.nav'.
 
@@ -1376,18 +1415,18 @@ Package logreq Info: Writing requests to 'main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 38115 strings out of 474222
- 777303 string characters out of 5748733
- 1944975 words of memory out of 5000000
- 59585 multiletter control sequences out of 15000+600000
- 581008 words of font info for 91 fonts, out of 8000000 for 9000
+ 38173 strings out of 474222
+ 778924 string characters out of 5748733
+ 1943975 words of memory out of 5000000
+ 59640 multiletter control sequences out of 15000+600000
+ 581767 words of font info for 92 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  128i,22n,123p,1182b,1645s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsi1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss0600.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss0800.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss0900.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss1440.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsx0800.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsx0900.pfb>
-Output written on main.pdf (10 pages, 1140683 bytes).
+</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsi1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss0600.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss0800.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss0900.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss1440.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsx0800.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsx0900.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsx1000.pfb>
+Output written on main.pdf (11 pages, 880828 bytes).
 PDF statistics:
- 322 PDF objects out of 1000 (max. 8388607)
+ 326 PDF objects out of 1000 (max. 8388607)
  206 compressed objects within 3 object streams
- 29 named destinations out of 1000 (max. 500000)
- 141 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 31 named destinations out of 1000 (max. 500000)
+ 168 words of extra memory for PDF output out of 10000 (max. 10000000)
 

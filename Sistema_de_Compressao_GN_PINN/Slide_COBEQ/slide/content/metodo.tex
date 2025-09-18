@@ -1,54 +1,34 @@
 \section{Estrutura da Rede Neural Artificial}
 
-\begin{frame}{Sistema de Compressão}
-
-\begin{figure}
-    \centering
-    \includegraphics[width=0.6\linewidth]{figures/compressao.png}
-    \caption{Sitema de Compressão retirado de Meira et al. (2021)}
-    \label{fig:enter-label}
-\end{figure}
-
-
-\end{frame}
 % Equações Governantes
 \begin{frame}{Sistema de Compressão e Gás Natural}
     \begin{columns}[T] % [T] alinha as colunas pelo topo
         % Coluna da esquerda - Tabela
         \begin{column}{0.48\textwidth}
-            \begin{block}{\centering Tabela de dados do sistema}
-                \footnotesize
-                \centering
-                \begin{tabular}{ccc}
-                    \toprule
-                    \textbf{Variável} & \textbf{Valor} & \textbf{Unidade} \\
-                    \midrule
-                    $A_1$ & $2{,}6 \times 10^{-3}$ & m² \\
-                    $v_P$ & $2{,}0$ & m³ \\
-                    $L_C$ & $2{,}0$ & m \\
-                    $k_v$ & $0{,}38$ & kg/(s·kPa) \\
-                    $P_1$ & $4{,}5$ & MPa \\
-                    $T_1$ & $300$ & K \\
-                    $P_{\text{saída}}$ & $5{,}0$ & MPa \\
-                    \bottomrule
-                \end{tabular}
-            \end{block}
+        \begin{figure}
+            \centering
+            \includegraphics[width=1.1\linewidth]{figures/compressao.png}
+            \caption{Sitema de Compressão retirado de Meira et al. (2021)}
+            \label{fig:enter-label}
+        \end{figure}
         \end{column}
 
         % Coluna da direita - Composição e EoS
         \begin{column}{0.52\textwidth}
             \scriptsize
+        \begin{block}{Composição do gás}
+                
             O gás natural utilizado é rico em metano, com composição baseada em Chaczykowski (2009):
             
-            \vspace{0.15cm}
-            \begin{itemize}
+            \vspace{0.12cm}
+            \begin{itemize}  
                 \item CH\textsubscript{4}: 98,34\% \quad C\textsubscript{2}H\textsubscript{6}: 0,61\%
                 \item C\textsubscript{3}H\textsubscript{8}: 0,15\% \quad iC\textsubscript{4}H\textsubscript{10}: 0,03\%
                 \item nC\textsubscript{4}H\textsubscript{10}: 0,03\% \quad CO\textsubscript{2}: 0,80\%
                 \item Traços de: iC\textsubscript{5}H\textsubscript{12}, nC\textsubscript{5}H\textsubscript{12}, N\textsubscript{2}
             \end{itemize}
-
-            \vspace{0.15cm}
+        \end{block}
+            \vspace{0.1cm}
             A equação de estado de Soave (1972) foi utilizada para modelar o comportamento termodinâmico do gás:
 
             \[
@@ -156,7 +136,7 @@
                         Nº de camadas (LSTM) & 1 \\
                         Learning Rate inicial & $1 \cdot 10^{-4}$ \\
                         Tamanho do mini batch & 64 \\
-                        Neurônios por camada & 128 \\
+                        Neurônios por camada & 100 \\
                         Nº de épocas & 200 \\
                         Otimizador & Adam \\
                         \bottomrule
@@ -166,3 +146,51 @@
         \end{column}
     \end{columns}
 \end{frame}
+
+\begin{frame}{Resultados de Previsão e Erro Quadrático Médio}
+\scriptsize
+
+\begin{center}
+% Linha de imagens lado a lado
+\setlength{\fboxsep}{0pt}% remove espaço extra
+\begin{minipage}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=1.05\linewidth, height=0.40\textheight, keepaspectratio]{figures/plot_1.png}
+    \vspace{0.1cm}
+    {\tiny\parbox{\linewidth}{\centering Comparação entre o modelo de rede neural e os dados simulados para vazão mássica, temperatura no plenum ($T_P$) e pressão no plenum ($P_P$).}}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=1.1\linewidth, height=0.4\textheight, keepaspectratio]{figures/plot_2.png}
+    \vspace{0.1cm}
+    {\tiny\parbox{\linewidth}{\centering Comparação entre o modelo de rede neural e os dados simulados para a pressão ($P_2$) e a temperatura ($T_2$) na saída do compressor.}}
+\end{minipage}
+\end{center}
+
+\vspace{0.2cm}
+
+% Linha da tabela
+\centering
+\textbf{Raiz do Erro Quadrático Médio (RMSE) das demais variáveis} \\[0.2cm]
+
+\begin{tabular}{@{}ccccccc@{}}
+\toprule
+$V_P$ & $T_{imp}$ & $V_{imp}$ & $T_{dif}$ & $V_{dif}$ & $T_{2s}$ & $V_{2s}$ \\
+\midrule
+0.012762 & 0.050806 & 0.045487 & 0.049855 & 0.031096 & 0.037175 & 0.037160 \\
+\bottomrule
+\end{tabular}
+
+\end{frame}
+
+\begin{frame}{Distribuição do Tempo de Simulação}
+\centering
+\includegraphics[width=0.8\textwidth]{figures/hist.png}
+
+\vspace{0.3cm}
+{\scriptsize Distribuição do tempo de simulação dos experimentos/modelos.}
+\end{frame}
+
+
+
+

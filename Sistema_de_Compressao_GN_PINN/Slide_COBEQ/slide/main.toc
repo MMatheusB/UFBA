@@ -1,4 +1,4 @@
 \babel@toc {brazilian}{}\relax 
 \beamer@sectionintoc {1}{Introdução}{2}{0}{1}
 \beamer@sectionintoc {2}{Estrutura da Rede Neural Artificial}{3}{0}{2}
-\beamer@sectionintoc {3}{Considerações finais}{8}{0}{3}
+\beamer@sectionintoc {3}{Considerações finais}{9}{0}{3}
