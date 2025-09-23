@@ -67,7 +67,7 @@ class duto:
         dVdt = np.zeros_like(V)
         dwdt = np.zeros_like(w)
         #no inicio a derivada de T, V é 0(no tempo)
-        for i in range(len(self.l)):
+        for i in range(0, len(self.l)):
             gas2 = self.gas.copy_change_conditions(T[i], None, V[i], 'gas')
             v_kg = V[i]/gas2.mixture.MM_m
             rho = 1 / v_kg
@@ -112,19 +112,17 @@ class duto:
 
             result = (matrix_a @ matrix_dx) + matrix_b
             
-            if i==0:
+            
+            dTdt[i] = result[0] 
+            dVdt[i] = result[1]
+            dwdt[i] = result[2]
+
+            if i == 0:
                 dTdt[i] = 0
-                dVdt[i] = 0
-                dwdt[i] = result[0]
-            elif i== len(self.l) - 1:
-                dTdt[i] = result[0] 
-                dVdt[i] = result[1]
+                dVdt[i] = 0 # permite w evoluir
+            elif i == len(self.l) - 1:
                 dwdt[i] = 0
-            else:
-                dTdt[i] = result[0] 
-                dVdt[i] = result[1]
-                dwdt[i] = result[2]
-        
+            
 
         dydt = np.empty_like(y)
         dydt[0::3] = dTdt
