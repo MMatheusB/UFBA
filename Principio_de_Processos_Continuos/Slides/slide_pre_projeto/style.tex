@@ -1,0 +1,61 @@
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage[english, brazilian]{babel}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{xkeyval}
+\usepackage{relsize}
+\usepackage{multimedia}
+\usepackage{hyperref}
+\usepackage{esdiff}
+\usepackage{bm}
+\usepackage{csquotes}
+\usepackage[style=authoryear, doi=false, url=false]{biblatex}
+\usepackage{booktabs}
+\usepackage{multicol}
+\usepackage{fontawesome}
+% General settings
+\usetikzlibrary{tikzmark,arrows,shapes,positioning,chains}
+\usefonttheme{professionalfonts}
+\hypersetup{pdfpagemode=FullScreen}
+
+% Custom math operators
+\DeclareMathOperator{\sech}{sech}
+
+% Beamer settings
+% Beamer Theme
+\usetheme{Madrid}
+
+% Remove símbolos de navegação
+\setbeamertemplate{navigation symbols}{}
+
+% Rodapé com nome e título
+\setbeamertemplate{footline}{
+  \leavevmode%
+  \hbox{%
+    \begin{beamercolorbox}[wd=0.7\paperwidth,ht=2.5ex,dp=1ex,leftskip=1em]{author in head/foot}%
+      \usebeamerfont{author in head/foot}Matheus Marinho Bezerra
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=0.3\paperwidth,ht=2.5ex,dp=1ex,rightskip=1em]{date in head/foot}%
+      \usebeamerfont{date in head/foot}Pitch Manim
+    \end{beamercolorbox}}%
+  \vskip0pt%
+}
+
+% Numeração de figuras
+\setbeamertemplate{caption}[numbered]
+
+% Fonte: sans serif padrão do LaTeX
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[T1]{fontenc}
+
+% Tamanho dos itens
+\setbeamerfont{frametitle}{size=\Large,series=\bfseries}
+\setbeamerfont{title}{size=\huge,series=\bfseries}
+\setbeamerfont{subtitle}{size=\Large,series=\mdseries}
+\setbeamerfont{author}{size=\large}
+\setbeamerfont{institute}{size=\footnotesize}
+\setbeamerfont{date}{size=\footnotesize}
+
+

@@ -19,6 +19,36 @@
 
 \refsection{0}
   \datalist[entry]{nyt/global//global/global}
+    \entry{Chaczykowski2009}{article}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=400fb8c468dfcba454097e86181c70ec}{%
+           family={Chaczykowski},
+           familyi={C\bibinitperiod},
+           given={M.},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{400fb8c468dfcba454097e86181c70ec}
+      \strng{fullhash}{400fb8c468dfcba454097e86181c70ec}
+      \strng{bibnamehash}{400fb8c468dfcba454097e86181c70ec}
+      \strng{authorbibnamehash}{400fb8c468dfcba454097e86181c70ec}
+      \strng{authornamehash}{400fb8c468dfcba454097e86181c70ec}
+      \strng{authorfullhash}{400fb8c468dfcba454097e86181c70ec}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{issn}{0263-8762}
+      \field{journaltitle}{Chemical Engineering Research and Design}
+      \field{number}{12}
+      \field{title}{Sensitivity of pipeline gas flow model to the selection of the equation of state}
+      \field{volume}{87}
+      \field{year}{2009}
+      \field{pages}{1596\bibrangedash 1603}
+      \range{pages}{8}
+    \endentry
     \entry{MARFATIA2022100030}{article}{}
       \name{author}{2}{}{%
         {{un=0,uniquepart=base,hash=27249133c8e440d10bf6d6c1009e7c91}{%
@@ -64,6 +94,34 @@
       \verb https://www.sciencedirect.com/science/article/pii/S2772508122000217
       \endverb
       \keyw{Fuel cost minimization problem,FCMP,Natural gas transportation,Neural networks,Surrogate model,MILP}
+    \endentry
+    \entry{Meira2022}{thesis}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=35c487d507b60bdab6952d3a928082c3}{%
+           family={Meira},
+           familyi={M\bibinitperiod},
+           given={Rodrigo\bibnamedelima Lima},
+           giveni={R\bibinitperiod\bibinitdelim L\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{institution}{1}{%
+        {Universidade Federal da Bahia}%
+      }
+      \strng{namehash}{35c487d507b60bdab6952d3a928082c3}
+      \strng{fullhash}{35c487d507b60bdab6952d3a928082c3}
+      \strng{bibnamehash}{35c487d507b60bdab6952d3a928082c3}
+      \strng{authorbibnamehash}{35c487d507b60bdab6952d3a928082c3}
+      \strng{authornamehash}{35c487d507b60bdab6952d3a928082c3}
+      \strng{authorfullhash}{35c487d507b60bdab6952d3a928082c3}
+      \field{sortinit}{M}
+      \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Modelagem rigorosa em regime dinâmico e controle preditivo de sistemas de transporte de fluidos compressíveis integrados a compressores centrífugos}
+      \field{type}{Tese (Doutorado em Engenharia Industrial)}
+      \field{year}{2022}
     \endentry
     \entry{Mohaghegh1996}{article}{}
       \name{author}{5}{}{%

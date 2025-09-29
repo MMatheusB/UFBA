@@ -1,0 +1,5 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/script/1080p60/partial_movie_files/EquacaoCena/3529212410_2601998368_223132457.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/script/1080p60/partial_movie_files/EquacaoCena/3040924799_962221356_584339432.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/script/1080p60/partial_movie_files/EquacaoCena/3040924799_2552855209_1776750482.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/script/1080p60/partial_movie_files/EquacaoCena/3040924799_2196676046_3156690622.mp4'

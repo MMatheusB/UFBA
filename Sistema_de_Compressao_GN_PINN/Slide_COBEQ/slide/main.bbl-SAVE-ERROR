@@ -1,0 +1,268 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.2 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nyt/global//global/global}
+    \entry{Chaczykowski2009}{article}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=400fb8c468dfcba454097e86181c70ec}{%
+           family={Chaczykowski},
+           familyi={C\bibinitperiod},
+           given={M.},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{400fb8c468dfcba454097e86181c70ec}
+      \strng{fullhash}{400fb8c468dfcba454097e86181c70ec}
+      \strng{bibnamehash}{400fb8c468dfcba454097e86181c70ec}
+      \strng{authorbibnamehash}{400fb8c468dfcba454097e86181c70ec}
+      \strng{authornamehash}{400fb8c468dfcba454097e86181c70ec}
+      \strng{authorfullhash}{400fb8c468dfcba454097e86181c70ec}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{issn}{0263-8762}
+      \field{journaltitle}{Chemical Engineering Research and Design}
+      \field{number}{12}
+      \field{title}{Sensitivity of pipeline gas flow model to the selection of the equation of state}
+      \field{volume}{87}
+      \field{year}{2009}
+      \field{pages}{1596\bibrangedash 1603}
+      \range{pages}{8}
+    \endentry
+    \entry{MARFATIA2022100030}{article}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=27249133c8e440d10bf6d6c1009e7c91}{%
+           family={Marfatia},
+           familyi={M\bibinitperiod},
+           given={Zaid},
+           giveni={Z\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=09e1a64c667557dd7866bc4e66d193ce}{%
+           family={Li},
+           familyi={L\bibinitperiod},
+           given={Xiang},
+           giveni={X\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{06172072ca14bb58b3d9f69ba72bfd5b}
+      \strng{fullhash}{06172072ca14bb58b3d9f69ba72bfd5b}
+      \strng{bibnamehash}{06172072ca14bb58b3d9f69ba72bfd5b}
+      \strng{authorbibnamehash}{06172072ca14bb58b3d9f69ba72bfd5b}
+      \strng{authornamehash}{06172072ca14bb58b3d9f69ba72bfd5b}
+      \strng{authorfullhash}{06172072ca14bb58b3d9f69ba72bfd5b}
+      \field{sortinit}{M}
+      \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{The fuel cost minimization problem (FCMP) for natural gas transport is important because of the immense energy consumed by compressors to satisfy increasing natural gas demands. Current approaches to the FCMP use inaccurate simplified models, or more complex and computationally challenging models, to describe compressor performance. This paper develops two novel data-driven surrogate models, namely, the dimensionless group based model and the deep neural network (DNN) model. The DNN involves rectified linear units as activation functions, so it can be reformulated into mixed-integer linear constraints in the FCMP. The case study results show that both the dimensionless group based and the DNN models achieve better accuracy than two typical surrogate models in the literature, and they are also computationally more efficient for optimization. The computational performance of the dimensionless based model is sensitive to gas supply and demand data, while that of the DNN model is robust.}
+      \field{issn}{2772-5081}
+      \field{journaltitle}{Digital Chemical Engineering}
+      \field{title}{Data-Driven Natural Gas Compressor Models for Gas Transport Network Optimization}
+      \field{volume}{3}
+      \field{year}{2022}
+      \field{pages}{100030}
+      \range{pages}{1}
+      \verb{doi}
+      \verb https://doi.org/10.1016/j.dche.2022.100030
+      \endverb
+      \verb{urlraw}
+      \verb https://www.sciencedirect.com/science/article/pii/S2772508122000217
+      \endverb
+      \verb{url}
+      \verb https://www.sciencedirect.com/science/article/pii/S2772508122000217
+      \endverb
+      \keyw{Fuel cost minimization problem,FCMP,Natural gas transportation,Neural networks,Surrogate model,MILP}
+    \endentry
+    \entry{Meira2022}{thesis}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=35c487d507b60bdab6952d3a928082c3}{%
+           family={Meira},
+           familyi={M\bibinitperiod},
+           given={Rodrigo\bibnamedelima Lima},
+           giveni={R\bibinitperiod\bibinitdelim L\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{institution}{1}{%
+        {Universidade Federal da Bahia}%
+      }
+      \strng{namehash}{35c487d507b60bdab6952d3a928082c3}
+      \strng{fullhash}{35c487d507b60bdab6952d3a928082c3}
+      \strng{bibnamehash}{35c487d507b60bdab6952d3a928082c3}
+      \strng{authorbibnamehash}{35c487d507b60bdab6952d3a928082c3}
+      \strng{authornamehash}{35c487d507b60bdab6952d3a928082c3}
+      \strng{authorfullhash}{35c487d507b60bdab6952d3a928082c3}
+      \field{sortinit}{M}
+      \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Modelagem rigorosa em regime dinâmico e controle preditivo de sistemas de transporte de fluidos compressíveis integrados a compressores centrífugos}
+      \field{type}{Tese (Doutorado em Engenharia Industrial)}
+      \field{year}{2022}
+    \endentry
+    \entry{Mohaghegh1996}{article}{}
+      \name{author}{5}{}{%
+        {{un=0,uniquepart=base,hash=115ace121628a029ec3ae992d9fba096}{%
+           family={Mohaghegh},
+           familyi={M\bibinitperiod},
+           given={Shahab},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=88dff5eccc08590ac448f638d4cf6cac}{%
+           family={Arefi},
+           familyi={A\bibinitperiod},
+           given={Reza},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=b2a65063b942ac632314225c92d65983}{%
+           family={Ameri},
+           familyi={A\bibinitperiod},
+           given={Sam},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=40fdc4366d1db8393d5d97b53fbfe649}{%
+           family={Amini},
+           familyi={A\bibinitperiod},
+           given={Khashayar},
+           giveni={K\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=3bf5b5d16c7e0818f3cb2cd4c06adc0e}{%
+           family={Nutter},
+           familyi={N\bibinitperiod},
+           given={Roy},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {Elsevier}%
+      }
+      \strng{namehash}{6c1fec6ad20a2d7807d5a241ac59a3b7}
+      \strng{fullhash}{7bf8878706b080a6b3be5e3af938ea63}
+      \strng{bibnamehash}{6c1fec6ad20a2d7807d5a241ac59a3b7}
+      \strng{authorbibnamehash}{6c1fec6ad20a2d7807d5a241ac59a3b7}
+      \strng{authornamehash}{6c1fec6ad20a2d7807d5a241ac59a3b7}
+      \strng{authorfullhash}{7bf8878706b080a6b3be5e3af938ea63}
+      \field{sortinit}{M}
+      \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Petroleum Science and Engineering}
+      \field{number}{4}
+      \field{title}{Petroleum reservoir characterization with the aid of artificial neural networks}
+      \field{volume}{16}
+      \field{year}{1996}
+      \field{pages}{263\bibrangedash 274}
+      \range{pages}{12}
+      \verb{doi}
+      \verb 10.1016/S0920-4105(96)00031-6
+      \endverb
+      \verb{urlraw}
+      \verb https://www.sciencedirect.com/science/article/pii/S0920410596000316
+      \endverb
+      \verb{url}
+      \verb https://www.sciencedirect.com/science/article/pii/S0920410596000316
+      \endverb
+    \endentry
+    \entry{Raissi2017}{article}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=95a17c39168b9e6b8812f207b4e036c1}{%
+           family={Raissi},
+           familyi={R\bibinitperiod},
+           given={Maziar},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=197d71332633e07aa578718628fdc405}{%
+           family={Perdikaris},
+           familyi={P\bibinitperiod},
+           given={Paris},
+           giveni={P\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=bfaf154b1f300f885a75adce4c6b773e}{%
+           family={Karniadakis},
+           familyi={K\bibinitperiod},
+           given={George\bibnamedelima Em},
+           giveni={G\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{767366a7d0fdde767496da8385111e76}
+      \strng{fullhash}{767366a7d0fdde767496da8385111e76}
+      \strng{bibnamehash}{767366a7d0fdde767496da8385111e76}
+      \strng{authorbibnamehash}{767366a7d0fdde767496da8385111e76}
+      \strng{authornamehash}{767366a7d0fdde767496da8385111e76}
+      \strng{authorfullhash}{767366a7d0fdde767496da8385111e76}
+      \field{sortinit}{R}
+      \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{arXiv preprint arXiv:1704.03718}
+      \field{title}{Physics Informed Deep Learning (Part I): Data-driven Solutions of Nonlinear Partial Differential Equations}
+      \field{year}{2017}
+      \verb{urlraw}
+      \verb https://arxiv.org/abs/1704.03718
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/abs/1704.03718
+      \endverb
+    \endentry
+    \entry{Soave1972}{article}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=a830b8a7d80e030646089354dd65a9cb}{%
+           family={Soave},
+           familyi={S\bibinitperiod},
+           given={G.},
+           giveni={G\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{a830b8a7d80e030646089354dd65a9cb}
+      \strng{fullhash}{a830b8a7d80e030646089354dd65a9cb}
+      \strng{bibnamehash}{a830b8a7d80e030646089354dd65a9cb}
+      \strng{authorbibnamehash}{a830b8a7d80e030646089354dd65a9cb}
+      \strng{authornamehash}{a830b8a7d80e030646089354dd65a9cb}
+      \strng{authorfullhash}{a830b8a7d80e030646089354dd65a9cb}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{issn}{0009-2509}
+      \field{journaltitle}{Chemical Engineering Science}
+      \field{month}{6}
+      \field{number}{6}
+      \field{title}{Equilibrium constants from a modified Redlich-Kwong equation of state}
+      \field{volume}{27}
+      \field{year}{1972}
+      \field{pages}{1197\bibrangedash 1203}
+      \range{pages}{7}
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

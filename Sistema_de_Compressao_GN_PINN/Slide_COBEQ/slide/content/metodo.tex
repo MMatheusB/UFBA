@@ -8,7 +8,7 @@
         \begin{figure}
             \centering
             \includegraphics[width=1.1\linewidth]{figures/compressao.png}
-            \caption{Sitema de Compressão retirado de Meira et al. (2021)}
+            \caption{Sitema de Compressão retirado de \cite{Meira2022}}
             \label{fig:enter-label}
         \end{figure}
         \end{column}
@@ -18,7 +18,7 @@
             \scriptsize
         \begin{block}{Composição do gás}
                 
-            O gás natural utilizado é rico em metano, com composição baseada em Chaczykowski (2009):
+            O gás natural utilizado é rico em metano, com composição baseada em \cite{Chaczykowski2009}:
             
             \vspace{0.12cm}
             \begin{itemize}  
@@ -29,7 +29,7 @@
             \end{itemize}
         \end{block}
             \vspace{0.1cm}
-            A equação de estado de Soave (1972) foi utilizada para modelar o comportamento termodinâmico do gás:
+            A equação de estado de \cite{Meira2022} foi utilizada para modelar o comportamento termodinâmico do gás:
 
             \[
             P = \frac{R T}{V - b} - \frac{a(T)}{V(V + b)}
@@ -46,7 +46,7 @@
 
 
 
-\begin{frame}{Equações e Variáveis do Modelo de Meira et al. (2021)}
+\begin{frame}{Equações e Variáveis do Modelo de \cite{Meira2022}}
     \scriptsize
     \textbf{Equações diferenciais que descrevem a dinâmica do sistema:}
 
@@ -118,7 +118,7 @@
                 \item \( \hat{y}^* \): variáveis previstas mensuráveis (saída da rede);
                 \item \( y^* \): variáveis reais mensuráveis (target);
                 \item \( \hat{z} \): variáveis algébricas previstas pela rede;
-                \item \( z \): variáveis algébricas calculadas pelo solver extermp.
+                \item \( z \): variáveis algébricas calculadas pelo solver externo.
             \end{itemize}
         \end{column}
 
@@ -157,13 +157,13 @@
     \centering
     \includegraphics[width=1.05\linewidth, height=0.40\textheight, keepaspectratio]{figures/plot_1.png}
     \vspace{0.1cm}
-    {\tiny\parbox{\linewidth}{\centering Comparação entre o modelo de rede neural e os dados simulados para vazão mássica, temperatura no plenum ($T_P$) e pressão no plenum ($P_P$).}}
+    {\tiny\parbox{\linewidth}{\centering \textbf{Figura 3}: Comparação entre o modelo de rede neural e os dados simulados para vazão mássica, temperatura no plenum ($T_P$) e pressão no plenum ($P_P$).}}
 \end{minipage}\hfill
 \begin{minipage}[t]{0.49\textwidth}
     \centering
     \includegraphics[width=1.1\linewidth, height=0.4\textheight, keepaspectratio]{figures/plot_2.png}
     \vspace{0.1cm}
-    {\tiny\parbox{\linewidth}{\centering Comparação entre o modelo de rede neural e os dados simulados para a pressão ($P_2$) e a temperatura ($T_2$) na saída do compressor.}}
+    {\tiny\parbox{\linewidth}{\centering \textbf{Figura 4}: Comparação entre o modelo de rede neural e os dados simulados para a pressão ($P_2$) e a temperatura ($T_2$) na saída do compressor.}}
 \end{minipage}
 \end{center}
 
@@ -185,10 +185,10 @@ $V_P$ & $T_{imp}$ & $V_{imp}$ & $T_{dif}$ & $V_{dif}$ & $T_{2s}$ & $V_{2s}$ \\
 
 \begin{frame}{Distribuição do Tempo de Simulação}
 \centering
-\includegraphics[width=0.8\textwidth]{figures/hist.png}
+\includegraphics[width=0.65\textwidth]{figures/hist.png}
 
 \vspace{0.3cm}
-{\scriptsize Distribuição do tempo de simulação dos experimentos/modelos.}
+{\scriptsize \textbf{Figura 5}: Distribuição do tempo de simulação dos experimentos/modelos.}
 \end{frame}
 
 
