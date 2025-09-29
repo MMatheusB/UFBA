@@ -1,1 +1,1 @@
-# Research_about_PINNs
+# Trabalhos da UFBA e Pesquisa Cientifica
