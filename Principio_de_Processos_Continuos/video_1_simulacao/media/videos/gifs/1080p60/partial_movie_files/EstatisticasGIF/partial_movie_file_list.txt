@@ -1,0 +1,10 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/gifs/1080p60/partial_movie_files/EstatisticasGIF/3529212410_1593331728_223132457.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/gifs/1080p60/partial_movie_files/EstatisticasGIF/3040924799_1106938013_3961702550.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/gifs/1080p60/partial_movie_files/EstatisticasGIF/3040924799_24690273_1831543264.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/gifs/1080p60/partial_movie_files/EstatisticasGIF/3040924799_4217992463_57067489.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/gifs/1080p60/partial_movie_files/EstatisticasGIF/3040924799_1178611967_3781905899.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/gifs/1080p60/partial_movie_files/EstatisticasGIF/3040924799_4217992463_1464892014.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/gifs/1080p60/partial_movie_files/EstatisticasGIF/3040924799_779991418_2538146689.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/gifs/1080p60/partial_movie_files/EstatisticasGIF/3040924799_2844360058_927933608.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/gifs/1080p60/partial_movie_files/EstatisticasGIF/3040924799_372272327_2151369842.mp4'

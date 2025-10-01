@@ -1,0 +1,6 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/gifs/1080p60/partial_movie_files/EDO_EDP_GIF/3529212410_3174940378_223132457.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/gifs/1080p60/partial_movie_files/EDO_EDP_GIF/3040924799_1957689669_229375770.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/gifs/1080p60/partial_movie_files/EDO_EDP_GIF/3040924799_2898595991_3219450359.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/gifs/1080p60/partial_movie_files/EDO_EDP_GIF/3040924799_2552855209_1502123311.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/gifs/1080p60/partial_movie_files/EDO_EDP_GIF/3040924799_73082233_1280829275.mp4'

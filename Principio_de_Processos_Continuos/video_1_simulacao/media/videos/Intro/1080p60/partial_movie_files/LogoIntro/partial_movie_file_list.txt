@@ -1,0 +1,9 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/Intro/1080p60/partial_movie_files/LogoIntro/3529212410_3335662989_223132457.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/Intro/1080p60/partial_movie_files/LogoIntro/3040924799_3394500337_13128830.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/Intro/1080p60/partial_movie_files/LogoIntro/3040924799_1297907392_897108946.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/Intro/1080p60/partial_movie_files/LogoIntro/3040924799_3394500337_3010008942.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/Intro/1080p60/partial_movie_files/LogoIntro/3040924799_717472458_2376841579.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/Intro/1080p60/partial_movie_files/LogoIntro/3040924799_4217992463_3915121122.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/Intro/1080p60/partial_movie_files/LogoIntro/3040924799_1023109546_825333220.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_1_simulacao/media/videos/Intro/1080p60/partial_movie_files/LogoIntro/3040924799_4217992463_1960095348.mp4'

@@ -76,3 +76,5 @@ class IntroCena(Scene):
         ).scale(0.4)
 
         self.play(FadeIn(citacao, shift=UP*0.2))
+
+        self.wait(5)
