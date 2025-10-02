@@ -1,0 +1,33 @@
+\documentclass[aspectratio=169]{beamer}
+
+\input{style.tex}
+\usepackage{pdfpages}
+\setbeamercolor{background canvas}{bg=}
+
+% Informações do trabalho
+\title[PRE PROJETO]{Sistema Para Controle Avancado}
+\author[Matheus Marinho Bezerra]{Matheus Marinho Bezerra}
+\institute[UFBA]{Universidade Federal da Bahia\\Controle Avancado\\Prof. Márcio André Fernandes Martins}
+\date{}
+
+\addbibresource{referencias.bib}
+
+\graphicspath{{Figures/}}
+
+\begin{document}
+
+% Slide de capa
+\begin{frame}
+    \titlepage
+\end{frame}
+% Demais conteúdos
+\input{content/introduction.tex}
+\input{content/metodo.tex}
+\input{content/conclusion.tex}
+
+% Slide de bibliografia
+\begin{frame}[allowframebreaks]{Bibliografia}
+   \printbibliography
+\end{frame}
+
+\end{document}

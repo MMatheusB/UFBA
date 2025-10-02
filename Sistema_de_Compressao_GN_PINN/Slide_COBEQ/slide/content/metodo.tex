@@ -46,12 +46,12 @@
 
 
 
-\begin{frame}{Equações e Variáveis do Modelo de \cite{Meira2022}}
+\begin{frame}{Equações e Variáveis do Modelo de \cite{Meira2022} }
     \scriptsize
     \textbf{Equações diferenciais que descrevem a dinâmica do sistema:}
 
     \begin{multicols}{2}
-    % Coluna da esquerda: equações
+    % Coluna da esquerda: equações diferenciais
     \begin{align}
         \frac{d\dot{m}}{dt} &= \frac{A_1}{L_c}(P_2 - P_P) \tag{1} \\
         \frac{dV_P}{dt} &= -\frac{V_P^2}{v_{PM}} \left( \dot{m} - \alpha k_v \sqrt{P_P - P_{\text{out}}} \right) \tag{2} \\
@@ -60,14 +60,15 @@
             &\frac{V_P \dot{m}}{v_P M} \left( \frac{h_c - h_p}{C_V} \right) + \\
             + &\frac{R_a T_P}{C_V} \left[ T_P \left( \frac{\partial Z_P}{\partial T} \right)_{V_P} + Z_P \right]
             \frac{V_P}{v_P M} \left( \dot{m} - \alpha k_v \sqrt{P_P - P_{\text{out}}} \right)
-        \end{aligned} \tag{3}
+        \end{aligned} \tag{3} \\
+        \textbf{f(u, x, z)} &= 0 \tag{4}
     \end{align}
 
     \columnbreak
-    % Coluna da direita: itemize alinhado à direita usando minipage
+    % Coluna da direita: variáveis algébricas
     \begin{minipage}{\linewidth}
         \raggedleft
-        \textbf{Principais variáveis algébricas estimadas:}
+        \textbf{Variáveis algébricas estimadas:}
         \begin{itemize}
             \item \( P_2 \), \( T_2 \), \( V_2 \): saída do compressor
             \item \( T_{2s} \), \( V_{2s} \): pós-compressão isentrópica
@@ -78,17 +79,6 @@
         \end{itemize}
     \end{minipage}
     \end{multicols}
-
-    \vspace{0.2cm}
-    \textbf{Símbolos:}
-    \begin{itemize}
-        \item \( \dot{m} \): vazão mássica; 
-        \( V_P \), \( T_P \), \( Z_P \): volume molar, temperatura e fator de compressibilidade no plenum;
-        \( R_a \): constante dos gases; 
-        \( M \): massa molar; 
-        \( h_c \), \( h_p \): entalpias; 
-        \( C_V \): calor específico a volume constante.
-    \end{itemize}
 \end{frame}
 
 \begin{frame}{Estrutura da Rede Neural Proposta}
@@ -147,41 +137,41 @@
     \end{columns}
 \end{frame}
 
-\begin{frame}{Resultados de Previsão e Erro Quadrático Médio}
+% --- SLIDE 1 ---
+\begin{frame}{Resultados de Previsão – Parte 1}
 \scriptsize
 
 \begin{center}
-% Linha de imagens lado a lado
-\setlength{\fboxsep}{0pt}% remove espaço extra
-\begin{minipage}[t]{0.49\textwidth}
-    \centering
-    \includegraphics[width=1.05\linewidth, height=0.40\textheight, keepaspectratio]{figures/plot_1.png}
-    \vspace{0.1cm}
-    {\tiny\parbox{\linewidth}{\centering \textbf{Figura 3}: Comparação entre o modelo de rede neural e os dados simulados para vazão mássica, temperatura no plenum ($T_P$) e pressão no plenum ($P_P$).}}
-\end{minipage}\hfill
-\begin{minipage}[t]{0.49\textwidth}
-    \centering
-    \includegraphics[width=1.1\linewidth, height=0.4\textheight, keepaspectratio]{figures/plot_2.png}
-    \vspace{0.1cm}
-    {\tiny\parbox{\linewidth}{\centering \textbf{Figura 4}: Comparação entre o modelo de rede neural e os dados simulados para a pressão ($P_2$) e a temperatura ($T_2$) na saída do compressor.}}
-\end{minipage}
+    \includegraphics[width=0.85\textwidth]{figures/dados1.png} \\
+    \includegraphics[width=0.85\textwidth]{figures/dados2.png}
 \end{center}
 
-\vspace{0.2cm}
-
-% Linha da tabela
-\centering
-\textbf{Raiz do Erro Quadrático Médio (RMSE) das demais variáveis} \\[0.2cm]
-
-\begin{tabular}{@{}ccccccc@{}}
-\toprule
-$V_P$ & $T_{imp}$ & $V_{imp}$ & $T_{dif}$ & $V_{dif}$ & $T_{2s}$ & $V_{2s}$ \\
-\midrule
-0.012762 & 0.050806 & 0.045487 & 0.049855 & 0.031096 & 0.037175 & 0.037160 \\
-\bottomrule
-\end{tabular}
+{\centering
+\tiny
+\textbf{Figuras 3 e 4:} Comparação entre os valores previstos pelo modelo e os dados reais para as variáveis associadas ao plenum (\(T_P\), \(V_P\), \(P_P\)), saída do compressor (\(P_2\)) e impelidor (\(T_{imp}\), \(V_{imp}\)).
+}
 
 \end{frame}
+
+% --- SLIDE 2 ---
+\begin{frame}{Resultados de Previsão – Parte 2}
+\scriptsize
+
+\begin{center}
+    \includegraphics[width=0.85\textwidth]{figures/dados3.png} 
+    \includegraphics[width=0.85\textwidth]{figures/dados4.png}
+\end{center}
+
+
+
+{\centering
+\tiny
+\textbf{Figuras 5 e 6:} Comparação entre os valores previstos pelo modelo e os dados reais para as variáveis do difusor ($T_{dif}$, $V_{dif}$, $T_2$), do plenum ($\dot{m}$), e da pós-compressão isentrópica ($T_{2s}$, $V_{2s}$), além da saída do compressor ($P_2$).
+}
+
+\end{frame}
+
+
 
 \begin{frame}{Distribuição do Tempo de Simulação}
 \centering
