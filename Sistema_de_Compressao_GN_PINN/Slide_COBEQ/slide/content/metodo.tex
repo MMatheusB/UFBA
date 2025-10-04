@@ -29,7 +29,7 @@
             \end{itemize}
         \end{block}
             \vspace{0.1cm}
-            A equação de estado de \cite{Meira2022} foi utilizada para modelar o comportamento termodinâmico do gás:
+            A equação de estado de \cite{Soave1972} foi utilizada para modelar o comportamento termodinâmico do gás:
 
             \[
             P = \frac{R T}{V - b} - \frac{a(T)}{V(V + b)}
@@ -48,7 +48,7 @@
 
 \begin{frame}{Equações e Variáveis do Modelo de \cite{Meira2022} }
     \scriptsize
-    \textbf{Equações diferenciais que descrevem a dinâmica do sistema:}
+    \textbf{Equações que descrevem a dinâmica do sistema:}
 
     \begin{multicols}{2}
     % Coluna da esquerda: equações diferenciais
@@ -61,23 +61,28 @@
             + &\frac{R_a T_P}{C_V} \left[ T_P \left( \frac{\partial Z_P}{\partial T} \right)_{V_P} + Z_P \right]
             \frac{V_P}{v_P M} \left( \dot{m} - \alpha k_v \sqrt{P_P - P_{\text{out}}} \right)
         \end{aligned} \tag{3} \\
-        \textbf{f(u, x, z)} &= 0 \tag{4}
+            0 &= f(x, z, u) \tag{4} \qquad \text{(equações algébricas)}
     \end{align}
+
 
     \columnbreak
     % Coluna da direita: variáveis algébricas
     \begin{minipage}{\linewidth}
-        \raggedleft
-        \textbf{Variáveis algébricas estimadas:}
+        \textbf{Variáveis estimadas pelo modelo:}
         \begin{itemize}
-            \item \( P_2 \), \( T_2 \), \( V_2 \): saída do compressor
+            \item \textcolor{blue}{\( \dot{m} \)}: vazão mássica
+            \item \textcolor{blue}{\( T_P \)}, \( V_P \), \textcolor{blue}{\( P_P \)}: variáveis no plenum
+            \item \textcolor{blue}{\( P_2 \)}, \textcolor{blue}{\( T_2 \)}, \( V_2 \): saída do compressor
             \item \( T_{2s} \), \( V_{2s} \): pós-compressão isentrópica
-            \item \( V_1 \): sucção do compressor
-            \item \( V_{imp} \), \( T_{imp} \): impelidor
-            \item \( V_{dif} \), \( T_{dif} \): difusor
-            \item \( P_P \): pressão no plenum
+            \item \( T_{imp} \), \( V_{imp} \): impelidor
+            \item \( T_{dif} \), \( V_{dif} \): difusor
         \end{itemize}
+
+        \vspace{1.5cm}
+        {\scriptsize \textcolor{blue}{\textbf{Observação:}} Variáveis em azul correspondem às entradas da rede neural, obtidas por medição.}
     \end{minipage}
+
+
     \end{multicols}
 \end{frame}
 
@@ -94,27 +99,43 @@
         % Coluna da esquerda - Função de perda
         \begin{column}{0.55\textwidth}
             \footnotesize
-            A equação geral da função de perda utilizada foi:
-
-            \[
-            \text{Loss} = \frac{1}{N} \sum_{i=1}^{N} (\hat{y}_i^* - y_i^*)^2
-            + \frac{1}{N} \sum_{i=1}^{N} \left( \frac{d\hat{y}_{i,\text{num}}}{dt} - \frac{d\hat{y}_{i,\text{an}}}{dt} \right)^2
-            + \frac{1}{N} \sum_{i=1}^{N} (\hat{z}_i - z_i)^2
-            \]
+            A função de perda é composta por quatro parcelas:
 
             \vspace{0.2cm}
+            \scriptsize
+            \[
+            \text{Loss} = 
+            \underbrace{
+            \frac{1}{N} \sum_{i=1}^{N} \left( \hat{y}_{d,i}^* - y_{d,i}^* \right)^2
+            }_{\text{Mensuráveis diferenciais}} 
+            + 
+            \underbrace{
+            \frac{1}{N} \sum_{i=1}^{N} \left( \hat{y}_{a,i}^* - y_{a,i}^* \right)^2
+            }_{\text{Mensuráveis algébricas}} 
+            + 
+            \underbrace{
+            \frac{1}{N} \sum_{i=1}^{N} \left( \frac{d\hat{x}_i}{dt} - \frac{d\hat{x}_i^{an}}{dt} \right)^2
+            }_{\text{Consistência com as EDOs}} 
+            + 
+            \underbrace{
+            \frac{1}{N} \sum_{i=1}^{N} \left( \hat{z}_i - z_i \right)^2
+            }_{\text{Variáveis algébricas estimadas}}
+            \]
+
+            \vspace{0.3cm}
             Onde:
             \begin{itemize}
-                \item \( \hat{y}^* \): variáveis previstas mensuráveis (saída da rede);
-                \item \( y^* \): variáveis reais mensuráveis (target);
-                \item \( \hat{z} \): variáveis algébricas previstas pela rede;
-                \item \( z \): variáveis algébricas calculadas pelo solver externo.
+                \item \( \hat{y}_{d}^* \): variáveis diferenciais mensuráveis (ex: \( \dot{m} \), \( T_P \));
+                \item \( \hat{y}_{a}^* \): variáveis algébricas mensuráveis (ex: \( P_2 \), \( T_2 \));
+                \item \( \hat{x}_i \): variáveis diferenciais com derivada temporal avaliada numericamente;
+                \item \( \hat{z}_i \): variáveis algébricas previstas pela rede;
+                \item \( z_i \): variáveis algébricas calculadas pelo solver externo.
             \end{itemize}
         \end{column}
 
-        % Coluna da direita - Tabela de hiperparâmetros
+        % Coluna da direita - Hiperparâmetros
         \begin{column}{0.45\textwidth}
-            \vspace{2cm}
+            \vspace{2.5cm}
             \begin{block}{\centering Hiperparâmetros do Modelo}
                 \footnotesize
                 \centering
@@ -136,6 +157,7 @@
         \end{column}
     \end{columns}
 \end{frame}
+
 
 % --- SLIDE 1 ---
 \begin{frame}{Resultados de Previsão – Parte 1}
