@@ -1,0 +1,12 @@
+\documentclass{standalone}
+\usepackage{circuitikz}
+
+\begin{document}
+\begin{circuitikz}[american voltages]
+    \draw
+    (0,0) to[V, l=$\varepsilon(t)$] (0,3)
+          to[R, l=R] (3,3)
+          to[C, l=C] (3,0)
+          -- (0,0);
+\end{circuitikz}
+\end{document}
