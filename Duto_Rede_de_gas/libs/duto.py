@@ -19,7 +19,7 @@ class duto:
         self.k_solo = 0.89 # w / (m*K)
         self.T_solo = 15 + 273.15# C
         self.z_solo = 2 # m
-        self.l = [i*0.05*self.Lc for i in range(0,20)]
+        self.l = [i*0.05*self.Lc for i in range(0,21)]
         #[0, 0.1*self.Lc, 0.2*self.Lc, 0.30*self.Lc, 0.4*self.Lc, 0.5*self.Lc, 0.60*self.Lc, 0.70*self.Lc, 0.80*self.Lc, 0.9*self.Lc, self.Lc]
 
     def fator_friccao(self, Re): 

@@ -50,7 +50,7 @@ class RCCircuitGraphOnly1(Scene):
         # --- Passo 4: Gráfico ---
         axes = Axes(
             x_range=[0, t_span[1], t_span[1]/5],
-            y_range=[0, 5.5, 1],
+            y_range=[0, 5.5, 1],  
             axis_config={"include_tip": True}
         ).scale(0.6).move_to(RIGHT * 3)
         labels = axes.get_axis_labels("t (s)", "V_C(t) (V)")
