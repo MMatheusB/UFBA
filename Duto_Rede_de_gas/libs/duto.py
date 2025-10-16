@@ -10,7 +10,7 @@ from builtins import sum
 
 
 class duto:
-    def __init__(self, gas, visc, Lc, D):
+    def __init__(self, gas, visc, Lc, D, n_points = 42):
         self.visc = visc
         self.gas = gas
         self.Lc = Lc
@@ -19,8 +19,11 @@ class duto:
         self.k_solo = 0.89 # w / (m*K)
         self.T_solo = 15 + 273.15# C
         self.z_solo = 2 # m
-        self.l = [i*0.05*self.Lc for i in range(0,21)]
-        #[0, 0.1*self.Lc, 0.2*self.Lc, 0.30*self.Lc, 0.4*self.Lc, 0.5*self.Lc, 0.60*self.Lc, 0.70*self.Lc, 0.80*self.Lc, 0.9*self.Lc, self.Lc]
+        
+        # --- Malha de Chebyshev-Gauss ---
+        i = np.arange(1, n_points + 1)
+        xi = np.cos((2*i - 1) / (2*n_points) * np.pi)  # [-1,1]
+        self.l = (self.Lc / (xi[-1] - xi[0])) * (xi - xi[0])  # [0, Lc]
 
     def fator_friccao(self, Re): 
         return 0.25*float(-4 * np.log10(self.e_D / 3.7 / self.D - 5.02/ Re * np.log10(self.e_D/ 3.7 / self.D - 5.02/Re * np.log10(self.e_D / 3.7  / self.D + 13/Re))))**(-2)
@@ -36,18 +39,37 @@ class duto:
         return float(h_t)
 
     def derivada_centrada(self, x, f, i):
+        """
+        Calcula derivada de f(x) no ponto x[i] usando polinômio de Lagrange de 3 pontos.
+        Compatível com o restante do código.
+        """
+        n = len(x)
 
-        h = x[1] - x[0]  # assume espaçamento uniforme
-    
+        # Escolhe 3 pontos conforme posição
         if i == 0:
-        # progressiva de 3 pontos (ordem 2)
-            return (-3*f[0] + 4*f[1] - f[2]) / (x[2] - x[0])
-        elif i == len(x) - 1:
-        # regressiva de 3 pontos (ordem 2)
-            return (3*f[-1] - 4*f[-2] + f[-3]) / (x[-1] - x[-3])
+            idx = [0, 1, 2]  # progressiva
+        elif i == n - 1:
+            idx = [n - 3, n - 2, n - 1]  # regressiva
         else:
-        # centrada de 3 pontos (ordem 2)
-            return (f[i+1] - f[i-1]) / (x[i+1] - x[i-1])
+            idx = [i - 1, i, i + 1]  # centrada
+
+        x_sub = np.array([x[j] for j in idx], dtype=float)
+        f_sub = np.array([f[j] for j in idx], dtype=float)
+        xi = x[i]
+
+        deriv = 0.0
+        for j in range(3):
+            Lj_deriv = 0.0
+            for m in range(3):
+                if m != j:
+                    prod = 1.0
+                    for k in range(3):
+                        if k != j and k != m:
+                            prod *= (xi - x_sub[k]) / (x_sub[j] - x_sub[k])
+                    Lj_deriv += prod / (x_sub[j] - x_sub[m])
+            deriv += f_sub[j] * Lj_deriv
+
+        return float(deriv)
 
 
     def evaluate_dae(self, t, y):
