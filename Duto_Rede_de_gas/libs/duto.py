@@ -10,7 +10,7 @@ from builtins import sum
 
 
 class duto:
-    def __init__(self, gas, visc, Lc, D, n_points = 42):
+    def __init__(self, gas, visc, Lc, D, n_points = 21):
         self.visc = visc
         self.gas = gas
         self.Lc = Lc
