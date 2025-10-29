@@ -7,7 +7,7 @@ from libs.composicaogas import *
 
 
 class duto_casadi:
-    def __init__(self, gas, visc, Lc, D, n_points=21):
+    def __init__(self, gas, visc, Lc, compressor, D, n_points=21):
         self.visc = visc
         self.gas = gas
         self.Lc = Lc
@@ -16,7 +16,7 @@ class duto_casadi:
         self.k_solo = 0.89  # w / (m*K)
         self.T_solo = 15 + 273.15  # K
         self.z_solo = 2  # m
-
+        self.compressor = compressor
         # --- Malha de Chebyshev-Gauss ---
         i = np.arange(1, n_points + 1)
         xi = np.cos((2 * i - 1) / (2 * n_points) * np.pi)  # [-1,1]
@@ -70,12 +70,46 @@ class duto_casadi:
             deriv += f_sub[j] * Lj_deriv
         return deriv
 
-    def evaluate_dae(self, t, y):
-
-        # Separar variáveis
+    def evaluate_dae(self, t, y, z, u):
+        # --- Variáveis diferenciais ---
         T = [y[3*i + 0] for i in range(self.n_points)]
         V = [y[3*i + 1] for i in range(self.n_points)]
         w = [y[3*i + 2] for i in range(self.n_points)]
+
+        # --- Variáveis algébricas do compressor ---
+        Timp = z[0]   # Temperatura na entrada do compressor
+        Vimp = z[1]   # Vazão na entrada do compressor
+        Tdif = z[2]   # Temperatura na saída do compressor
+        Vdif = z[3]   # Vazão na saída do compressor
+        T2s  = z[4]   # Temperatura isentrópica
+        V2s  = z[5]   # Vazão isentrópica
+        T2   = z[6]   # Temperatura real
+        V2   = z[7]   # Vazão real
+        V1   = z[8]   # Vazão na entrada do duto
+
+        rot_comp = u  # rotação do compressor
+
+        # --- Avalia as equações do compressor ---
+        # (usa as mesmas equações do compressor original)
+        A = np.pi * (self.D**2) / 4
+
+        MM = self.gas.mixture.MM_m  # massa molar em kg/mol
+
+        m_dot = rho * A * w[0]
+        
+        a3, a4, a5, a6, a7, a8, a9, a10, a11 = self.compressor.character_dae(
+            [Timp, Vimp, Tdif, Vdif, T2s, V2s, T2, V2, V1],
+            [rot_comp, (m_dot)/4, 8400, 300]   # <- substitua por condições conhecidas do lado de sucção
+        )
+
+        # P2 será a saída do compressor
+        P2 = self.compressor.P2
+        T2 = self.compressor.T2
+        V2 = self.compressor.V2
+
+        # --- Aplica essas como condições de contorno do duto ---
+        T[0] = T2
+        V[0] = V2
 
         dTdt, dVdt, dwdt = [], [], []
 
@@ -133,6 +167,8 @@ class duto_casadi:
         dydt = []
         for i in range(self.n_points):
             dydt += [dTdt[i], dVdt[i], dwdt[i]]
+        
+        alg = vertcat(a3, a4, a5, a6, a7, a8, a9, a10, a11)
 
-        return vertcat(*dydt)
+        return vertcat(*dydt), alg
 
