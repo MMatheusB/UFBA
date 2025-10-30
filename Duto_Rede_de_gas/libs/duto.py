@@ -139,26 +139,14 @@ class duto:
     # ---------------------
     # Estacionário (com integração do compressor)
     # ---------------------
-    def estacionario(self, x, y):
+    def estacionario(self, x, y, compressor =None):
         """
         Calcula o regime estacionário do duto.
         Se o compressor for passado, usa sua saída (T2, V2) como entrada do duto.
         """
         # --- Condições de contorno ---
-        if self.compressor is not None:
-            # Resolve as variáveis estacionárias do self.compressor
-            (
-                Timp, Vimp, Tdif, Vdif,
-                T2s, V2s, T2, V2, V1
-            ) = self.compressor.solve_steady_state(
-                self.compressor.P1, self.compressor.T1, self.compressor.N, self.compressor.dot_m
-            )
 
-            T_inicial = float(T2)
-            V_inicial = float(V2)
-        else:
-            # Sem compressor (modo isolado)
-            T_inicial, V_inicial = y[0], y[1]
+        T_inicial, V_inicial = y[0], y[1]
 
         # --- Calcula derivadas no ponto x ---
         T, V, w = map(float, y)

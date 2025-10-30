@@ -2,6 +2,44 @@ from manim import *
 import numpy as np
 from scipy.integrate import solve_ivp
 
+class RCCircuitPremises(Scene):
+    def construct(self):
+        # --- Título ---
+        title = Text("Premissas do Modelo RC", font_size=42, color=BLUE).to_edge(UP)
+        self.play(Write(title))
+        self.wait(1.5)
+
+        # --- Lista de premissas ---
+        premissas = BulletedList(
+            "Os fios e componentes são ideais (sem perdas de energia)",
+            "A fonte de tensão é constante no tempo",
+            "O capacitor está inicialmente descarregado",
+            "A resistência e a capacitância não variam com o tempo",
+            "As grandezas variam continuamente, sem saltos instantâneos",
+            font_size=30
+        ).next_to(title, DOWN, buff=0.8)
+
+        # Exibir uma a uma
+        for item in premissas:
+            self.play(FadeIn(item, shift=DOWN), run_time=1.2)
+            self.wait(1.3)
+
+        self.wait(2)
+
+        # --- Encerramento / transição ---
+        outro = Text(
+            "Com essas premissas, conseguimos descrever a carga do capacitor ao longo do tempo.",
+            font_size=18
+        ).next_to(premissas, DOWN, buff=0.8)
+
+        self.play(Write(outro))
+        self.wait(3)
+
+        # Fade para limpar a tela antes da próxima animação
+        self.play(FadeOut(title), FadeOut(premissas), FadeOut(outro))
+        self.wait(1)
+
+        
 class RCCircuitGraphOnly1(Scene):
     def construct(self):
         # --- Parâmetros do circuito ---

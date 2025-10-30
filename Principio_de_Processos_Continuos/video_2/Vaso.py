@@ -2,9 +2,49 @@ from manim import *
 import numpy as np
 from scipy.integrate import solve_ivp
 
+# --- CENA 1: Premissas do Modelo ---
+class ModelPremises(Scene):
+    def construct(self):
+        # Título
+        title = Text("Premissas do Modelo", font_size=42, color=BLUE).to_edge(UP)
+        self.play(Write(title))
+        self.wait(1.5)
+
+        # Lista de premissas
+        premissas = BulletedList(
+            "O gás se comporta como um gás ideal",
+            "A temperatura dentro do tanque é constante (processo isotérmico)",
+            "O volume do tanque não muda com o tempo (tanque rígido)",
+            "As vazões de entrada e saída dependem da diferença de pressão",
+            "Não há perdas de calor ou atrito significativas",
+            font_size=30
+        ).next_to(title, DOWN, buff=0.8)
+
+        # Apresentar premissas com pequenas pausas
+        for item in premissas:
+            self.play(FadeIn(item, shift=DOWN), run_time=1.2)
+            self.wait(1.5)
+
+        self.wait(2)
+
+        # Transição para próxima cena
+        outro = Text(
+            "Com essas premissas, conseguimos descrever a dinâmica da pressão no vaso.",
+            font_size=16
+        ).next_to(premissas, DOWN, buff=0.8)
+
+        self.play(Write(outro))
+        self.wait(3)
+
+        # Fade para encerrar
+        self.play(FadeOut(title), FadeOut(premissas), FadeOut(outro))
+        self.wait(1)
+
+
+# --- CENA 2: Dinâmica do vaso pressurizado ---
 class PressurizedVesselAnimation(Scene):
     def construct(self):
-        # --- Parâmetros físicos do sistema ---
+        # --- Parâmetros físicos ---
         R = 8.314      # J/mol·K
         T = 300         # K
         V = 1.0         # m³
@@ -15,11 +55,11 @@ class PressurizedVesselAnimation(Scene):
         P2 = 2.0        # pressão de saída (bar)
         P0 = 5.0        # pressão inicial (bar)
 
-        # --- EDO: dP/dt = (RT/(V*MM)) * (k1*(P1 - P) - k2*(P - P2)) ---
+        # --- EDO: dP/dt = (RT/(V*MM)) * (k1*sqrt(P1 - P) - k2*sqrt(P - P2)) ---
         def dPdt(t, P):
-            return (R*T/(V*MM)) * (k1*(P1 - P) - k2*(P - P2))
+            return (R*T/(V*MM)) * (k1*np.sqrt(P1 - P) - k2*np.sqrt(P - P2))
 
-        # --- Solução numérica usando solve_ivp ---
+        # --- Solução numérica ---
         t_span = (0, 0.1)
         t_eval = np.linspace(*t_span, 200)
         sol = solve_ivp(dPdt, t_span, [P0], t_eval=t_eval)
@@ -29,14 +69,14 @@ class PressurizedVesselAnimation(Scene):
         # --- Texto de introdução ---
         intro_text = Text("Vaso pressurizado de gás", font_size=36).to_edge(UP)
         self.play(Write(intro_text))
-        self.wait(3)
+        self.wait(0.5)
 
-        # --- Desenho do vaso com entrada e saída ---
+        # --- Desenho do vaso ---
         vessel = Rectangle(width=3, height=4, color=BLUE).move_to(ORIGIN)
         inlet_arrow = Arrow(start=LEFT*3.5, end=LEFT*1.5, color=GREEN)
         outlet_arrow = Arrow(start=RIGHT*1.5, end=RIGHT*3.5, color=RED)
-        label_in = Text("F₁(t)", font_size=24).next_to(inlet_arrow, UP)
-        label_out = Text("F₂(t)", font_size=24).next_to(outlet_arrow, UP)
+        label_in = Text("P₁(t)", font_size=24).next_to(inlet_arrow, UP)
+        label_out = Text("P₂(t)", font_size=24).next_to(outlet_arrow, UP)
 
         self.play(Create(vessel))
         self.play(GrowArrow(inlet_arrow), Write(label_in))
@@ -51,7 +91,9 @@ class PressurizedVesselAnimation(Scene):
         self.wait(1)
 
         # --- Passo 2: Equações intermediárias ---
-        eq_flows = MathTex(r"F_1(t) = k_1 (P_1 - P(t)),\quad F_2(t) = k_2 (P(t) - P_2)").next_to(vessel, DOWN)
+        eq_flows = MathTex(
+            r"F_1(t) = k_1 \sqrt{(P_1 - P(t))} ,\quad F_2(t) = k_2 \sqrt{(P(t) - P_2)}"
+        ).next_to(vessel, DOWN)
         eq_mass_ideal = MathTex(r"m(t) = \frac{P(t)\,V\,M_M}{R\,T}").next_to(vessel, DOWN)
         eq_mass_derivative = MathTex(r"\frac{dm(t)}{dt} = \frac{V\,M_M}{R\,T}\frac{dP(t)}{dt}").next_to(vessel, DOWN)
 
@@ -64,16 +106,16 @@ class PressurizedVesselAnimation(Scene):
         self.play(FadeOut(eq_mass_derivative))
         self.wait(2)
 
-        # --- Passo 3: Equação final da pressão ---
+        # --- Passo 3: Equação final da pressão (corrigida com raiz) ---
         eq_final_pressure = MathTex(
-            r"\frac{dP}{dt} = \frac{R\,T}{V\,M_M} \Big( k_1 (P_1 - P) - k_2 (P - P_2) \Big)"
+            r"\frac{dP}{dt} = \frac{R\,T}{V\,M_M} \Big( k_1 \sqrt{P_1 - P} - k_2 \sqrt{P - P_2} \Big)"
         ).next_to(vessel, DOWN)
         self.play(Write(eq_final_pressure))
         self.wait(4)
         self.play(FadeOut(eq_final_pressure))
         self.wait(0.5)
 
-        # --- Passo 4: Mover tanque para esquerda e mostrar gráfico à direita ---
+        # --- Passo 4: mover tanque e mostrar gráfico ---
         self.play(
             vessel.animate.move_to(LEFT*3.5),
             inlet_arrow.animate.shift(LEFT*3.5),
@@ -83,9 +125,9 @@ class PressurizedVesselAnimation(Scene):
             run_time=3
         )
 
-        # Criação do gráfico à direita
+        # Criação do gráfico
         axes = Axes(
-            x_range=[0, 0.1, 0.02],  # tempo de 0 a 0.1
+            x_range=[0, 0.1, 0.02],
             y_range=[min(P_vals)-0.5, max(P_vals)+0.5, 1],
             axis_config={"include_tip": True}
         ).scale(0.5).move_to(RIGHT*3)
@@ -93,22 +135,19 @@ class PressurizedVesselAnimation(Scene):
         labels = axes.get_axis_labels("t", "P(t)")
         self.play(Create(axes), Write(labels))
 
-        # --- Curva simulada (traçada progressivamente) ---
+        # Curva da pressão
         pressure_curve = axes.plot(
             lambda t: np.interp(t, t_vals, P_vals),
             x_range=[t_vals[0], t_vals[-1]],
             color=YELLOW
         )
 
-        # Animação: curva sendo desenhada no tempo
+        # Animação do gráfico
         self.play(Create(pressure_curve), run_time=6, rate_func=linear)
         self.wait(3)
 
-        # --- Passo 5: Animação das setas de fluxo contínuo ---
+        # --- Passo 5: setas piscando (fluxo contínuo) ---
         for _ in range(3):
             self.play(Indicate(inlet_arrow), Indicate(outlet_arrow), run_time=1.5)
 
-
-        # --- Passo 5: Animação das setas de fluxo contínuo ---
-        for _ in range(3):
-            self.play(Indicate(inlet_arrow), Indicate(outlet_arrow), run_time=1.5)
+        self.wait(2)

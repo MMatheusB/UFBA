@@ -87,25 +87,25 @@ class duto_casadi:
         V2   = z[7]   # Vazão real
         V1   = z[8]   # Vazão na entrada do duto
 
-        rot_comp = u  # rotação do compressor
+        rot_comp = u[0]  # rotação do compressor
 
         # --- Avalia as equações do compressor ---
         # (usa as mesmas equações do compressor original)
         A = np.pi * (self.D**2) / 4
 
         MM = self.gas.mixture.MM_m  # massa molar em kg/mol
-
+        v_kg = V[0] / MM
+        rho = 1 / v_kg
         m_dot = rho * A * w[0]
         
         a3, a4, a5, a6, a7, a8, a9, a10, a11 = self.compressor.character_dae(
             [Timp, Vimp, Tdif, Vdif, T2s, V2s, T2, V2, V1],
-            [rot_comp, (m_dot)/4, 8400, 300]   # <- substitua por condições conhecidas do lado de sucção
+            [rot_comp, (m_dot)/4, 8400, 300]   
         )
 
         # P2 será a saída do compressor
-        P2 = self.compressor.P2
-        T2 = self.compressor.T2
-        V2 = self.compressor.V2
+        T2 = a9
+        V2 = a10
 
         # --- Aplica essas como condições de contorno do duto ---
         T[0] = T2
@@ -172,3 +172,41 @@ class duto_casadi:
 
         return vertcat(*dydt), alg
 
+    def compute_initial_algebraics(self, y0, u0, P2=8400, T2=300):
+        """
+        Calcula o chute inicial para as variáveis algébricas do compressor
+        com base nos estados diferenciais iniciais do duto.
+        """
+        # Extrair os primeiros nós (entrada do duto)
+        T1 = y0[0]          # T do primeiro nó
+        V1 = y0[1]          # V do primeiro nó
+        w1 = y0[2]          # velocidade do primeiro nó
+
+        # --- Chute inicial simplificado usando densidade ---
+        R = 8.314
+        MM = self.gas.mixture.MM_m
+        rho1 = 1 / V1        # já que V é volume específico
+        m_dot = rho1 * w1    # vazão mássica aproximada
+
+        # Temperatura e vazão na entrada e saída do compressor
+        Timp = T1
+        Vimp = V1
+        Tdif = T2
+        Vdif = m_dot / (P2 * MM / (R * T2))  # V = m_dot / rho2
+
+        # Chute para variáveis isentrópicas e reais (igual ao simples)
+        T2s = T2
+        V2s = Vdif
+        T2_real = T2
+        V2_real = Vdif
+        V1_out = Vdif
+
+        z0 = np.array([Timp, Vimp, Tdif, Vdif, T2s, V2s, T2_real, V2_real, V1_out])
+
+        # --- Opcional: passar pelo character_dae para consistência ---
+        z_input = [Timp, Vimp, Tdif, Vdif, T2s, V2s, T2_real, V2_real, V1_out]
+        u_input = [u0, m_dot, P2, T2]  # ajusta conforme sua entrada real
+        a3, a4, a5, a6, a7, a8, a9, a10, a11 = self.compressor.character_dae(z_input, u_input)
+
+        # Retorna z0 final consistente
+        return z0
