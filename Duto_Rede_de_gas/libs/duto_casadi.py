@@ -71,23 +71,19 @@ class duto_casadi:
         return deriv
 
     def evaluate_dae(self, t, y, z, u):
-        # --- Variáveis diferenciais ---
         T = [y[3*i + 0] for i in range(self.n_points)]
         V = [y[3*i + 1] for i in range(self.n_points)]
         w = [y[3*i + 2] for i in range(self.n_points)]
 
-        # --- Variáveis algébricas do compressor ---
         Timp = z[0]   # Temperatura na entrada do compressor
         Vimp = z[1]   # Vazão na entrada do compressor
         Tdif = z[2]   # Temperatura na saída do compressor
         Vdif = z[3]   # Vazão na saída do compressor
-        T2s  = z[4]   # Temperatura isentrópica
-        V2s  = z[5]   # Vazão isentrópica
-        T2   = z[6]   # Temperatura real
-        V2   = z[7]   # Vazão real
-        V1   = z[8]   # Vazão na entrada do duto
-
-        rot_comp = u[0]  # rotação do compressor
+        T2s  = z[4]   
+        V2s  = z[5]   
+        T2   = z[6]   
+        V2   = z[7]   
+        V1   = z[8]   
 
         # --- Avalia as equações do compressor ---
         # (usa as mesmas equações do compressor original)
@@ -100,7 +96,7 @@ class duto_casadi:
         
         a3, a4, a5, a6, a7, a8, a9, a10, a11 = self.compressor.character_dae(
             [Timp, Vimp, Tdif, Vdif, T2s, V2s, T2, V2, V1],
-            [rot_comp, (m_dot)/4, 8400, 300]   
+            [u[0], (m_dot)/4, u[1], u[2]]   
         )
 
         # P2 será a saída do compressor
@@ -171,42 +167,3 @@ class duto_casadi:
         alg = vertcat(a3, a4, a5, a6, a7, a8, a9, a10, a11)
 
         return vertcat(*dydt), alg
-
-    def compute_initial_algebraics(self, y0, u0, P2=8400, T2=300):
-        """
-        Calcula o chute inicial para as variáveis algébricas do compressor
-        com base nos estados diferenciais iniciais do duto.
-        """
-        # Extrair os primeiros nós (entrada do duto)
-        T1 = y0[0]          # T do primeiro nó
-        V1 = y0[1]          # V do primeiro nó
-        w1 = y0[2]          # velocidade do primeiro nó
-
-        # --- Chute inicial simplificado usando densidade ---
-        R = 8.314
-        MM = self.gas.mixture.MM_m
-        rho1 = 1 / V1        # já que V é volume específico
-        m_dot = rho1 * w1    # vazão mássica aproximada
-
-        # Temperatura e vazão na entrada e saída do compressor
-        Timp = T1
-        Vimp = V1
-        Tdif = T2
-        Vdif = m_dot / (P2 * MM / (R * T2))  # V = m_dot / rho2
-
-        # Chute para variáveis isentrópicas e reais (igual ao simples)
-        T2s = T2
-        V2s = Vdif
-        T2_real = T2
-        V2_real = Vdif
-        V1_out = Vdif
-
-        z0 = np.array([Timp, Vimp, Tdif, Vdif, T2s, V2s, T2_real, V2_real, V1_out])
-
-        # --- Opcional: passar pelo character_dae para consistência ---
-        z_input = [Timp, Vimp, Tdif, Vdif, T2s, V2s, T2_real, V2_real, V1_out]
-        u_input = [u0, m_dot, P2, T2]  # ajusta conforme sua entrada real
-        a3, a4, a5, a6, a7, a8, a9, a10, a11 = self.compressor.character_dae(z_input, u_input)
-
-        # Retorna z0 final consistente
-        return z0
