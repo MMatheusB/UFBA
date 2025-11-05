@@ -25,13 +25,9 @@ class duto:
     def fator_friccao(self, Re):
         
         # Zigrang & Sylvester (1982)
-        f = 0.25 * (
-            -4 * np.log10(
-                (self.e_D / (3.7 * self.D))
-                - (5.02 / Re) * np.log10(
-                    (self.e_D / (3.7 * self.D))
+        f = 0.25 * (-4 * np.log10((self.e_D / (3.7 * self.D))- (5.02 / Re) * np.log10((self.e_D / (3.7 * self.D))
                     - (5.02 / Re) * np.log10(
-                        (self.e_D / (3.7 * self.D)) + (13.0 / Re)
+                    (self.e_D / (3.7 * self.D)) + (13.0 / Re)
                     )
                 )
             )
@@ -40,27 +36,25 @@ class duto:
         return f
     
     def q_solo(self, Rho, T, U): 
-        return float((1/Rho) * (4*U/ self. D) * (self.T_solo - T))
+        #Chaczykowski(2010)
+        return float((1/Rho) * (4*U/ self. D) * (T - self.T_solo))
 
     def coef_cov_fluid(self, kappa, mu, Re, gas):
         P_r = (gas.Cpt*1000/gas.mixture.MM_m*mu)/kappa
         ft = (1.82*np.log10(Re) - 1.64)**(-2)
-        Nu = (ft/8)*(Re - 1000)*P_r/(1.07 + 12.7*((ft/8)**(0.5))*(P_r**(2/3) - 1))
-        h_t = Nu*kappa/self.D
+        Nu = ft*(Re - 1000)*P_r/(1.07 + 12.7*(ft**(0.5))*(P_r**(2/3) - 1))
+        h_t = (Nu*kappa/self.D)*1/8
         return float(h_t)
 
     def derivada_centrada(self, x, f, i):
 
-        h = x[1] - x[0]  # assume espaçamento uniforme
+        h = x[1] - x[0]  
     
         if i == 0:
-        # progressiva de 3 pontos (ordem 2)
             return (-3*f[0] + 4*f[1] - f[2]) / (x[2] - x[0])
         elif i == len(x) - 1:
-        # regressiva de 3 pontos (ordem 2)
             return (3*f[-1] - 4*f[-2] + f[-3]) / (x[-1] - x[-3])
         else:
-        # centrada de 3 pontos (ordem 2)
             return (f[i+1] - f[i-1]) / (x[i+1] - x[i-1])
 
 
@@ -80,7 +74,6 @@ class duto:
         dTdt = np.zeros_like(T)
         dVdt = np.zeros_like(V)
         dwdt = np.zeros_like(w)
-        #no inicio a derivada de T, V é 0(no tempo)
         for i in range(0, len(self.l)):
             gas2 = self.gas.copy_change_conditions(T[i], None, V[i], 'gas')
             v_kg = V[i]/gas2.mixture.MM_m
@@ -94,16 +87,17 @@ class duto:
             f = self.fator_friccao(Re) #fator de fricção.
 
             kappa = coef_con_ter(gas2)
-
+            #U e h_t => (BERGMAN et al., 2011)
+            
             h_t = self.coef_cov_fluid(kappa, mu, Re, gas2)
-
+            
             U = 1/((1/h_t) + (self.D/(2*self.k_solo))*(np.arccosh(2*self.z_solo/self.D)))
 
             q = self.q_solo(rho, T[i], U)
             #calor.
             dPdT = float(gas2.dPdT)*1000
             dPdV = float(gas2.dPdV)*1000
-
+            print(kappa)
             dT_dx = self.derivada_centrada(self.l, T, i)
             dV_dx = self.derivada_centrada(self.l, V, i)
             dw_dx = self.derivada_centrada(self.l, w, i)
@@ -119,7 +113,7 @@ class duto:
             ], dtype=float)
     
             matrix_b = np.array([
-            [f * w[i]**2 * abs(w[i]) / (2 * self.D * Cv) + q / Cv],
+            [-f * w[i]**2 * abs(w[i]) / (2 * self.D * Cv) + q / Cv],
             [0.0],
             [-f * w[i] * abs(w[i]) / (2 * self.D)]
             ], dtype=float)
@@ -133,7 +127,7 @@ class duto:
 
             if i == 0:
                 dTdt[i] = 0
-                dVdt[i] = 0 # permite w evoluir
+                dVdt[i] = 0 
             elif i == len(self.l) - 1:
                 dwdt[i] = 0
             
@@ -146,7 +140,7 @@ class duto:
         return dydt
     
     def estacionario(self, x, y):
-        T, V, w = map(float, y)  # garante que T, V, w são floats puros
+        T, V, w = map(float, y) 
     
         gas2 = self.gas.copy_change_conditions(T, None, V, 'gas')
         v_kg = float(V / gas2.mixture.MM_m)
@@ -160,13 +154,11 @@ class duto:
         kappa = float(coef_con_ter(gas2))
     
         h_t = self.coef_cov_fluid(kappa, mu, Re, gas2)
-        U = 1.0 / ((1.0 / h_t) + (self.D / (2 * self.k_solo)) * (np.arccosh(2 * self.z_solo / self.D)))
-        q = 0
-
-        
+        U = (1.0 / ((1.0 / h_t) + (self.D / (2 * self.k_solo)) * (np.arccosh(2 * self.z_solo / self.D))))
+        q = self.q_solo(rho, T, U)
         dPdT = float(gas2.dPdT)*1000
         dPdV = float(gas2.dPdV)*1000
-    
+        
         matrix_a = np.array([
             [-w, 0.0, -T * (v_kg * dPdT / Cv)],
             [0.0, -w, V],
@@ -174,7 +166,7 @@ class duto:
         ], dtype=float)
 
         matrix_b = np.array([
-            [f * w**2 * abs(w) / (2 * self.D * Cv) + q / Cv],
+            [f * w**2 * abs(w) / (2 * self.D * Cv) + (q) / Cv],
             [0.0],
             [-f * w * abs(w) / (2 * self.D)]
         ], dtype=float)
