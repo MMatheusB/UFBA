@@ -7,7 +7,7 @@ from libs.composicaogas import *
 
 
 class duto_casadi:
-    def __init__(self, gas, visc, Lc, compressor, D, n_points=15):
+    def __init__(self, gas, visc, Lc, compressor, D, n_points=21):
         self.visc = visc
         self.gas = gas
         self.Lc = Lc
@@ -88,6 +88,8 @@ class duto_casadi:
         rot = u[0] 
         P1 = u[1]
         T1 = u[2]
+        Q_final = u[3]
+
         A = np.pi * (self.D**2) / 4
 
         MM = self.gas.mixture.MM_m  # massa molar em kg/mol
@@ -98,9 +100,7 @@ class duto_casadi:
             [Timp, Vimp, Tdif, Vdif, T2s, V2s, T2, V2, V1],
             [rot, (m_dot)/4, P1, T1]   
         )
-        # --- Aplica   essas como condições de contorno do duto ---
-        # T[0] = T2   # Temperatura na entrada do duto = Temperatura de saída do compressor
-        # V[0] = V2 
+        w_final = Q_final/A
         dTdt, dVdt, dwdt = [], [], []
 
         for i in range(self.n_points):
@@ -151,7 +151,7 @@ class duto_casadi:
                 dTdt[i] = (T2 - T[i])
                 dVdt[i] = (V2 - V[i])
             elif i == self.n_points - 1:
-                dwdt[i] = SX(0)
+                dwdt[i] = (w_final - w[i])
 
         # Concatenar tudo
         dydt = []
