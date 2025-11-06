@@ -7,7 +7,7 @@ from libs.composicaogas import *
 
 
 class duto_casadi:
-    def __init__(self, gas, visc, Lc, compressor, D, n_points=21):
+    def __init__(self, gas, visc, Lc, compressor, D, n_points=15):
         self.visc = visc
         self.gas = gas
         self.Lc = Lc
@@ -29,10 +29,10 @@ class duto_casadi:
         """
         eD = self.e_D / self.D
         expr = -4 * log10(eD / 3.7 - 5.02 / Re * log10(eD / 3.7 - 5.02 / Re * log10(eD / 3.7 + 13 / Re)))
-        return 0.25 * (expr)**(-2)
+        return 4 * (expr)**(-2)
 
     def q_solo(self, Rho, T, U):
-        return (1 / Rho) * (4 * U / self.D) * (T - self.T_solo)
+        return (1 / Rho) * (4 * U / self.D) * (self.T_solo - T)
 
     def coef_cov_fluid(self, kappa, mu, Re, gas):
         Pr = (gas.Cpt * 1000 / gas.mixture.MM_m * mu) / kappa
@@ -84,29 +84,23 @@ class duto_casadi:
         T2   = z[6]   
         V2   = z[7]   
         V1   = z[8]   
-
-        # --- Avalia as equações do compressor ---
-        # (usa as mesmas equações do compressor original)
+        
+        rot = u[0] 
+        P1 = u[1]
+        T1 = u[2]
         A = np.pi * (self.D**2) / 4
 
         MM = self.gas.mixture.MM_m  # massa molar em kg/mol
         v_kg = V[0] / MM
         rho = 1 / v_kg
         m_dot = rho * A * w[0]
-        
         a3, a4, a5, a6, a7, a8, a9, a10, a11 = self.compressor.character_dae(
             [Timp, Vimp, Tdif, Vdif, T2s, V2s, T2, V2, V1],
-            [u[0], (m_dot)/4, u[1], u[2]]   
+            [rot, (m_dot)/4, P1, T1]   
         )
-
-        # P2 será a saída do compressor
-        T2 = a9
-        V2 = a10
-
-        # --- Aplica essas como condições de contorno do duto ---
-        T[0] = T2
-        V[0] = V2
-
+        # --- Aplica   essas como condições de contorno do duto ---
+        # T[0] = T2   # Temperatura na entrada do duto = Temperatura de saída do compressor
+        # V[0] = V2 
         dTdt, dVdt, dwdt = [], [], []
 
         for i in range(self.n_points):
@@ -154,8 +148,8 @@ class duto_casadi:
 
             # Condições de fronteira
             if i == 0:
-                dTdt[i] = SX(0)
-                dVdt[i] = SX(0)
+                dTdt[i] = (T2 - T[i])
+                dVdt[i] = (V2 - V[i])
             elif i == self.n_points - 1:
                 dwdt[i] = SX(0)
 
@@ -167,3 +161,56 @@ class duto_casadi:
         alg = vertcat(a3, a4, a5, a6, a7, a8, a9, a10, a11)
 
         return vertcat(*dydt), alg
+    
+    def estacionario(self, x, y):
+        """
+        Implementação simbólica da EDO estacionária para o duto.
+        Entradas:
+            x : MX (posição)
+            y : MX [T, V, w]
+        Saída:
+            [dTdx, dVdx, dwdx] como MX
+        """
+        T, V, w = y[0], y[1], y[2]
+
+        # Copia o gás e atualiza as condições
+        gas2 = self.gas.copy_change_conditions(T, None, V, 'gas')
+        v_kg = V / gas2.mixture.MM_m
+        rho = 1 / v_kg
+        gas2.ci_real()
+
+        Cv = gas2.Cvt / gas2.mixture.MM_m * 1000
+        mu = self.visc.evaluate_viscosity(T, gas2.P)
+        Re = rho * w * self.D / mu
+
+        # Fator de fricção
+        f = self.fator_friccao(Re)
+        kappa = coef_con_ter(gas2)
+        h_t = self.coef_cov_fluid(kappa, mu, Re, gas2)
+        U = 1 / ((1 / h_t) + (self.D / (2 * self.k_solo)) * arccosh(2 * self.z_solo / self.D))
+        q = self.q_solo(rho, T, U)
+
+        dPdT = gas2.dPdT * 1000
+        dPdV = gas2.dPdV * 1000
+
+        # Matriz A e vetor b simbólicos
+        A = vertcat(
+            horzcat(-w, 0, -T * (v_kg * dPdT / Cv)),
+            horzcat(0, -w, V),
+            horzcat(-v_kg * dPdT, -v_kg * dPdV, -w)
+        )
+
+        b = vertcat(
+            f * w**2 * fabs(w) / (2 * self.D * Cv) + q / Cv,
+            0,
+            -f * w * fabs(w) / (2 * self.D)
+        )
+
+        # Sistema linear A * [dTdx, dVdx, dwdx] = -b
+        deriv = -inv(A) @ b
+
+        dTdx = deriv[0]
+        dVdx = deriv[1]
+        dwdx = deriv[2]
+
+        return vertcat(dTdx, dVdx, dwdx)
