@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2025.9.16)  1 OCT 2025 23:36
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2025.9.16)  8 NOV 2025 17:36
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1211,47 +1211,36 @@ Package pdflscape Info: Auto-detected driver: pdftex on input line 81.
 )) (./main.nav) [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}{/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-t1.enc}] (./content/introduction.tex
-LaTeX Font Info:    Trying to load font information for U+fontawesomethree on input line 17.
- (/usr/share/texlive/texmf-dist/tex/latex/fontawesome/ufontawesomethree.fd
-File: ufontawesomethree.fd 2016/05/22 Font definitions for U/fontawesomethree.
-)
-LaTeX Font Info:    Trying to load font information for U+fontawesometwo on input line 17.
- (/usr/share/texlive/texmf-dist/tex/latex/fontawesome/ufontawesometwo.fd
-File: ufontawesometwo.fd 2016/05/22 Font definitions for U/fontawesometwo.
-) [2
-
-{/usr/share/texlive/texmf-dist/fonts/enc/dvips/fontawesome/fontawesomethree.enc}{/usr/share/texlive/texmf-dist/fonts/enc/dvips/fontawesome/fontawesometwo.enc}] [3
-
-]) (./content/metodo.tex [4
-
-] [5
-
-]
-LaTeX Font Info:    Trying to load font information for U+msa on input line 46.
- (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
-File: umsa.fd 2013/01/14 v3.01 AMS symbols A
-)
-LaTeX Font Info:    Trying to load font information for U+msb on input line 46.
- (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
-File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
-LaTeX Font Info:    Trying to load font information for OT1+mathkerncmss on input line 46.
- (/usr/share/texlive/texmf-dist/tex/latex/sansmathaccent/ot1mathkerncmss.fd
-File: ot1mathkerncmss.fd 2020/01/31 Fontinst v1.933 font definitions for OT1/mathkerncmss.
-) [6
-
-]
-<Figures/math2sim.jpg, id=174, 532.99126pt x 319.1925pt>
+<Figures/math2sim.jpg, id=60, 532.99126pt x 319.1925pt>
 File: Figures/math2sim.jpg Graphic file (type jpg)
 <use Figures/math2sim.jpg>
-Package pdftex.def Info: Figures/math2sim.jpg  used on input line 62.
-(pdftex.def)             Requested size: 173.39096pt x 103.83861pt.
-LaTeX Font Info:    Trying to load font information for TS1+cmss on input line 62.
- (/usr/share/texlive/texmf-dist/tex/latex/base/ts1cmss.fd
-File: ts1cmss.fd 2023/04/13 v2.5m Standard LaTeX font definitions
-) [7
+Package pdftex.def Info: Figures/math2sim.jpg  used on input line 6.
+(pdftex.def)             Requested size: 260.09306pt x 155.76765pt.
+ [2
 
-{/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-ts1.enc} <./Figures/math2sim.jpg>]) (./content/conclusion.tex)
+ <./Figures/math2sim.jpg>] [3
+
+]
+LaTeX Font Info:    Trying to load font information for U+fontawesometwo on input line 31.
+ (/usr/share/texlive/texmf-dist/tex/latex/fontawesome/ufontawesometwo.fd
+File: ufontawesometwo.fd 2016/05/22 Font definitions for U/fontawesometwo.
+) [4
+
+{/usr/share/texlive/texmf-dist/fonts/enc/dvips/fontawesome/fontawesometwo.enc}]) (./content/metodo.tex
+LaTeX Font Info:    Trying to load font information for U+fontawesomethree on input line 18.
+ (/usr/share/texlive/texmf-dist/tex/latex/fontawesome/ufontawesomethree.fd
+File: ufontawesomethree.fd 2016/05/22 Font definitions for U/fontawesomethree.
+) [5
+
+{/usr/share/texlive/texmf-dist/fonts/enc/dvips/fontawesome/fontawesomethree.enc}] [6
+
+] [7
+
+]) (./content/conclusion.tex [8
+
+] [9
+
+]
 \tf@nav=\write7
 \openout7 = `main.nav'.
 
@@ -1267,24 +1256,24 @@ LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-22>
  ***********
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 6BBAF22E99B1A00D65D2B81DBD51F856;197.
+(rerunfilecheck)             Checksum: 8A553C259EDF615790FE53925E423826;811.
 Package logreq Info: Writing requests to 'main.run.xml'.
 \openout1 = `main.run.xml'.
 
- ) 
+ ) ) 
 Here is how much of TeX's memory you used:
- 39418 strings out of 474222
- 794703 string characters out of 5748733
- 1938975 words of memory out of 5000000
- 60882 multiletter control sequences out of 15000+600000
- 580832 words of font info for 87 fonts, out of 8000000 for 9000
+ 39401 strings out of 474222
+ 794846 string characters out of 5748733
+ 1937975 words of memory out of 5000000
+ 60896 multiletter control sequences out of 15000+600000
+ 570123 words of font info for 54 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  128i,14n,123p,763b,1641s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</usr/share/texlive/texmf-dist/fonts/type1/public/fontawesome/FontAwesome.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsi1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss0600.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss0900.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss1440.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsx1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsx1440.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsx2074.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsx2488.pfb>
-Output written on main.pdf (7 pages, 199814 bytes).
+</usr/share/texlive/texmf-dist/fonts/type1/public/fontawesome/FontAwesome.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsi1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsi1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfso1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss0600.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss0900.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsx1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsx1440.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsx2074.pfb>
+Output written on main.pdf (9 pages, 212474 bytes).
 PDF statistics:
- 251 PDF objects out of 1000 (max. 8388607)
- 151 compressed objects within 2 object streams
- 17 named destinations out of 1000 (max. 500000)
- 398 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 323 PDF objects out of 1000 (max. 8388607)
+ 197 compressed objects within 2 object streams
+ 25 named destinations out of 1000 (max. 500000)
+ 580 words of extra memory for PDF output out of 10000 (max. 10000000)
 

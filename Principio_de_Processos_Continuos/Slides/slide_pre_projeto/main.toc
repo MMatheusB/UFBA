@@ -1,3 +1,7 @@
 \babel@toc {brazilian}{}\relax 
 \beamer@sectionintoc {1}{Introdução}{2}{0}{1}
-\beamer@sectionintoc {2}{Metodologia}{4}{0}{2}
+\beamer@sectionintoc {2}{Etapas Concluídas}{5}{0}{2}
+\beamer@sectionintoc {3}{Ferramentas Utilizadas}{6}{0}{3}
+\beamer@sectionintoc {4}{Desafios e Aprendizados}{7}{0}{4}
+\beamer@sectionintoc {5}{Próximas Etapas}{8}{0}{5}
+\beamer@sectionintoc {6}{Conclusão Parcial}{9}{0}{6}
