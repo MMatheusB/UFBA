@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Dec 19 17:08:19 2024
-
-@author: Rodrigo Meira
-"""
-
 from libs.eos_database import *
 from libs.compressor_class import *
 from libs.compression import *

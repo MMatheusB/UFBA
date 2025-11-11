@@ -32,7 +32,8 @@ class duto_casadi:
         return 4 * (expr)**(-2)
 
     def q_solo(self, Rho, T, U):
-        return (1 / Rho) * (4 * U / self.D) * (self.T_solo - T)
+        # return (1 / Rho) * (4 * U / self.D) * (self.T_solo - T)
+        return 0
 
     def coef_cov_fluid(self, kappa, mu, Re, gas):
         Pr = (gas.Cpt * 1000 / gas.mixture.MM_m * mu) / kappa

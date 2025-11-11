@@ -1,0 +1,13 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_3/media/videos/pend/1080p60/partial_movie_files/PenduloGraficoNaoLinear/3529212410_3315238620_223132457.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_3/media/videos/pend/1080p60/partial_movie_files/PenduloGraficoNaoLinear/3040924799_4217992463_842236052.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_3/media/videos/pend/1080p60/partial_movie_files/PenduloGraficoNaoLinear/3040924799_1335444057_1666396817.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_3/media/videos/pend/1080p60/partial_movie_files/PenduloGraficoNaoLinear/3040924799_3394500337_2863814414.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_3/media/videos/pend/1080p60/partial_movie_files/PenduloGraficoNaoLinear/3040924799_2519277722_3299136348.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_3/media/videos/pend/1080p60/partial_movie_files/PenduloGraficoNaoLinear/3040924799_3394500337_1234563410.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_3/media/videos/pend/1080p60/partial_movie_files/PenduloGraficoNaoLinear/3040924799_631205811_212055976.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_3/media/videos/pend/1080p60/partial_movie_files/PenduloGraficoNaoLinear/3040924799_3394500337_1216944961.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_3/media/videos/pend/1080p60/partial_movie_files/PenduloGraficoNaoLinear/3040924799_3417461788_1231704615.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_3/media/videos/pend/1080p60/partial_movie_files/PenduloGraficoNaoLinear/3040924799_2552855209_2927053618.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_3/media/videos/pend/1080p60/partial_movie_files/PenduloGraficoNaoLinear/3040924799_3782745535_451827.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_3/media/videos/pend/1080p60/partial_movie_files/PenduloGraficoNaoLinear/3040924799_4217992463_90150494.mp4'

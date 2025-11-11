@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2025.9.16)  8 NOV 2025 17:36
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2025.9.16)  10 NOV 2025 13:16
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1262,18 +1262,18 @@ Package logreq Info: Writing requests to 'main.run.xml'.
 
  ) ) 
 Here is how much of TeX's memory you used:
- 39401 strings out of 474222
- 794846 string characters out of 5748733
+ 39395 strings out of 474222
+ 794581 string characters out of 5748733
  1937975 words of memory out of 5000000
- 60896 multiletter control sequences out of 15000+600000
+ 60890 multiletter control sequences out of 15000+600000
  570123 words of font info for 54 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  128i,14n,123p,763b,1641s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/fontawesome/FontAwesome.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsi1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsi1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfso1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss0600.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss0900.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsx1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsx1440.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsx2074.pfb>
-Output written on main.pdf (9 pages, 212474 bytes).
+Output written on main.pdf (9 pages, 209982 bytes).
 PDF statistics:
- 323 PDF objects out of 1000 (max. 8388607)
- 197 compressed objects within 2 object streams
+ 311 PDF objects out of 1000 (max. 8388607)
+ 191 compressed objects within 2 object streams
  25 named destinations out of 1000 (max. 500000)
- 580 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 544 words of extra memory for PDF output out of 10000 (max. 10000000)
 

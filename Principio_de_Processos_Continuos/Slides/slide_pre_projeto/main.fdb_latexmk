@@ -1,12 +1,12 @@
 # Fdb version 4
-["biber main"] 0 "main.bcf" "main.bbl" "main" 1762634199.38286 -1
-  "main.bcf" 1762634199.27738 107408 2fcb92199e14a56fefa2aaf7b1802edd "pdflatex"
+["biber main"] 0 "main.bcf" "main.bbl" "main" 1762791415.81753 -1
+  "main.bcf" 1762791415.71378 107408 2fcb92199e14a56fefa2aaf7b1802edd "pdflatex"
   "referencias.bib" 1759003920.54979 0 d41d8cd98f00b204e9800998ecf8427e ""
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1762634197.86604 "/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/Slides/slide_pre_projeto/main.tex" "main.pdf" "main" 1762634199.38318 0
+["pdflatex"] 1762791414.36446 "/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/Slides/slide_pre_projeto/main.tex" "main.pdf" "main" 1762791415.81777 0
   "/etc/texmf/web2c/texmf.cnf" 1758044847.69842 475 c0e671620eb5563b2130f56340a5fde8 ""
   "/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/Slides/slide_pre_projeto/main.tex" 1762633909.48906 798 f83c3bafd835a4542c67b2f83d26e3f0 ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/fontawesome/fontawesomethree.enc" 1463430686 2437 443c81fb50993bacedc5f9a206c322b0 ""
@@ -292,14 +292,14 @@
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1758044869.48449 5472669 54eaf61a88b6b7896ebd0dac973cb29c ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1758044907 8212700 d02191bab0c21488c6459bde99ef313b ""
   "Figures/math2sim.jpg" 1759372413.60866 12589 0ca57ec38fed22b50eaca11bc3a591f3 ""
-  "content/conclusion.tex" 1762633998.09303 991 de449f92d94a3c8de8b35f75ed40ef20 ""
+  "content/conclusion.tex" 1762791414.15839 714 c9321d80747d1b668ede70e80e461178 ""
   "content/introduction.tex" 1762634196.16569 1277 ce10ddac129b423f026f0a102efc1b46 ""
-  "content/metodo.tex" 1762633966.52999 1971 7ce8fbf9fc380fa415366149f1847aca ""
-  "main.aux" 1762634199.27305 3565 2127e39fcb23742b384be4b25c82aa76 "pdflatex"
+  "content/metodo.tex" 1762791356.37963 1960 2e69ef4dbf88f4e786e2291b321e1ac8 ""
+  "main.aux" 1762791415.70976 3565 2127e39fcb23742b384be4b25c82aa76 "pdflatex"
   "main.bbl" 1762633911.85533 466 ee04f40f768daeed26442158e95aba61 "biber main"
-  "main.nav" 1762634199.27738 2021 51a6d7ad5f2d4f68f0181ee9c8a0560e "pdflatex"
-  "main.out" 1762634199.27305 811 8a553c259edf615790fe53925e423826 "pdflatex"
-  "main.run.xml" 1762634199.27738 2345 6a996a4458e7ecf2f0989aa8f4d40e9e "pdflatex"
+  "main.nav" 1762791415.71378 2021 51a6d7ad5f2d4f68f0181ee9c8a0560e "pdflatex"
+  "main.out" 1762791415.70976 811 8a553c259edf615790fe53925e423826 "pdflatex"
+  "main.run.xml" 1762791415.71378 2345 6a996a4458e7ecf2f0989aa8f4d40e9e "pdflatex"
   "main.tex" 1762633909.48906 798 f83c3bafd835a4542c67b2f83d26e3f0 ""
   "style.tex" 1762633780.0336 1683 48b72bf70ccd716abb64162b23557259 ""
   (generated)

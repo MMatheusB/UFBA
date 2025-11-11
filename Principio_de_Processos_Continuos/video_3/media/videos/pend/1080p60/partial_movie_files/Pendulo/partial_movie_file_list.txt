@@ -1,0 +1,2 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_3/media/videos/pend/1080p60/partial_movie_files/Pendulo/3529212410_2478584755_815511913.mp4'

@@ -212,12 +212,13 @@ class PenduloEquacoes(Scene):
         self.play(FadeOut(title), FadeOut(eq_final), FadeOut(outro))
         self.wait(1)
 
+
 class PenduloGraficoNaoLinear(Scene):
     def construct(self):
         # --- Parâmetros físicos ---
         L = 2.0       # comprimento (m)
         g = 9.81      # gravidade (m/s²)
-        theta0 = 0.8  # ângulo inicial (rad) -> um pouco maior pra mostrar não linearidade
+        theta0 = 0.8  # ângulo inicial (rad)
         omega0 = 0.0  # velocidade angular inicial
 
         # --- Equação diferencial ---
@@ -229,15 +230,15 @@ class PenduloGraficoNaoLinear(Scene):
 
         # --- Solução numérica ---
         t_span = (0, 10)
-        t_eval = np.linspace(*t_span, 100)
+        t_eval = np.linspace(*t_span, 300)
         sol = solve_ivp(pendulo, t_span, [theta0, omega0], t_eval=t_eval)
         t_vals = sol.t
         theta_vals = sol.y[0]
 
         # --- Título ---
-        title = Text("Evolução Temporal do Ângulo (Modelo Não Linear)", font_size=38, color=BLUE).to_edge(UP)
+        title = Text("Evolução Temporal do Ângulo", font_size=38, color=BLUE).to_edge(UP)
         self.play(Write(title))
-        self.wait(1.2)
+        self.wait(1)
 
         # --- Eixos ---
         axes = Axes(
@@ -248,44 +249,45 @@ class PenduloGraficoNaoLinear(Scene):
             axis_config={"include_tip": True},
         ).shift(DOWN * 0.5)
         labels = axes.get_axis_labels("t (s)", r"\theta(t) (rad)")
-
         self.play(Create(axes), Write(labels))
         self.wait(0.5)
 
-        # --- Gráfico ---
-        graph = axes.plot_line_graph(
+        # --- Gráfico base ---
+        full_graph = axes.plot_line_graph(
             x_values=t_vals,
             y_values=theta_vals,
-            line_color=YELLOW,
+            line_color=GRAY,
+            stroke_width=2
         )
+        self.play(Create(full_graph), run_time=1.5)
+        self.wait(0.5)
 
-        # --- Ponto em movimento e trilha ---
+        # --- Gráfico em tempo real ---
+        trace = VMobject(color=YELLOW, stroke_width=4)
+        trace.set_points_as_corners([axes.c2p(t_vals[0], theta_vals[0])])
         dot = Dot(color=RED).move_to(axes.c2p(t_vals[0], theta_vals[0]))
-        trace = VMobject(color=YELLOW)
-        trace.set_points_as_corners([dot.get_center(), dot.get_center()])
+
         self.add(trace, dot)
 
-        # --- Atualização dinâmica ---
-        def update_dot_and_trace(mob, alpha):
+        def update_trace(mob, alpha):
             idx = int(alpha * (len(t_vals) - 1))
-            new_point = axes.c2p(t_vals[idx], theta_vals[idx])
-            dot.move_to(new_point)
-            last_point = trace.points[-1]
-            if np.linalg.norm(new_point - last_point) > 0.001:
-                new_points = np.vstack([trace.points, new_point])
-                trace.set_points_as_corners(new_points)
+            if idx < 1:
+                idx = 1
+            new_points = [axes.c2p(t_vals[i], theta_vals[i]) for i in range(idx)]
+            trace.set_points_as_corners(new_points)
+            dot.move_to(new_points[-1])
 
-        # --- Animação do ponto percorrendo o gráfico ---
-        self.play(UpdateFromAlphaFunc(dot, update_dot_and_trace), run_time=8, rate_func=linear)
+        # --- Animação principal ---
+        self.play(UpdateFromAlphaFunc(trace, update_trace), run_time=8, rate_func=linear)
+        self.wait(0.5)
 
         outro = Text(
-            "Observe que o movimento não é perfeitamente harmônico — \ncaracterística do modelo não linear.",
+            "Modelo simulado",
             font_size=24
         ).next_to(axes, DOWN, buff=0.8)
         self.play(Write(outro))
         self.wait(3)
 
         # --- Encerramento ---
-        self.play(FadeOut(dot), FadeOut(trace), FadeOut(graph), FadeOut(axes), FadeOut(labels), FadeOut(title), FadeOut(outro))
+        self.play(*[FadeOut(mob) for mob in [dot, trace, axes, labels, title, outro, full_graph]])
         self.wait(1)
-
