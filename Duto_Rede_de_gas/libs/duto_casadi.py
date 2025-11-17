@@ -71,6 +71,28 @@ class duto_casadi:
             deriv += f_sub[j] * Lj_deriv
         return deriv
 
+    def evaluate_alg(self, T_in, V_in, w_in, w_aspas, V_aspas, T_aspas):
+        A = np.pi * (self.D**2) / 4
+        MM = self.gas.mixture.MM_m  # massa molar em kg/mol
+        v_kg = V_in / MM
+        rho = 1 / v_kg
+        m_dot_final = rho * A * w_in
+        v_kg_aspas = V_aspas / MM
+        rho_aspas = 1 / v_kg_aspas
+        m_dot_aspas = rho_aspas * A * w_aspas
+        ag1 = m_dot_final * (self.gas.h - self.gas.h) + T_in * self.gas.dPdT * V_in* (m_dot_final - m_dot_aspas)
+        gas_in = self.gas.copy_change_conditions(T_in, None, V_in, 'gas')
+        gas_aspas = self.gas.copy_change_conditions(T_aspas, None, V_aspas, 'gas')
+        ag2 = gas_in.P - gas_aspas.P
+        ag3 = m_dot_final - m_dot_aspas
+        
+        return  ag1, ag2, ag3
+
+
+
+
+
+
     def evaluate_dae(self, t, y, z, u):
         T = [y[3*i + 0] for i in range(self.n_points)]
         V = [y[3*i + 1] for i in range(self.n_points)]
@@ -85,7 +107,11 @@ class duto_casadi:
         T2   = z[6]   
         V2   = z[7]   
         V1   = z[8]   
-        
+        T_aspas = z[9]
+        V_aspas = z[10]
+        w_aspas = z[11]
+
+
         rot = u[0] 
         P1 = u[1]
         T1 = u[2]
@@ -103,7 +129,6 @@ class duto_casadi:
         )
         w_final = Q_final/A
         dTdt, dVdt, dwdt = [], [], []
-
         for i in range(self.n_points):
             # Atualiza propriedades do gás
             gas2 = self.gas.copy_change_conditions(T[i], None, V[i], 'gas')
@@ -160,6 +185,101 @@ class duto_casadi:
             dydt += [dTdt[i], dVdt[i], dwdt[i]]
         
         alg = vertcat(a3, a4, a5, a6, a7, a8, a9, a10, a11)
+
+        return vertcat(*dydt), alg
+    def evaluate_dae(self, t, y, z, u):
+        T = [y[3*i + 0] for i in range(self.n_points)]
+        V = [y[3*i + 1] for i in range(self.n_points)]
+        w = [y[3*i + 2] for i in range(self.n_points)]
+
+        Timp = z[0]   # Temperatura na entrada do compressor
+        Vimp = z[1]   # Vazão na entrada do compressor
+        Tdif = z[2]   # Temperatura na saída do compressor
+        Vdif = z[3]   # Vazão na saída do compressor
+        T2s  = z[4]   
+        V2s  = z[5]   
+        T2   = z[6]   
+        V2   = z[7]   
+        V1   = z[8]   
+        T_aspas = z[9]
+        V_aspas = z[10]
+        w_aspas = z[11]
+
+
+        rot = u[0] 
+        P1 = u[1]
+        T1 = u[2]
+        Q_final = u[3]
+
+        A = np.pi * (self.D**2) / 4
+
+        MM = self.gas.mixture.MM_m  # massa molar em kg/mol
+        v_kg = V[0] / MM
+        rho = 1 / v_kg
+        m_dot = rho * A * w[0]
+        a3, a4, a5, a6, a7, a8, a9, a10, a11 = self.compressor.character_dae(
+            [Timp, Vimp, Tdif, Vdif, T2s, V2s, T2, V2, V1],
+            [rot, (m_dot)/4, P1, T1]   
+        )
+        a12, a13, a14 = self.evaluate_alg(T[-1], V[-1],w[-1], w_aspas, V_aspas, T_aspas)
+        w_final = Q_final/A
+        dTdt, dVdt, dwdt = [], [], []
+        for i in range(self.n_points):
+            # Atualiza propriedades do gás
+            gas2 = self.gas.copy_change_conditions(T[i], None, V[i], 'gas')
+            v_kg = V[i] / gas2.mixture.MM_m
+            rho = 1 / v_kg
+            gas2.ci_real()
+            Cv = gas2.Cvt / gas2.mixture.MM_m * 1000
+            mu = self.visc.evaluate_viscosity(T[i], gas2.P)
+            Re = rho * w[i] * self.D / mu
+            f = self.fator_friccao(Re)
+            kappa = coef_con_ter(gas2)
+            h_t = self.coef_cov_fluid(kappa, mu, Re, gas2)
+            U = 1 / ((1 / h_t) + (self.D / (2 * self.k_solo)) * arccosh(2 * self.z_solo / self.D))
+            q = self.q_solo(rho, T[i], U)
+            dPdT = gas2.dPdT * 1000
+            dPdV = gas2.dPdV * 1000
+
+            # Derivadas espaciais
+            dT_dx = self.derivada_centrada(self.l, T, i)
+            dV_dx = self.derivada_centrada(self.l, V, i)
+            dw_dx = self.derivada_centrada(self.l, w, i)
+
+            # Matriz A simbólica
+            A = vertcat(
+                horzcat(-w[i], 0, -T[i] * (v_kg * dPdT / Cv)),
+                horzcat(0, -w[i], V[i]),
+                horzcat(-v_kg * dPdT, -v_kg * dPdV, -w[i])
+            )
+
+            dx = vertcat(dT_dx, dV_dx, dw_dx)
+
+            b = vertcat(
+                f * w[i]**2 * fabs(w[i]) / (2 * self.D * Cv) + q / Cv,
+                SX(0),
+                -f * w[i] * fabs(w[i]) / (2 * self.D)
+            )
+
+            result = A @ dx + b
+
+            dTdt.append(result[0])
+            dVdt.append(result[1])
+            dwdt.append(result[2])
+
+            # Condições de fronteira
+            if i == 0:
+                dTdt[i] = (T2 - T[i])
+                dVdt[i] = (V2 - V[i])
+            elif i == self.n_points - 1:
+                dwdt[i] = (w_final - w[i])
+
+        # Concatenar tudo
+        dydt = []
+        for i in range(self.n_points):
+            dydt += [dTdt[i], dVdt[i], dwdt[i]]
+        
+        alg = vertcat(a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14)
 
         return vertcat(*dydt), alg
     
