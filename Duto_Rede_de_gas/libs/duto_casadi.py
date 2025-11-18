@@ -88,11 +88,6 @@ class duto_casadi:
         
         return  ag1, ag2, ag3
 
-
-
-
-
-
     def evaluate_dae(self, t, y, z, u):
         T = [y[3*i + 0] for i in range(self.n_points)]
         V = [y[3*i + 1] for i in range(self.n_points)]
@@ -107,9 +102,6 @@ class duto_casadi:
         T2   = z[6]   
         V2   = z[7]   
         V1   = z[8]   
-        T_aspas = z[9]
-        V_aspas = z[10]
-        w_aspas = z[11]
 
 
         rot = u[0] 
@@ -187,29 +179,40 @@ class duto_casadi:
         alg = vertcat(a3, a4, a5, a6, a7, a8, a9, a10, a11)
 
         return vertcat(*dydt), alg
-    def evaluate_dae(self, t, y, z, u):
-        T = [y[3*i + 0] for i in range(self.n_points)]
-        V = [y[3*i + 1] for i in range(self.n_points)]
-        w = [y[3*i + 2] for i in range(self.n_points)]
+    
+    def evaluate_dae_duto2(self, t, y, z, u):
+        T = [y[3*i + 0] for i in range(self.n_points * 2)]
+        V = [y[3*i + 1] for i in range(self.n_points * 2)]
+        w = [y[3*i + 2] for i in range(self.n_points * 2)]
 
-        Timp = z[0]   # Temperatura na entrada do compressor
-        Vimp = z[1]   # Vazão na entrada do compressor
-        Tdif = z[2]   # Temperatura na saída do compressor
-        Vdif = z[3]   # Vazão na saída do compressor
-        T2s  = z[4]   
-        V2s  = z[5]   
-        T2   = z[6]   
-        V2   = z[7]   
-        V1   = z[8]   
+        Timp_1 = z[0]   # Temperatura na entrada do compressor
+        Vimp_1 = z[1]   # Vazão na entrada do compressor
+        Tdif_1 = z[2]   # Temperatura na saída do compressor
+        Vdif_1 = z[3]   # Vazão na saída do compressor
+        T2s_1 = z[4]   
+        V2s_1 = z[5]   
+        T2_1 = z[6]   
+        V2_1 = z[7]   
+        V1_1 = z[8]   
         T_aspas = z[9]
         V_aspas = z[10]
         w_aspas = z[11]
-
-
+        Timp_2 = z[12]   # Temperatura na entrada do compressor
+        Vimp_2 = z[13]   # Vazão na entrada do compressor
+        Tdif_2 = z[14]   # Temperatura na saída do compressor
+        Vdif_2 = z[15]   # Vazão na saída do compressor
+        T2s_2 = z[16]   
+        V2s_2 = z[17]   
+        T2_2 = z[18]   
+        V2_2 = z[19]   
+        V1_2 = z[20]
+        
         rot = u[0] 
         P1 = u[1]
         T1 = u[2]
-        Q_final = u[3]
+        P_duto = u[3]
+        rot2 = u[4]
+        Q_final = u[5]
 
         A = np.pi * (self.D**2) / 4
 
@@ -218,7 +221,7 @@ class duto_casadi:
         rho = 1 / v_kg
         m_dot = rho * A * w[0]
         a3, a4, a5, a6, a7, a8, a9, a10, a11 = self.compressor.character_dae(
-            [Timp, Vimp, Tdif, Vdif, T2s, V2s, T2, V2, V1],
+            [Timp_1, Vimp_1, Tdif_1, Vdif_1, T2s_1, V2s_1, T2_1, V2_1, V1_1],
             [rot, (m_dot)/4, P1, T1]   
         )
         a12, a13, a14 = self.evaluate_alg(T[-1], V[-1],w[-1], w_aspas, V_aspas, T_aspas)
@@ -242,9 +245,9 @@ class duto_casadi:
             dPdV = gas2.dPdV * 1000
 
             # Derivadas espaciais
-            dT_dx = self.derivada_centrada(self.l, T, i)
-            dV_dx = self.derivada_centrada(self.l, V, i)
-            dw_dx = self.derivada_centrada(self.l, w, i)
+            dT_dx = self.derivada_centrada(self.l, T[:self.n_points+1], i)
+            dV_dx = self.derivada_centrada(self.l, V[:self.n_points+1], i)
+            dw_dx = self.derivada_centrada(self.l, w[:self.n_points+1], i)
 
             # Matriz A simbólica
             A = vertcat(
@@ -269,17 +272,75 @@ class duto_casadi:
 
             # Condições de fronteira
             if i == 0:
-                dTdt[i] = (T2 - T[i])
-                dVdt[i] = (V2 - V[i])
+                dTdt[i] = (T2_1 - T[i])
+                dVdt[i] = (V2_1 - V[i])
             elif i == self.n_points - 1:
                 dwdt[i] = (w_final - w[i])
+        
+        v_kg = V[self.n_points] / MM
+        rho = 1 / v_kg
+        m_dot = rho * A * w[self.n_points]
+        gas_temp = self.gas.copy_change_conditions(T_aspas, None, V_aspas, 'gas')
 
+        a15, a16, a17, a18, a19, a20, a21, a22, a23 = self.compressor.character_dae(
+            [Timp_2, Vimp_2, Tdif_2, Vdif_2, T2s_2, V2s_2, T2_2, V2_2, V1_2],
+            [rot2, (m_dot)/4, gas_temp.P, T_aspas]
+        )
+        for i in range(self.n_points):
+            # Atualiza propriedades do gás
+            gas2 = self.gas.copy_change_conditions(T[i], None, V[i], 'gas')
+            v_kg = V[i] / gas2.mixture.MM_m
+            rho = 1 / v_kg
+            gas2.ci_real()
+            Cv = gas2.Cvt / gas2.mixture.MM_m * 1000
+            mu = self.visc.evaluate_viscosity(T[i], gas2.P)
+            Re = rho * w[i] * self.D / mu
+            f = self.fator_friccao(Re)
+            kappa = coef_con_ter(gas2)
+            h_t = self.coef_cov_fluid(kappa, mu, Re, gas2)
+            U = 1 / ((1 / h_t) + (self.D / (2 * self.k_solo)) * arccosh(2 * self.z_solo / self.D))
+            q = self.q_solo(rho, T[i], U)
+            dPdT = gas2.dPdT * 1000
+            dPdV = gas2.dPdV * 1000
+
+            # Derivadas espaciais
+            dT_dx = self.derivada_centrada(self.l, T[self.n_points:], i)
+            dV_dx = self.derivada_centrada(self.l, V[self.n_points:], i)
+            dw_dx = self.derivada_centrada(self.l, w[self.n_points:], i)
+
+            # Matriz A simbólica
+            A = vertcat(
+                horzcat(-w[i], 0, -T[i] * (v_kg * dPdT / Cv)),
+                horzcat(0, -w[i], V[i]),
+                horzcat(-v_kg * dPdT, -v_kg * dPdV, -w[i])
+            )
+
+            dx = vertcat(dT_dx, dV_dx, dw_dx)
+
+            b = vertcat(
+                f * w[i]**2 * fabs(w[i]) / (2 * self.D * Cv) + q / Cv,
+                SX(0),
+                -f * w[i] * fabs(w[i]) / (2 * self.D)
+            )
+
+            result = A @ dx + b
+
+            dTdt.append(result[0])
+            dVdt.append(result[1])
+            dwdt.append(result[2])
+
+            # Condições de fronteira
+            if i == 0:
+                dTdt[i] = (T2_2 - T[i])
+                dVdt[i] = (V2_2 - V[i])
+            elif i == self.n_points - 1:
+                dwdt[i] = (w_final - w[i])
         # Concatenar tudo
         dydt = []
         for i in range(self.n_points):
             dydt += [dTdt[i], dVdt[i], dwdt[i]]
         
-        alg = vertcat(a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14)
+        alg = vertcat(a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23)
 
         return vertcat(*dydt), alg
     

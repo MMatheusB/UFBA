@@ -101,13 +101,6 @@ class duto:
             [0.0],
             [-f * w * abs(w) / (2 * self.D)]
         ], dtype=float)
-
-        print("\nmatrix_a shape:", matrix_a.shape)
-        print(matrix_a)
-        print("\nmatrix_b shape:", matrix_b.shape)
-        print(matrix_b)
-        print("--------------------------------------------------")
-
         result = -np.linalg.inv(matrix_a) @ matrix_b
         dTdx = float(result[0].item())
         dVdx = float(result[1].item())
