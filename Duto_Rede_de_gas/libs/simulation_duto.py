@@ -41,12 +41,12 @@ class SimuladorDuto:
         y_current, z_current = y0, z0
 
         for i in range(1, self.n_steps):
-            if i == 1200:
+            if i == 300:
                 u_current[0] = 700.0
                 u_current[-1] = 1.92
-            elif i == 2400:
+            elif i == 600:
                 u_current[0] = 670.0
-            elif i == 3600:
+            elif i == 900:
                 u_current[0] = 710.0
 
             sol = self.integrador(x0=ca.DM(y_current), z0=ca.DM(z_current), p=ca.DM(u_current))

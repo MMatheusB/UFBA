@@ -79,7 +79,7 @@ class Simulation:
         time = 0
         tm1 = tp.time()
         for i in range(self.nAlphas):
-            self.u0[3] = self.alphas[i]  # Atualiza a abertura da válvula
+            self.u0[3] = self.alphas[i]  
             self.u0[2] = self.N_RotS[i]
             for j in range(self.nData):
                 res = integrator_solver(x0=x_ss, z0=z_ss, p=self.u0)

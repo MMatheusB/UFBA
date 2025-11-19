@@ -72,7 +72,7 @@ class duto_casadi:
         return deriv
 
     def evaluate_alg(self, T_in, V_in, w_in, w_aspas, V_aspas, T_aspas):
-        A = np.pi * (self.D**2) / 4
+        A = ca.pi * (self.D**2) / 4
         MM = self.gas.mixture.MM_m  # massa molar em kg/mol
         v_kg = V_in / MM
         rho = 1 / v_kg
@@ -250,15 +250,15 @@ class duto_casadi:
             dw_dx = self.derivada_centrada(self.l, w[:self.n_points+1], i)
 
             # Matriz A simbólica
-            A = vertcat(
-                horzcat(-w[i], 0, -T[i] * (v_kg * dPdT / Cv)),
-                horzcat(0, -w[i], V[i]),
-                horzcat(-v_kg * dPdT, -v_kg * dPdV, -w[i])
+            A = ca.vertcat(
+                ca.horzcat(-w[i], 0, -T[i] * (v_kg * dPdT / Cv)),
+                ca.horzcat(0, -w[i], V[i]),
+                ca.horzcat(-v_kg * dPdT, -v_kg * dPdV, -w[i])
             )
 
-            dx = vertcat(dT_dx, dV_dx, dw_dx)
+            dx = ca.vertcat(dT_dx, dV_dx, dw_dx)
 
-            b = vertcat(
+            b = ca.vertcat(
                 f * w[i]**2 * fabs(w[i]) / (2 * self.D * Cv) + q / Cv,
                 SX(0),
                 -f * w[i] * fabs(w[i]) / (2 * self.D)
@@ -309,15 +309,15 @@ class duto_casadi:
             dw_dx = self.derivada_centrada(self.l, w[self.n_points:], i)
 
             # Matriz A simbólica
-            A = vertcat(
-                horzcat(-w[i], 0, -T[i] * (v_kg * dPdT / Cv)),
-                horzcat(0, -w[i], V[i]),
-                horzcat(-v_kg * dPdT, -v_kg * dPdV, -w[i])
+            A = ca.vertcat(
+                ca.horzcat(-w[i], 0, -T[i] * (v_kg * dPdT / Cv)),
+                ca.horzcat(0, -w[i], V[i]),
+                ca.horzcat(-v_kg * dPdT, -v_kg * dPdV, -w[i])
             )
 
-            dx = vertcat(dT_dx, dV_dx, dw_dx)
+            dx = ca.vertcat(dT_dx, dV_dx, dw_dx)
 
-            b = vertcat(
+            b = ca.vertcat(
                 f * w[i]**2 * fabs(w[i]) / (2 * self.D * Cv) + q / Cv,
                 SX(0),
                 -f * w[i] * fabs(w[i]) / (2 * self.D)
@@ -340,9 +340,9 @@ class duto_casadi:
         for i in range(self.n_points):
             dydt += [dTdt[i], dVdt[i], dwdt[i]]
         
-        alg = vertcat(a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23)
+        alg = ca.vertcat(a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23)
 
-        return vertcat(*dydt), alg
+        return ca.vertcat(*dydt), alg
     
     def estacionario(self, x, y):
         """
