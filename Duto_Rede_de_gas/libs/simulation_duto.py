@@ -12,7 +12,7 @@ class SimuladorDuto:
 
     def run(self, y0, z0, u0):
         y = ca.SX.sym("y", 3 * self.sistema.n_points)
-        z = ca.SX.sym("z", 9)
+        z = ca.SX.sym("z", 11)  # <- z tem 11 elementos: índices 0..10
         u = ca.SX.sym("u", 4)
         t = ca.SX.sym("t")
 
@@ -41,13 +41,13 @@ class SimuladorDuto:
         y_current, z_current = y0, z0
 
         for i in range(1, self.n_steps):
+
             if i == 300:
                 u_current[0] = 700.0
-                u_current[-1] = 1.92
             elif i == 600:
                 u_current[0] = 670.0
             elif i == 900:
-                u_current[0] = 710.0
+                u_current[0] = 750.0
 
             sol = self.integrador(x0=ca.DM(y_current), z0=ca.DM(z_current), p=ca.DM(u_current))
             y_current = np.array(sol["xf"]).flatten()
@@ -72,12 +72,12 @@ class SimuladorDuto:
         for i in range(self.n_steps):
             T_out = T_sol[i, -1]
             V_out = V_sol[i, -1]
-            v_kg = V_sol[i, :]/self.sistema.gas.mixture.MM_m
+            v_kg = V_sol[i, :] / self.sistema.gas.mixture.MM_m
             gas2 = self.sistema.gas.copy_change_conditions(T_out, None, V_out, 'gas')
             P_out[i] = gas2.P  
             m_dot_sol[i, :] = (1 / v_kg) * w_sol[i, :] * A
 
-        # armazenar resultados
+        # ARMAZENAR RESULTADOS + Z[9] E Z[10]
         self.resultados = {
             "tempo": np.linspace(0, self.n_steps*self.dt, self.n_steps),
             "T_sol": T_sol,
@@ -85,13 +85,14 @@ class SimuladorDuto:
             "w_sol": w_sol,
             "P_out": P_out,
             "m_dot": m_dot_sol,
-            "z_sol": z_sol
+            "z_sol": z_sol,
+            "z10": z_sol[:, 9],   # penúltima variável algébrica
+            "z11": z_sol[:, 10]   # última variável algébrica
         }
 
         return self.resultados
 
     def plotar(self):
-        """Gera plots básicos das variáveis simuladas."""
         if not self.resultados:
             print("⚠️ Nenhum resultado disponível. Rode a simulação primeiro.")
             return
@@ -103,6 +104,9 @@ class SimuladorDuto:
         P_out = self.resultados["P_out"]
         m_dot_sol = self.resultados["m_dot"]
 
+        z10 = self.resultados["z10"]
+        z11 = self.resultados["z11"]
+
         n_points = self.sistema.n_points
 
         # --- Temperatura ---
@@ -110,8 +114,8 @@ class SimuladorDuto:
         plt.title("Evolução da Temperatura ao longo do duto")
         for i in range(n_points):
             plt.plot(t_h, T_sol[:, i], label=f"Nó {i+1}")
-        plt.xlabel("Tempo [h]")
-        plt.ylabel("Temperatura [K]")
+        plt.xlabel("Tempo / h")
+        plt.ylabel("Temperatura / K")
         plt.grid(True)
         plt.legend(fontsize=8)
         plt.show()
@@ -121,8 +125,8 @@ class SimuladorDuto:
         plt.title("Evolução da Velocidade do Gás")
         for i in range(n_points):
             plt.plot(t_h, w_sol[:, i], label=f"Nó {i+1}")
-        plt.xlabel("Tempo [h]")
-        plt.ylabel("Velocidade [m/s]")
+        plt.xlabel("Tempo / h")
+        plt.ylabel("Velocidade / m/s")
         plt.grid(True)
         plt.legend(fontsize=8)
         plt.show()
@@ -132,8 +136,8 @@ class SimuladorDuto:
         plt.title("Evolução do Volume Específico")
         for i in range(n_points):
             plt.plot(t_h, V_sol[:, i], label=f"Nó {i+1}")
-        plt.xlabel("Tempo [h]")
-        plt.ylabel("Volume específico [m³/kmol]")
+        plt.xlabel("Tempo / h")
+        plt.ylabel("Volume específico / m³/mol")
         plt.grid(True)
         plt.legend(fontsize=8)
         plt.show()
@@ -143,18 +147,35 @@ class SimuladorDuto:
         plt.title("Evolução da Vazão Mássica")
         for i in range(n_points):
             plt.plot(t_h, m_dot_sol[:, i], label=f"Nó {i+1}")
-        plt.xlabel("Tempo [h]")
-        plt.ylabel("Vazão mássica [kg/s]")
+        plt.xlabel("Tempo / h")
+        plt.ylabel("Vazão mássica / kg/s")
         plt.grid(True)
         plt.legend(fontsize=8)
         plt.show()
 
-        # --- Pressão na saída ---
+        # # --- Pressão na saída ---
+        # plt.figure(figsize=(9, 6))
+        # plt.plot(t_h, P_out, color='tab:red', linewidth=2)
+        # plt.title("Pressão na Saída do Duto")
+        # plt.xlabel("Tempo / h")
+        # plt.ylabel("Pressão / kPa")
+        # plt.grid(True)
+        # plt.show()
+
+        # --- z[10] ---
         plt.figure(figsize=(9, 6))
-        plt.plot(t_h, P_out, color='tab:red', linewidth=2)
-        plt.title("Pressão na Saída do Duto")
-        plt.xlabel("Tempo [h]")
-        plt.ylabel("Pressão [Pa]")
+        plt.title("Evolução da Vazão Mássica no No 1")
+        plt.plot(t_h, z10, linewidth=2)
+        plt.xlabel("Tempo / h")
+        plt.ylabel("z[10]")
         plt.grid(True)
         plt.show()
 
+        # --- z[11] ---
+        plt.figure(figsize=(9, 6))
+        plt.title("Evolução da Pressão na Saída do Duto")
+        plt.plot(t_h, z11, linewidth=2, color="purple")
+        plt.xlabel("Tempo / h")
+        plt.ylabel("z[11]")
+        plt.grid(True)
+        plt.show()

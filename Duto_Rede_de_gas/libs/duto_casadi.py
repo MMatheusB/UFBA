@@ -32,8 +32,7 @@ class duto_casadi:
         return 4 * (expr)**(-2)
 
     def q_solo(self, Rho, T, U):
-        # return (1 / Rho) * (4 * U / self.D) * (self.T_solo - T)
-        return 0
+        return (1 / Rho) * (4 * U / self.D) * (self.T_solo - T)
 
     def coef_cov_fluid(self, kappa, mu, Re, gas):
         Pr = (gas.Cpt * 1000 / gas.mixture.MM_m * mu) / kappa
@@ -102,7 +101,8 @@ class duto_casadi:
         T2   = z[6]   
         V2   = z[7]   
         V1   = z[8]   
-
+        m_dot_inicio = z[9]
+        P_final = z[10]
 
         rot = u[0] 
         P1 = u[1]
@@ -115,10 +115,16 @@ class duto_casadi:
         v_kg = V[0] / MM
         rho = 1 / v_kg
         m_dot = rho * A * w[0]
-        a3, a4, a5, a6, a7, a8, a9, a10, a11 = self.compressor.character_dae(
+        a1, a2, a3, a4, a5, a6, a7, a8, a9 = self.compressor.character_dae(
             [Timp, Vimp, Tdif, Vdif, T2s, V2s, T2, V2, V1],
             [rot, (m_dot)/4, P1, T1]   
         )
+        a10 = m_dot_inicio - m_dot
+        
+        gas_temp = self.gas.copy_change_conditions(T[-1], None, V[-1], 'gas')
+        
+        a11 = P_final - gas_temp.P
+
         w_final = Q_final/A
         dTdt, dVdt, dwdt = [], [], []
         for i in range(self.n_points):
@@ -176,7 +182,7 @@ class duto_casadi:
         for i in range(self.n_points):
             dydt += [dTdt[i], dVdt[i], dwdt[i]]
         
-        alg = vertcat(a3, a4, a5, a6, a7, a8, a9, a10, a11)
+        alg = vertcat(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11)
 
         return vertcat(*dydt), alg
     
