@@ -12,8 +12,8 @@ class SimuladorDuto:
 
     def run(self, y0, z0, u0, N_perturb, N_data, Rot, dt):
         y = ca.SX.sym("y", 3 * self.sistema.n_points)
-        z = ca.SX.sym("z", 11)  
-        u = ca.SX.sym("u", 4)
+        z = ca.SX.sym("z", 14)  
+        u = ca.SX.sym("u", 6)
         t = ca.SX.sym("t")
 
         dydt, alg_eqs = self.sistema.evaluate_dae(t, y, z, u)

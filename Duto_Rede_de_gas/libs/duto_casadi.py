@@ -42,7 +42,7 @@ class duto_casadi:
     def T_ML(self, T2, Tq, Taq, T_af):
         a = T2 - Taq
         b = Tq - T_af
-        c = np.ln(a/b)
+        c = np.log(a/b)
         return (a - b)/c
 
     def derivada_centrada(self, x, f, i):
@@ -206,7 +206,7 @@ class duto_casadi:
         for i in range(self.n_points):
             dydt += [dTdt[i], dVdt[i], dwdt[i]]
         
-        alg = vertcat(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11)
+        alg = vertcat(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14)
 
         return vertcat(*dydt), alg
     
