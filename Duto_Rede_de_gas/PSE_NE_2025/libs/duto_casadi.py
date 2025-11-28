@@ -17,7 +17,6 @@ class duto_casadi:
         self.T_solo = 15 + 273.15  # K
         self.z_solo = 2  # m
         self.compressor = compressor
-        
         # --- Malha de Chebyshev-Gauss ---
         i = np.arange(1, n_points + 1)
         xi = np.cos((2 * i - 1) / (2 * n_points) * np.pi)  # [-1,1]
@@ -25,6 +24,9 @@ class duto_casadi:
         self.n_points = n_points
 
     def fator_friccao(self, Re):
+        """
+        Implementação simbólica do fator de fricção usando CasADi.
+        """
         eD = self.e_D / self.D
         expr = -4 * log10(eD / 3.7 - 5.02 / Re * log10(eD / 3.7 - 5.02 / Re * log10(eD / 3.7 + 13 / Re)))
         return 4 * (expr)**(-2)
@@ -33,19 +35,16 @@ class duto_casadi:
         return (1 / Rho) * (4 * U / self.D) * (self.T_solo - T)
 
     def coef_cov_fluid(self, kappa, mu, Re, gas):
-        Pr = (gas.Cpt / gas.mixture.MM_m * mu) / kappa
+        Pr = (gas.Cpt * 1000 / gas.mixture.MM_m * mu) / kappa
         ft = (1.82 * log10(Re) - 1.64)**(-2)
-        Nu = (ft / 8) * (Re - 1000) * Pr / (1 + 12.7 * sqrt(ft / 8) * (Pr**(2/3) - 1))
+        Nu = (ft / 8) * (Re - 1000) * Pr / (1.07 + 12.7 * sqrt(ft / 8) * (Pr**(2/3) - 1))
         h_t = Nu * kappa / self.D
         return h_t
 
-    def T_ML(self, T2, Tq, Taq, T_af):
-        a = T2 - Taq
-        b = Tq - T_af
-        c = np.log(a/b)
-        return (a - b)/c
-
     def derivada_centrada(self, x, f, i):
+        """
+        Adaptado para CasADi: f é uma lista de MX e x é numpy.
+        """
         n = len(x)
         if i == 0:
             idx = [0, 1, 2]
@@ -71,7 +70,7 @@ class duto_casadi:
             deriv += f_sub[j] * Lj_deriv
         return deriv
 
-    def evaluate_alg_duto2(self, T_in, V_in, w_in, w_aspas, V_aspas, T_aspas):
+    def evaluate_alg(self, T_in, V_in, w_in, w_aspas, V_aspas, T_aspas):
         A = ca.pi * (self.D**2) / 4
         MM = self.gas.mixture.MM_m  # massa molar em kg/mol
         v_kg = V_in / MM
@@ -97,23 +96,18 @@ class duto_casadi:
         Vimp = z[1]   # Vazão na entrada do compressor
         Tdif = z[2]   # Temperatura na saída do compressor
         Vdif = z[3]   # Vazão na saída do compressor
-        T2s  = z[4]
-        V2s  = z[5]
-        T2   = z[6]
-        V2   = z[7]
-        V1   = z[8]
-        T_q = z[9]
-        T_aq = z[10]
-        V_q = z[11]
-        m_dot_inicio = z[12]
-        P_final = z[13]
+        T2s  = z[4]   
+        V2s  = z[5]   
+        T2   = z[6]   
+        V2   = z[7]   
+        V1   = z[8]   
+        m_dot_inicio = z[9]
+        P_final = z[10]
 
-        rot = u[0]
-        m_dot_agua = u[1]
-        P1 = u[2]
-        T1 = u[3]
-        Q_final = u[4]
-        T_af = u[5]
+        rot = u[0] 
+        P1 = u[1]
+        T1 = u[2]
+        Q_final = u[3]
 
         A = np.pi * (self.D**2) / 4
 
@@ -125,29 +119,11 @@ class duto_casadi:
             [Timp, Vimp, Tdif, Vdif, T2s, V2s, T2, V2, V1],
             [rot, (m_dot)/4, P1, T1]   
         )
-        gas_T2 = self.gas.copy_change_conditions(T2, None, V2, 'gas')
-        mu_T2 = self.visc.evaluate_viscosity(T2, gas_T2.P)
-        Re_T2 = rho * w[0] * self.D / mu_T2
-        kappa_T2 = coef_con_ter(gas_T2)
-        h_t_T2 = self.coef_cov_fluid(kappa_T2, mu_T2, Re_T2, gas_T2)
-       
-        gas_Tq = self.gas.copy_change_conditions(T_q, None, V_q, 'gas')
-        mu_Tq = self.visc.evaluate_viscosity(T_q, gas_Tq.P)
-        Re_Tq = rho * w[0] * self.D / mu_Tq
-        kappa_Tq = coef_con_ter(gas_Tq)
-        h_t_Tq = self.coef_cov_fluid(kappa_Tq, mu_Tq, Re_Tq, gas_Tq)
-       
-        a10 = m_dot*(h_t_T2 - h_t_Tq) - 300*self.T_ML(T2, T_q, T_aq, T_af)
-
-        a11 = m_dot_agua*4184 - 300*self.T_ML(T2, T_q, T_aq, T_af)
-
-        a12 = gas_T2.P - gas_Tq.P
-
-        a13 = m_dot_inicio - m_dot
+        a10 = m_dot_inicio - m_dot
         
         gas_temp = self.gas.copy_change_conditions(T[-1], None, V[-1], 'gas')
         
-        a14 = P_final - gas_temp.P
+        a11 = P_final - gas_temp.P
 
         w_final = Q_final/A
         dTdt, dVdt, dwdt = [], [], []
@@ -206,7 +182,7 @@ class duto_casadi:
         for i in range(self.n_points):
             dydt += [dTdt[i], dVdt[i], dwdt[i]]
         
-        alg = vertcat(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14)
+        alg = vertcat(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11)
 
         return vertcat(*dydt), alg
     
@@ -413,7 +389,7 @@ class duto_casadi:
         )
 
         b = vertcat(
-            f * w**2 * fabs(w) / (2 * self.D * Cv) + (q / Cv),
+            f * w**2 * fabs(w) / (2 * self.D * Cv) + q / Cv,
             0,
             -f * w * fabs(w) / (2 * self.D)
         )
