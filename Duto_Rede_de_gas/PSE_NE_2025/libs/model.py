@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.utils.data import DataLoader, TensorDataset
 
 class RNNModelWrapper(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim, num_layers,
@@ -16,7 +17,7 @@ class RNNModelWrapper(nn.Module):
         self.y_max = torch.tensor(y_max, dtype=torch.float32).to(device)
 
         # --------------------- MODELO ---------------------
-        self.rnn = nn.RNN(
+        self.rnn = nn.GRU(
             input_size=input_dim,
             hidden_size=hidden_dim,
             num_layers=num_layers,
@@ -35,16 +36,15 @@ class RNNModelWrapper(nn.Module):
     # ------------------ NORMALIZAÇÃO --------------------
     # ====================================================
     def normalize_x(self, x):
-        return 2 * (x - self.x_min) / (self.x_max - self.x_min) - 1
-    
-    def normalize_y(self, y):
-        # y: [batch, n_vars], self.y_min/self.y_max: [n_vars]
-        return 2 * (y - self.y_min.unsqueeze(0)) / (self.y_max.unsqueeze(0) - self.y_min.unsqueeze(0)) - 1
-    
+        # x: [batch, seq_len, n_features]
+        return 2 * (x - self.x_min[None, None, :]) / (self.x_max[None, None, :] - self.x_min[None, None, :]) - 1
 
+    def normalize_y(self, y):
+        # y: [batch, n_vars]
+        return 2 * (y - self.y_min[None, :]) / (self.y_max[None, :] - self.y_min[None, :]) - 1
 
     def denormalize_y(self, y_norm):
-        return (y_norm + 1) * 0.5 * (self.y_max - self.y_min) + self.y_min
+        return (y_norm + 1) * 0.5 * (self.y_max[None, :] - self.y_min[None, :]) + self.y_min[None, :]
 
 
     # ====================================================
@@ -60,39 +60,34 @@ class RNNModelWrapper(nn.Module):
     # ====================================================
     # ---------------------- TREINO -----------------------
     # ====================================================
-    def train_model(self, x_train, y_train, epochs=50):
+    def train_model(self, train_loader, epochs=50):
         self.train()
-        x_train = torch.tensor(x_train, dtype=torch.float32).to(self.device)
-        y_train = torch.tensor(y_train, dtype=torch.float32).to(self.device)
 
-        # normalizar
-        x_train = self.normalize_x(x_train)
-        y_train = self.normalize_y(y_train)
-
-        # ----- pesos das variáveis de saída -----
-        weights = torch.tensor([1.0, 5, 2.0], dtype=torch.float32).to(self.device)  # exemplo: ajustar w1,w2,w3
+        # Pesos das 3 variáveis de saída
+        weights = torch.tensor([15, 12.0, 5.0], dtype=torch.float32).to(self.device)
 
         for ep in range(epochs):
-            self.optimizer.zero_grad()
-            pred = self.forward(x_train)  # (N, output_dim)
+            total_loss = 0.0
 
-            # erro quadrático por variável
-            errors = (pred - y_train) ** 2
+            for xb, yb in train_loader:
+                xb = xb.to(self.device)
+                yb = yb.to(self.device)
 
-            # aplica os pesos
-            weighted_errors = errors * weights
+                self.optimizer.zero_grad()
 
-            # loss total
-            loss = weighted_errors.mean()
+                pred = self.forward(xb)
 
-            # perdas separadas por variável
-            loss_per_var = weighted_errors.mean(dim=0)  # (output_dim,)
+                errors = (pred - yb) ** 2
+                weighted_errors = errors * weights
+                loss = weighted_errors.mean()
 
-            loss.backward()
-            self.optimizer.step()
+                loss.backward()
+                self.optimizer.step()
+
+                total_loss += loss.item()
 
             if (ep + 1) % 10 == 0:
-                print(f"Epoch {ep+1}/{epochs} | Loss = {loss.item():.5f} | Per-variable = {loss_per_var.detach().cpu().numpy()}")
+                print(f"Epoch {ep+1}/{epochs} | Loss = {total_loss/len(train_loader):.6f}")
 
 
 

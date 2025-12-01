@@ -6,9 +6,7 @@ from libs.eos_database import *
 from libs.gc_eos_soave import *
 from builtins import sum
 
-def sub_vis_chung(T, V, gas):
-
-    V = V * 1e3  
+def sub_vis_chung(T, V, gas):  
 
 
     Tc = np.array([sp.Tc for sp in gas.mixture.list_of_species])

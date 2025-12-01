@@ -33,7 +33,8 @@ class duto_casadi:
         return (1 / Rho) * (4 * U / self.D) * (self.T_solo - T)
 
     def coef_cov_fluid(self, kappa, mu, Re, gas):
-        Pr = (gas.Cpt / gas.mixture.MM_m * mu) / kappa
+        gas.ci_real()
+        Pr = mu * (gas.Cpt / gas.mixture.MM_m) / kappa
         ft = (1.82 * log10(Re) - 1.64)**(-2)
         Nu = (ft / 8) * (Re - 1000) * Pr / (1 + 12.7 * sqrt(ft / 8) * (Pr**(2/3) - 1))
         h_t = Nu * kappa / self.D

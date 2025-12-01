@@ -1,14 +1,13 @@
 from casadi import *
 from numpy import exp, log, array, roots, isnan, fromstring
 from scipy.optimize import fsolve
-from libs.species_builder import R, Species, Mixture
+from libs.species_builder import Species, Mixture
 from libs.eos_database import *
 from libs.gc_eos_soave import *
 from builtins import sum
 
 def sub_vis_chung(T, V, gas):
-
-    V = V * 1e3  
+    V = V  
 
 
     Tc = np.array([sp.Tc for sp in gas.mixture.list_of_species])
