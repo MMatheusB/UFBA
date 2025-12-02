@@ -17,7 +17,7 @@ class RNNModelWrapper(nn.Module):
         self.y_max = torch.tensor(y_max, dtype=torch.float32).to(device)
 
         # --------------------- MODELO ---------------------
-        self.rnn = nn.GRU(
+        self.rnn = nn.LSTM(
             input_size=input_dim,
             hidden_size=hidden_dim,
             num_layers=num_layers,
