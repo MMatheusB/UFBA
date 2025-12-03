@@ -22,10 +22,11 @@ class RNNModelWrapper(nn.Module):
             hidden_size=hidden_dim,
             num_layers=num_layers,
             batch_first=True,
-            bias=True
+            bias=True,
+            bidirectional = True
         )
 
-        self.fc = nn.Linear(hidden_dim, output_dim)
+        self.fc = nn.Linear(hidden_dim*2, output_dim)
 
         # Otimizador
         self.optimizer = optim.Adam(self.parameters(), lr=lr)
