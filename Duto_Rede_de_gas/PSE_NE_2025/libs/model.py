@@ -22,9 +22,7 @@ class RNNModelWrapper(nn.Module):
             hidden_size=hidden_dim,
             num_layers=num_layers,
             batch_first=True,
-            bias=True,
-            bidirectional = True
-        )
+            bias=True)
 
         self.fc = nn.Linear(hidden_dim*2, output_dim)
 
@@ -38,14 +36,14 @@ class RNNModelWrapper(nn.Module):
     # ====================================================
     def normalize_x(self, x):
         # x: [batch, seq_len, n_features]
-        return 2 * (x - self.x_min[None, None, :]) / (self.x_max[None, None, :] - self.x_min[None, None, :]) - 1
+        return 2 * (x - self.x_min) / (self.x_max - self.x_min) - 1
 
     def normalize_y(self, y):
         # y: [batch, n_vars]
-        return 2 * (y - self.y_min[None, :]) / (self.y_max[None, :] - self.y_min[None, :]) - 1
+        return 2 * (y - self.y_min) / (self.y_max - self.y_min) - 1
 
     def denormalize_y(self, y_norm):
-        return (y_norm + 1) * 0.5 * (self.y_max[None, :] - self.y_min[None, :]) + self.y_min[None, :]
+        return (y_norm + 1) * 0.5 * (self.y_max - self.y_min) + self.y_min
 
 
     # ====================================================
@@ -54,8 +52,8 @@ class RNNModelWrapper(nn.Module):
     def forward(self, x):
         out, _ = self.rnn(x)
         # pegar apenas o último passo da sequência
-        last_out = out[:, -1, :]
-        return self.fc(last_out)
+        last_out = self.fc(out)
+        return last_out
 
 
     # ====================================================

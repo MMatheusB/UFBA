@@ -99,32 +99,54 @@ class SimuladorDuto:
         return self.resultados
     
     
-    def train_dataset(self, time_step):
-        x_train = []
-        y_train = []
-        RNN_train = []
-        RNN_train = np.array(RNN_train)
-        
+    def train_dataset(self, time_step, horizon=10, output_dims=3):
         RNN_train = np.column_stack((
-        self.resultados["z10"],             # m_dot_in
-        self.resultados["z11"],             # P_out
-        self.resultados["T_sol"][:, 0],
-        self.resultados["rot"]     # T_in (nó 1)
-    ))
-        for i in range(len(RNN_train) - time_step):
-            x_train.append(RNN_train[i:i + time_step])
-            if i + time_step < len(RNN_train):
-                y_train.append(RNN_train[i + time_step, :3])
+            self.resultados["z10"],             # m_dot_in
+            self.resultados["z11"],             # P_out
+            self.resultados["T_sol"][:, 0],     # T_in (nó 1)
+            self.resultados["rot"]              # rotação/entrada
+        ))
 
-        x_train = torch.tensor(np.array(x_train), dtype=torch.float32)
-        y_train = torch.tensor(np.array(y_train), dtype=torch.float32)
+        # número total de observações
+        N_total = RNN_train.shape[0]
+        n_features = RNN_train.shape[1]
 
-        x_min = x_train.amin(dim=(0, 1), keepdim=True)
+        x_list = []
+        y_list = []
+
+        # garantir que exista espaço para time_step + horizon
+        max_i = N_total - (time_step + horizon) + 1
+        if max_i <= 0:
+            raise ValueError("Dados insuficientes: aumente N_data/N_perturb ou reduza time_step/horizon.")
+
+        for i in range(max_i):
+            # janela de entrada
+            x_window = RNN_train[i : i + time_step, :]                     # shape (time_step, n_features)
+            # sequência de saída com 'horizon' passos, apenas as primeiras output_dims colunas
+            y_window = RNN_train[i + time_step : i + time_step + horizon, :output_dims]  # shape (horizon, output_dims)
+
+            x_list.append(x_window)
+            y_list.append(y_window)
+
+        # converter para arrays/tensors
+        x_np = np.array(x_list)   # (n_samples, time_step, n_features)
+        y_np = np.array(y_list)   # (n_samples, horizon, output_dims)
+
+        x_train = torch.tensor(x_np, dtype=torch.float32)
+        y_train = torch.tensor(y_np, dtype=torch.float32)
+
+        # calcular min/max para normalização (por feature)
+        # para x: min/max por coluna de feature ao longo de todas as amostras e time_steps
+        x_min = x_train.amin(dim=(0, 1), keepdim=True)  # shape (1,1,n_features)
         x_max = x_train.amax(dim=(0, 1), keepdim=True)
-        y_min = y_train.amin(dim=(0), keepdim=True)
-        y_max = y_train.amax(dim=(0), keepdim=True)
+
+        # para y: min/max por feature ao longo de todas as amostras e horizon
+        y_min = y_train.amin(dim=(0, 1), keepdim=True)  # shape (1,1,output_dims)
+        y_max = y_train.amax(dim=(0, 1), keepdim=True)
 
         return RNN_train, x_train, y_train, x_min, x_max, y_min, y_max
+
+
     
 
     def plotar(self):
