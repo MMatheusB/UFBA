@@ -114,7 +114,7 @@ class SimuladorDuto:
 
         for j in range(n_points):
 
-            pos = j/(n_points-1)
+            pos = j
 
             for t in range(time_step, N_total-1):
 
@@ -124,24 +124,33 @@ class SimuladorDuto:
 
                     i = t - time_step + k
 
-                    T = T_sol[i, j]
-                    m = m_dot[i, j]
+                    T_in = T_sol[i, 0]
+                    m_in = m_dot[i, 0]
 
-                    V = V_sol[i, j]
-                    gas = self.sistema.gas.copy_change_conditions(T, None, V, 'gas')
-                    P = gas.P
+                    V_in = V_sol[i, 0]
 
-                    x_window.append([pos, T, m, P])
+                    gas_in = self.sistema.gas.copy_change_conditions(T_in, None, V_in, 'gas')
+                    P_in = gas_in.P
+
+                    T_out = T_sol[i, -1]
+                    m_out = m_dot[i, -1]
+
+                    V_out = V_sol[i, -1]
+
+                    gas_out = self.sistema.gas.copy_change_conditions(T_out, None, V_out, 'gas')
+                    P_out = gas_out.P
+
+                    x_window.append([pos, T_in, m_in, P_in, T_out, m_out, P_out])
 
                 # saída no tempo t+1
                 T_next = T_sol[t+1, j]
                 m_next = m_dot[t+1, j]
-
+                w_next = w_sol[t+1, j]
                 V_next = V_sol[t+1, j]
                 gas_next = self.sistema.gas.copy_change_conditions(T_next, None, V_next, 'gas')
                 P_next = gas_next.P
 
-                y = [T_next, m_next, P_next]
+                y = [T_next, V_next, w_next, m_next, P_next]
 
                 X_list.append(x_window)
                 Y_list.append(y)
@@ -159,9 +168,6 @@ class SimuladorDuto:
         y_max = y_train.amax(dim=0, keepdim=True)
 
         return x_train, y_train, x_min, x_max, y_min, y_max
-
-
-    
 
     def plotar(self):
         if not self.resultados:
