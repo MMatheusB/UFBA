@@ -99,52 +99,66 @@ class SimuladorDuto:
         return self.resultados
     
     
-    def train_dataset(self, time_step, horizon=10, output_dims=3):
-        RNN_train = np.column_stack((
-            self.resultados["z10"],             # m_dot_in
-            self.resultados["z11"],             # P_out
-            self.resultados["T_sol"][:, 0],     # T_in (nó 1)
-            self.resultados["rot"]              # rotação/entrada
-        ))
+    def train_dataset(self, time_step=5):
 
-        # número total de observações
-        N_total = RNN_train.shape[0]
-        n_features = RNN_train.shape[1]
+        T_sol = self.resultados["T_sol"]
+        V_sol = self.resultados["V_sol"]
+        w_sol = self.resultados["w_sol"]
+        m_dot = self.resultados["m_dot"]
 
-        x_list = []
-        y_list = []
+        n_points = self.sistema.n_points
+        N_total = T_sol.shape[0]
 
-        # garantir que exista espaço para time_step + horizon
-        max_i = N_total - (time_step + horizon) + 1
-        if max_i <= 0:
-            raise ValueError("Dados insuficientes: aumente N_data/N_perturb ou reduza time_step/horizon.")
+        X_list = []
+        Y_list = []
 
-        for i in range(max_i):
-            # janela de entrada
-            x_window = RNN_train[i : i + time_step, :]                     # shape (time_step, n_features)
-            # sequência de saída com 'horizon' passos, apenas as primeiras output_dims colunas
-            y_window = RNN_train[i + time_step : i + time_step + horizon, :output_dims]  # shape (horizon, output_dims)
+        for j in range(n_points):
 
-            x_list.append(x_window)
-            y_list.append(y_window)
+            pos = j/(n_points-1)
 
-        # converter para arrays/tensors
-        x_np = np.array(x_list)   # (n_samples, time_step, n_features)
-        y_np = np.array(y_list)   # (n_samples, horizon, output_dims)
+            for t in range(time_step, N_total-1):
+
+                x_window = []
+
+                for k in range(time_step):
+
+                    i = t - time_step + k
+
+                    T = T_sol[i, j]
+                    m = m_dot[i, j]
+
+                    V = V_sol[i, j]
+                    gas = self.sistema.gas.copy_change_conditions(T, None, V, 'gas')
+                    P = gas.P
+
+                    x_window.append([pos, T, m, P])
+
+                # saída no tempo t+1
+                T_next = T_sol[t+1, j]
+                m_next = m_dot[t+1, j]
+
+                V_next = V_sol[t+1, j]
+                gas_next = self.sistema.gas.copy_change_conditions(T_next, None, V_next, 'gas')
+                P_next = gas_next.P
+
+                y = [T_next, m_next, P_next]
+
+                X_list.append(x_window)
+                Y_list.append(y)
+
+        x_np = np.array(X_list)
+        y_np = np.array(Y_list)
 
         x_train = torch.tensor(x_np, dtype=torch.float32)
         y_train = torch.tensor(y_np, dtype=torch.float32)
 
-        # calcular min/max para normalização (por feature)
-        # para x: min/max por coluna de feature ao longo de todas as amostras e time_steps
-        x_min = x_train.amin(dim=(0, 1), keepdim=True)  # shape (1,1,n_features)
-        x_max = x_train.amax(dim=(0, 1), keepdim=True)
+        x_min = x_train.amin(dim=(0,1), keepdim=True)
+        x_max = x_train.amax(dim=(0,1), keepdim=True)
 
-        # para y: min/max por feature ao longo de todas as amostras e horizon
-        y_min = y_train.amin(dim=(0, 1), keepdim=True)  # shape (1,1,output_dims)
-        y_max = y_train.amax(dim=(0, 1), keepdim=True)
+        y_min = y_train.amin(dim=0, keepdim=True)
+        y_max = y_train.amax(dim=0, keepdim=True)
 
-        return RNN_train, x_train, y_train, x_min, x_max, y_min, y_max
+        return x_train, y_train, x_min, x_max, y_min, y_max
 
 
     

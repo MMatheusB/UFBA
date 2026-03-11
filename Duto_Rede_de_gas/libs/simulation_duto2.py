@@ -3,7 +3,7 @@ import casadi as ca
 import matplotlib.pyplot as plt
 
 class SimuladorDuto:
-    def __init__(self, sistema, dt=60, n_steps=5000):
+    def __init__(self, sistema, dt, n_steps):
         self.sistema = sistema
         self.dt = dt
         self.n_steps = n_steps
@@ -13,7 +13,7 @@ class SimuladorDuto:
     def run(self, y0, z0, u0):
         y = ca.SX.sym("y", 3 * self.sistema.n_points)
         z = ca.SX.sym("z", 12)  # <- z tem 11 elementos: índices 0..10
-        u = ca.SX.sym("u", 4)
+        u = ca.SX.sym("u", 1)
         t = ca.SX.sym("t")
 
         dydt, alg_eqs = self.sistema.evaluate_dae(t, y, z, u)

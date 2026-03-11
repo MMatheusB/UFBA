@@ -17,7 +17,6 @@ class duto_casadi:
         self.T_solo = 15 + 273.15  # K
         self.z_solo = 2  # m
         self.compressor = compressor
-        # --- Malha de Chebyshev-Gauss ---
         i = np.arange(1, n_points + 1)
         xi = np.cos((2 * i - 1) / (2 * n_points) * np.pi)  # [-1,1]
         self.l = (self.Lc / (xi[-1] - xi[0])) * (xi - xi[0])  # [0, Lc]
@@ -351,14 +350,7 @@ class duto_casadi:
         return ca.vertcat(*dydt), alg
     
     def estacionario(self, x, y):
-        """
-        Implementação simbólica da EDO estacionária para o duto.
-        Entradas:
-            x : MX (posição)
-            y : MX [T, V, w]
-        Saída:
-            [dTdx, dVdx, dwdx] como MX
-        """
+
         T, V, w = y[0], y[1], y[2]
 
         # Copia o gás e atualiza as condições

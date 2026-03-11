@@ -31,9 +31,6 @@ class RNNModelWrapper(nn.Module):
         self.loss_fn = nn.MSELoss()
 
 
-    # ====================================================
-    # ------------------ NORMALIZAÇÃO --------------------
-    # ====================================================
     def normalize_x(self, x):
         # x: [batch, seq_len, n_features]
         return 2 * (x - self.x_min) / (self.x_max - self.x_min) - 1
@@ -46,9 +43,6 @@ class RNNModelWrapper(nn.Module):
         return (y_norm + 1) * 0.5 * (self.y_max - self.y_min) + self.y_min
 
 
-    # ====================================================
-    # ----------------------- FORWARD ---------------------
-    # ====================================================
     def forward(self, x):
         out, _ = self.rnn(x)
         # pegar apenas o último passo da sequência
@@ -56,28 +50,19 @@ class RNNModelWrapper(nn.Module):
         return last_out
 
 
-    # ====================================================
-    # ---------------------- TREINO -----------------------
-    # ====================================================
     def train_model(self, train_loader, epochs=50):
         self.train()
-
-        # Pesos das 3 variáveis de saída
-        weights = torch.tensor([15, 12.0, 5.0], dtype=torch.float32).to(self.device)
-
         for ep in range(epochs):
             total_loss = 0.0
 
             for xb, yb in train_loader:
                 xb = xb.to(self.device)
                 yb = yb.to(self.device)
-
                 self.optimizer.zero_grad()
-
                 pred = self.forward(xb)
 
                 errors = (pred - yb) ** 2
-                weighted_errors = errors * weights
+                weighted_errors = errors
                 loss = weighted_errors.mean()
 
                 loss.backward()
@@ -88,13 +73,8 @@ class RNNModelWrapper(nn.Module):
             if (ep + 1) % 10 == 0:
                 print(f"Epoch {ep+1}/{epochs} | Loss = {total_loss/len(train_loader):.6f}")
 
-
-
-
-    # ====================================================
-    # ---------------------- PREDIÇÃO ----------------------
-    # ====================================================
     def predict(self, x):
+        """Função que faz sei lá o que"""
         self.eval()
         x = torch.tensor(x, dtype=torch.float32).to(self.device)
         x_norm = self.normalize_x(x)
