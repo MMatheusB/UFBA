@@ -1,0 +1,11 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_4/media/videos/eletromec/1080p60/partial_movie_files/SistemaEletromecanicoSimulacao/2257293077_1535163892_223132457.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_4/media/videos/eletromec/1080p60/partial_movie_files/SistemaEletromecanicoSimulacao/2135761390_2536175139_603746728.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_4/media/videos/eletromec/1080p60/partial_movie_files/SistemaEletromecanicoSimulacao/2135761390_3719647549_2232010226.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_4/media/videos/eletromec/1080p60/partial_movie_files/SistemaEletromecanicoSimulacao/2135761390_3206838883_3718705136.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_4/media/videos/eletromec/1080p60/partial_movie_files/SistemaEletromecanicoSimulacao/2135761390_3394500337_224634185.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_4/media/videos/eletromec/1080p60/partial_movie_files/SistemaEletromecanicoSimulacao/2135761390_1191986909_2719623633.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_4/media/videos/eletromec/1080p60/partial_movie_files/SistemaEletromecanicoSimulacao/2135761390_3366045169_3102966266.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_4/media/videos/eletromec/1080p60/partial_movie_files/SistemaEletromecanicoSimulacao/2135761390_2111648249_1077454107.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_4/media/videos/eletromec/1080p60/partial_movie_files/SistemaEletromecanicoSimulacao/2135761390_1498993433_3282659717.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_4/media/videos/eletromec/1080p60/partial_movie_files/SistemaEletromecanicoSimulacao/2135761390_2844360058_1876018651.mp4'

@@ -1,0 +1,12 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_6/media/videos/termico/1080p60/partial_movie_files/IntroTanque/2257293077_491375178_223132457.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_6/media/videos/termico/1080p60/partial_movie_files/IntroTanque/2135761390_1433877407_1079173790.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_6/media/videos/termico/1080p60/partial_movie_files/IntroTanque/2135761390_2167969756_613881392.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_6/media/videos/termico/1080p60/partial_movie_files/IntroTanque/2135761390_3902733901_791039880.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_6/media/videos/termico/1080p60/partial_movie_files/IntroTanque/2135761390_2987185276_1309473534.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_6/media/videos/termico/1080p60/partial_movie_files/IntroTanque/2135761390_3902733901_3391814156.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_6/media/videos/termico/1080p60/partial_movie_files/IntroTanque/2135761390_324454900_3556047886.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_6/media/videos/termico/1080p60/partial_movie_files/IntroTanque/2135761390_3902733901_2592335561.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_6/media/videos/termico/1080p60/partial_movie_files/IntroTanque/2135761390_2536175139_1903106840.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_6/media/videos/termico/1080p60/partial_movie_files/IntroTanque/2135761390_2000440177_1118746244.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_6/media/videos/termico/1080p60/partial_movie_files/IntroTanque/2135761390_3394500337_90150494.mp4'

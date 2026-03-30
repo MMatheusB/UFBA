@@ -111,31 +111,30 @@ class SimuladorDuto:
         X_list = []
         Y_list = []
 
-        for j in range(n_points):
+        for t in range(time_step, N_total - 1):
 
-            pos = j  
+            for j in range(n_points):
 
-            for t in range(time_step, N_total - 1):
-
+                pos = j
                 x_window = []
 
                 for k in range(time_step):
 
                     i = t - time_step + k
 
-                    # -------- INLET --------
                     T_in = T_sol[i, 0]
                     m_in = m_dot[i, 0]
-
                     V_in = V_sol[i, 0]
-                    P_in = self.sistema.gas.copy_change_conditions(T_in, None, V_in, 'gas').P
+                    P_in = self.sistema.gas.copy_change_conditions(
+                        T_in, None, V_in, 'gas'
+                    ).P
 
-                    # -------- OUTLET --------
                     T_out = T_sol[i, -1]
                     m_out = m_dot[i, -1]
-
                     V_out = V_sol[i, -1]
-                    P_out = self.sistema.gas.copy_change_conditions(T_out, None, V_out, 'gas').P
+                    P_out = self.sistema.gas.copy_change_conditions(
+                        T_out, None, V_out, 'gas'
+                    ).P
 
                     x_window.append([
                         pos,
@@ -157,11 +156,9 @@ class SimuladorDuto:
                 X_list.append(x_window)
                 Y_list.append(y)
 
-        # -------- TENSORES --------
         x_train = torch.tensor(np.array(X_list), dtype=torch.float32)
         y_train = torch.tensor(np.array(Y_list), dtype=torch.float32)
 
-        # -------- NORMALIZAÇÃO --------
         x_min = x_train.amin(dim=(0,1), keepdim=True)
         x_max = x_train.amax(dim=(0,1), keepdim=True)
 

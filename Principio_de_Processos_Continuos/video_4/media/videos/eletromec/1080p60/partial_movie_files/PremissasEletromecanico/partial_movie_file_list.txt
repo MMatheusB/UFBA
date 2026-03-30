@@ -1,0 +1,13 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_4/media/videos/eletromec/1080p60/partial_movie_files/PremissasEletromecanico/2257293077_2297285042_223132457.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_4/media/videos/eletromec/1080p60/partial_movie_files/PremissasEletromecanico/2135761390_4217992463_2301230461.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_4/media/videos/eletromec/1080p60/partial_movie_files/PremissasEletromecanico/2135761390_1469253797_2662422315.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_4/media/videos/eletromec/1080p60/partial_movie_files/PremissasEletromecanico/2135761390_1433877407_2532991667.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_4/media/videos/eletromec/1080p60/partial_movie_files/PremissasEletromecanico/2135761390_1481120507_1354199343.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_4/media/videos/eletromec/1080p60/partial_movie_files/PremissasEletromecanico/2135761390_1433877407_840286141.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_4/media/videos/eletromec/1080p60/partial_movie_files/PremissasEletromecanico/2135761390_160264403_3536254775.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_4/media/videos/eletromec/1080p60/partial_movie_files/PremissasEletromecanico/2135761390_1433877407_1662835511.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_4/media/videos/eletromec/1080p60/partial_movie_files/PremissasEletromecanico/2135761390_3404247665_1251412199.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_4/media/videos/eletromec/1080p60/partial_movie_files/PremissasEletromecanico/2135761390_1433877407_2733139295.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_4/media/videos/eletromec/1080p60/partial_movie_files/PremissasEletromecanico/2135761390_206138768_1127184111.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_4/media/videos/eletromec/1080p60/partial_movie_files/PremissasEletromecanico/2135761390_1905936281_4094420813.mp4'

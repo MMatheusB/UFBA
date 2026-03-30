@@ -42,96 +42,168 @@ class RNNModelWrapper(nn.Module):
     def denormalize_y(self, y_norm):
         return (y_norm + 1) * 0.5 * (self.y_max - self.y_min) + self.y_min
 
+    def derivada_lagrange_3p(self, var):
+        """
+        Derivada espacial usando Lagrange 3 pontos (malha não uniforme)
+        
+        var: (n_times, n_points)
+        """
 
+        device = var.device
+        dtype = var.dtype
+
+        x = torch.tensor(self.sistema.l, device=device, dtype=dtype)
+
+        n_times, n_points = var.shape
+        dvar_dx = torch.zeros_like(var)
+
+        for i in range(n_points):
+
+            # stencil
+            if i == 0:
+                idx = [0, 1, 2]
+            elif i == n_points - 1:
+                idx = [n_points - 3, n_points - 2, n_points - 1]
+            else:
+                idx = [i - 1, i, i + 1]
+
+            x_sub = x[idx]          # (3,)
+            f_sub = var[:, idx]     # (n_times, 3)
+            xi = x[i]
+
+            deriv = torch.zeros(n_times, device=device, dtype=dtype)
+
+            for j in range(3):
+
+                Lj_deriv = 0
+
+                for m in range(3):
+                    if m != j:
+
+                        prod = 1
+                        for k in range(3):
+                            if k != j and k != m:
+                                prod *= (xi - x_sub[k]) / (x_sub[j] - x_sub[k])
+
+                        Lj_deriv += prod / (x_sub[j] - x_sub[m])
+
+                deriv += f_sub[:, j] * Lj_deriv
+
+            dvar_dx[:, i] = deriv
+
+        return dvar_dx
+    
+    def derivada_t_3p(self, dt, var):
+        """
+        Derivada temporal com 3 pontos (ordem 2)
+        
+        var: (n_times, n_points)
+        """
+
+        n_times = var.shape[0]
+        dvar_dt = torch.zeros_like(var)
+
+        # ❌ impossível derivar com 1 ponto
+        if n_times == 1:
+            return dvar_dt
+
+        # 🔥 caso mínimo (2 pontos)
+        if n_times == 2:
+            dvar_dt[0] = (var[1] - var[0]) / dt
+            dvar_dt[1] = (var[1] - var[0]) / dt
+            return dvar_dt
+
+        # ✅ interior (central)
+        dvar_dt[1:-1] = (var[2:] - var[:-2]) / (2 * dt)
+
+        # bordas
+        dvar_dt[0] = (var[1] - var[0]) / dt
+        dvar_dt[-1] = (var[-1] - var[-2]) / dt
+
+        return dvar_dt
+    
     def forward(self, x):
-
-        x = x.clone()
-
-        indice = x[:, :, 0].long()
-
-        x_real = torch.tensor(self.sistema.l, device=x.device).float()
-
-        x_pos = x_real[indice]
-
-        x = torch.cat([
-            x_pos.unsqueeze(-1),
-            x[:, :, 1:]
-        ], dim=-1)
-
+        x = self.normalize_x(x)
         out, _ = self.rnn(x)
 
         out_last = out[:, -1, :]
         out = self.fc(out_last)
-
-        T = torch.nn.functional.softplus(out[:, 0]) + 200.0
-        V = torch.nn.functional.softplus(out[:, 1]) + 1e-3
-        w = out[:, 2]
-        P = torch.nn.functional.softplus(out[:, 3]) + 1e5
-        m = out[:, 4]
-
-        # clamp extra
-        T = torch.clamp(T, 200.0, 2000.0)
-        V = torch.clamp(V, 1e-6, 1.0)
-        P = torch.clamp(P, 1e5, 1e7)
-
-        out = torch.stack([T, V, w, P, m], dim=1)
+        out = self.denormalize_y(out)
 
         return out
 
 
-    def train_model(self, train_loader, epochs=50, lambda_phys=1.0):
+    def train_model(self, dt, train_loader, epochs=50, lambda_phys=1e-1):
 
         self.train()
 
         for ep in range(epochs):
-
             total_loss = 0.0
             total_data = 0.0
             total_phys = 0.0
 
             for xb, yb in train_loader:
 
+                self.optimizer.zero_grad()
+
                 xb = xb.to(self.device)
                 yb = yb.to(self.device)
 
-                xb = xb.clone().detach().requires_grad_(True)
-
-                self.optimizer.zero_grad()
-
                 pred = self.forward(xb)
 
-                pos = xb[:, 0, 0]
+                n = pred.shape[0]
 
-                mask = (pos == 0) | (pos == self.sistema.l[-1])
+                # pesos (ajuste como quiser)
+                w_T = 1e2
+                w_V = 1e3   
+                w_w = 1e3   
+                w_P = 5
+                w_m = 1e3
 
-                if mask.any():
-                    loss_data = ((pred - yb)[mask]**2).mean()
-                else:
-                    loss_data = torch.tensor(0.0, device=self.device)
+                weights = torch.tensor([w_T, w_V, w_w, w_P, w_m], device=self.device)
 
-                T = pred[:, 0]
-                V = pred[:, 1]
-                w = pred[:, 2]
-                P = pred[:, 3]
-                m = pred[:, 4]
+                # erro entrada
+                err_in = (pred[0] - yb[0])**2
+                loss_in = (err_in * weights).mean()
 
-                dT_dx = torch.autograd.grad(
-                    T, xb,
-                    grad_outputs=torch.ones_like(T),
-                    create_graph=True
-                )[0][:, -1, 0]
+                # erro saída
+                err_out = (pred[n-1] - yb[n-1])**2
+                loss_out = (err_out * weights).mean()
 
-                dV_dx = torch.autograd.grad(
-                    V, xb,
-                    grad_outputs=torch.ones_like(V),
-                    create_graph=True
-                )[0][:, -1, 0]
+                loss_data = loss_in + loss_out
 
-                dw_dx = torch.autograd.grad(
-                    w, xb,
-                    grad_outputs=torch.ones_like(w),
-                    create_graph=True
-                )[0][:, -1, 0]
+                n_points = self.sistema.n_points
+                batch_size = pred.shape[0]
+
+                assert batch_size % n_points == 0, "Batch desalinhado!"
+
+                n_times = batch_size // n_points
+
+                T = pred[:, 0].view(n_times, n_points)
+                V = pred[:, 1].view(n_times, n_points)
+                w = pred[:, 2].view(n_times, n_points)
+                P = pred[:, 3].view(n_times, n_points)
+
+                dT_dx = self.derivada_lagrange_3p(T)
+                dV_dx = self.derivada_lagrange_3p(V)
+                dw_dx = self.derivada_lagrange_3p(w)
+
+                dT_dt = self.derivada_t_3p(dt, T)
+                dV_dt = self.derivada_t_3p(dt, V)
+                dw_dt = self.derivada_t_3p(dt, w)
+
+                T = T.reshape(-1)
+                V = V.reshape(-1)
+                w = w.reshape(-1)
+                P = P.reshape(-1)
+
+                dT_dx = dT_dx.reshape(-1)
+                dV_dx = dV_dx.reshape(-1)
+                dw_dx = dw_dx.reshape(-1)
+
+                dT_dt = dT_dt.reshape(-1)
+                dV_dt = dV_dt.reshape(-1)
+                dw_dt = dw_dt.reshape(-1)
 
                 T_np = T.detach().cpu().numpy()
                 V_np = V.detach().cpu().numpy()
@@ -140,7 +212,6 @@ class RNNModelWrapper(nn.Module):
                 dPdT_list = []
                 dPdV_list = []
                 Cv_list = []
-                mu_list = []
                 f_list = []
                 q_list = []
 
@@ -150,6 +221,7 @@ class RNNModelWrapper(nn.Module):
                         T_np[i], None, V_np[i], 'gas'
                     )
                     gas_temp.ci_real()
+
                     dPdT_list.append(gas_temp.dPdT * 1000)
                     dPdV_list.append(gas_temp.dPdV * 1000)
                     Cv_list.append(gas_temp.Cvt / gas_temp.mixture.MM_m * 1000)
@@ -174,46 +246,55 @@ class RNNModelWrapper(nn.Module):
 
                     q = self.sistema.q_solo(rho, T_np[i], U)
 
-                    mu_list.append(mu)
                     f_list.append(f)
                     q_list.append(q)
 
-                # voltar pra torch
                 dPdT = torch.tensor(dPdT_list, device=self.device).float()
                 dPdV = torch.tensor(dPdV_list, device=self.device).float()
                 Cv   = torch.tensor(Cv_list, device=self.device).float()
                 f    = torch.tensor(f_list, device=self.device).float()
                 q    = torch.tensor(q_list, device=self.device).float()
 
-                res_T = (
+                # =========================
+                F_T = (
                     -w * dT_dx
                     - T * (V * dPdT / Cv) * dw_dx
                     + f * w**2 * torch.abs(w) / (2 * self.sistema.D * Cv)
                     + q / Cv
                 )
 
-                res_V = (
+                F_V = (
                     -w * dV_dx
                     + V * dw_dx
                 )
 
-                res_w = (
+                F_w = (
                     -V * dPdT * dT_dx
                     -V * dPdV * dV_dx
                     -w * dw_dx
                     -f * w * torch.abs(w) / (2 * self.sistema.D)
                 )
-                
-                res_T = torch.nan_to_num(res_T, nan=0.0)
-                res_V = torch.nan_to_num(res_V, nan=0.0)
-                res_w = torch.nan_to_num(res_w, nan=0.0)
-                
+
+                # =========================
+                # RESÍDUO FINAL
+                # =========================
+                res_T = dT_dt - F_T
+                res_V = dV_dt - F_V
+                res_w = dw_dt - F_w
+
+                res_T = torch.nan_to_num(res_T, nan=0.0, posinf=0.0, neginf=0.0)
+                res_V = torch.nan_to_num(res_V, nan=0.0, posinf=0.0, neginf=0.0)
+                res_w = torch.nan_to_num(res_w, nan=0.0, posinf=0.0, neginf=0.0)
+
                 loss_phys = (
                     (res_T**2).mean() +
                     (res_V**2).mean() +
                     (res_w**2).mean()
                 )
 
+                # =========================
+                # LOSS TOTAL
+                # =========================
                 loss = loss_data + lambda_phys * loss_phys
 
                 loss.backward()
@@ -223,13 +304,12 @@ class RNNModelWrapper(nn.Module):
                 total_data += loss_data.item()
                 total_phys += loss_phys.item()
 
-            if (ep + 1) % 10 == 0:
-                print(
-                    f"Epoch {ep+1}/{epochs} | "
-                    f"Total = {total_loss/len(train_loader):.6f} | "
-                    f"Data = {total_data/len(train_loader):.6f} | "
-                    f"Phys = {total_phys/len(train_loader):.6f}"
-                )
+            print(
+                f"Epoch {ep+1}/{epochs} | "
+                f"Total = {total_loss/len(train_loader):.6f} | "
+                f"Data = {total_data/len(train_loader):.6f} | "
+                f"Phys = {total_phys/len(train_loader):.6f}"
+            )
 
     def predict(self, x):
         """Função que faz sei lá o que"""

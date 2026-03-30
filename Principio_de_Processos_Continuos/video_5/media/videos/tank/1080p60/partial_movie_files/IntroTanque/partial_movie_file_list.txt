@@ -1,0 +1,13 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_5/media/videos/tank/1080p60/partial_movie_files/IntroTanque/2257293077_2370686590_223132457.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_5/media/videos/tank/1080p60/partial_movie_files/IntroTanque/2135761390_3932249147_1833446849.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_5/media/videos/tank/1080p60/partial_movie_files/IntroTanque/2135761390_1952858865_2844672172.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_5/media/videos/tank/1080p60/partial_movie_files/IntroTanque/2135761390_3585970359_2350496645.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_5/media/videos/tank/1080p60/partial_movie_files/IntroTanque/2135761390_820470782_971503111.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_5/media/videos/tank/1080p60/partial_movie_files/IntroTanque/2135761390_3585970359_438476946.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_5/media/videos/tank/1080p60/partial_movie_files/IntroTanque/2135761390_1716340602_433181784.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_5/media/videos/tank/1080p60/partial_movie_files/IntroTanque/2135761390_3585970359_2218543481.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_5/media/videos/tank/1080p60/partial_movie_files/IntroTanque/2135761390_2756491677_626760514.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_5/media/videos/tank/1080p60/partial_movie_files/IntroTanque/2135761390_2536175139_1149089152.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_5/media/videos/tank/1080p60/partial_movie_files/IntroTanque/2135761390_1991945047_2764077911.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_5/media/videos/tank/1080p60/partial_movie_files/IntroTanque/2135761390_3394500337_90150494.mp4'

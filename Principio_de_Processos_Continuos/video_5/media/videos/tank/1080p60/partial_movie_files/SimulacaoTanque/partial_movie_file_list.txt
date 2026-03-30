@@ -1,0 +1,13 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_5/media/videos/tank/1080p60/partial_movie_files/SimulacaoTanque/2257293077_2939966854_223132457.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_5/media/videos/tank/1080p60/partial_movie_files/SimulacaoTanque/2135761390_3932249147_2129756198.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_5/media/videos/tank/1080p60/partial_movie_files/SimulacaoTanque/2135761390_2580650675_4036752100.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_5/media/videos/tank/1080p60/partial_movie_files/SimulacaoTanque/2135761390_3394500337_2981452417.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_5/media/videos/tank/1080p60/partial_movie_files/SimulacaoTanque/2135761390_811876870_381330019.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_5/media/videos/tank/1080p60/partial_movie_files/SimulacaoTanque/2135761390_3585970359_3594493756.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_5/media/videos/tank/1080p60/partial_movie_files/SimulacaoTanque/2135761390_3619073610_3170595009.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_5/media/videos/tank/1080p60/partial_movie_files/SimulacaoTanque/2135761390_3394500337_3578195122.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_5/media/videos/tank/1080p60/partial_movie_files/SimulacaoTanque/2135761390_2608656454_1891949088.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_5/media/videos/tank/1080p60/partial_movie_files/SimulacaoTanque/2135761390_3366045169_4217496196.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_5/media/videos/tank/1080p60/partial_movie_files/SimulacaoTanque/2135761390_3419458047_1496252037.mp4'
+file 'file:/home/matheus/Trabalho/UFBA/Principio_de_Processos_Continuos/video_5/media/videos/tank/1080p60/partial_movie_files/SimulacaoTanque/2135761390_2318836581_90150494.mp4'
