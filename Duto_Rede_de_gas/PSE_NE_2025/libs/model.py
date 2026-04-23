@@ -93,32 +93,31 @@ class RNNModelWrapper(nn.Module):
 
         return dvar_dx
     
-    def derivada_t_3p(self, dt, var):
+    def derivada_t_5p(self, dt, var):
         """
-        Derivada temporal com 3 pontos (ordem 2)
-        
-        var: (n_times, n_points)
+        Derivada temporal com 5 pontos (ordem 4 no centro)
+
+        var: (5, n_points)
         """
 
-        n_times = var.shape[0]
         dvar_dt = torch.zeros_like(var)
 
-        # ❌ impossível derivar com 1 ponto
-        if n_times == 1:
-            return dvar_dt
 
-        # 🔥 caso mínimo (2 pontos)
-        if n_times == 2:
-            dvar_dt[0] = (var[1] - var[0]) / dt
-            dvar_dt[1] = (var[1] - var[0]) / dt
-            return dvar_dt
-
-        # ✅ interior (central)
-        dvar_dt[1:-1] = (var[2:] - var[:-2]) / (2 * dt)
-
-        # bordas
         dvar_dt[0] = (var[1] - var[0]) / dt
-        dvar_dt[-1] = (var[-1] - var[-2]) / dt
+
+
+        dvar_dt[1] = (var[2] - var[0]) / (2 * dt)
+
+  
+        dvar_dt[2] = (
+            -var[4] + 8*var[3] - 8*var[1] + var[0]
+        ) / (12 * dt)
+
+
+        dvar_dt[3] = (var[4] - var[2]) / (2 * dt)
+
+
+        dvar_dt[4] = (var[4] - var[3]) / dt
 
         return dvar_dt
     
@@ -133,7 +132,7 @@ class RNNModelWrapper(nn.Module):
         return out
 
 
-    def train_model(self, dt, train_loader, epochs=50, lambda_phys=1e-1):
+    def train_model(self, dt, train_loader, epochs=50, lambda_phys=1e1):
 
         self.train()
 
@@ -153,20 +152,17 @@ class RNNModelWrapper(nn.Module):
 
                 n = pred.shape[0]
 
-                # pesos (ajuste como quiser)
                 w_T = 1e2
-                w_V = 1e3   
-                w_w = 1e3   
-                w_P = 5
+                w_V = 1e4   
+                w_w = 1e5   
+                w_P = 1e1
                 w_m = 1e3
 
                 weights = torch.tensor([w_T, w_V, w_w, w_P, w_m], device=self.device)
 
-                # erro entrada
                 err_in = (pred[0] - yb[0])**2
                 loss_in = (err_in * weights).mean()
 
-                # erro saída
                 err_out = (pred[n-1] - yb[n-1])**2
                 loss_out = (err_out * weights).mean()
 
@@ -183,19 +179,21 @@ class RNNModelWrapper(nn.Module):
                 V = pred[:, 1].view(n_times, n_points)
                 w = pred[:, 2].view(n_times, n_points)
                 P = pred[:, 3].view(n_times, n_points)
+                m = pred[:, 4].view(n_times, n_points)
 
                 dT_dx = self.derivada_lagrange_3p(T)
                 dV_dx = self.derivada_lagrange_3p(V)
                 dw_dx = self.derivada_lagrange_3p(w)
 
-                dT_dt = self.derivada_t_3p(dt, T)
-                dV_dt = self.derivada_t_3p(dt, V)
-                dw_dt = self.derivada_t_3p(dt, w)
+                dT_dt = self.derivada_t_5p(dt, T)
+                dV_dt = self.derivada_t_5p(dt, V)
+                dw_dt = self.derivada_t_5p(dt, w)
 
                 T = T.reshape(-1)
                 V = V.reshape(-1)
                 w = w.reshape(-1)
                 P = P.reshape(-1)
+                m = m.reshape(-1)
 
                 dT_dx = dT_dx.reshape(-1)
                 dV_dx = dV_dx.reshape(-1)
@@ -214,6 +212,8 @@ class RNNModelWrapper(nn.Module):
                 Cv_list = []
                 f_list = []
                 q_list = []
+                m_phys_list = []
+                P_phys_list = []
 
                 for i in range(len(T_np)):
 
@@ -225,11 +225,15 @@ class RNNModelWrapper(nn.Module):
                     dPdT_list.append(gas_temp.dPdT * 1000)
                     dPdV_list.append(gas_temp.dPdV * 1000)
                     Cv_list.append(gas_temp.Cvt / gas_temp.mixture.MM_m * 1000)
-
+                    
+                    P_phys_list.append(gas_temp.P)
+                    
                     MM = gas_temp.mixture.MM_m
                     v_kg = V_np[i] / MM
                     rho = 1 / v_kg
-
+                    A = np.pi * (self.sistema.D**2) / 4
+                    m_phys = rho * w[i].item() * A        
+                    m_phys_list.append(m_phys)
                     mu = self.sistema.visc.evaluate_viscosity(T_np[i], P_np[i])
                     Re = rho * w[i].item() * self.sistema.D / mu
 
@@ -254,7 +258,8 @@ class RNNModelWrapper(nn.Module):
                 Cv   = torch.tensor(Cv_list, device=self.device).float()
                 f    = torch.tensor(f_list, device=self.device).float()
                 q    = torch.tensor(q_list, device=self.device).float()
-
+                m_phys = torch.tensor(m_phys_list, device=self.device).float()
+                P_phys = torch.tensor(P_phys_list, device=self.device).float()
                 # =========================
                 F_T = (
                     -w * dT_dx
@@ -275,13 +280,12 @@ class RNNModelWrapper(nn.Module):
                     -f * w * torch.abs(w) / (2 * self.sistema.D)
                 )
 
-                # =========================
-                # RESÍDUO FINAL
-                # =========================
                 res_T = dT_dt - F_T
                 res_V = dV_dt - F_V
                 res_w = dw_dt - F_w
-
+                res_m = m - m_phys
+                res_P = P - P_phys
+                
                 res_T = torch.nan_to_num(res_T, nan=0.0, posinf=0.0, neginf=0.0)
                 res_V = torch.nan_to_num(res_V, nan=0.0, posinf=0.0, neginf=0.0)
                 res_w = torch.nan_to_num(res_w, nan=0.0, posinf=0.0, neginf=0.0)
@@ -289,13 +293,12 @@ class RNNModelWrapper(nn.Module):
                 loss_phys = (
                     (res_T**2).mean() +
                     (res_V**2).mean() +
-                    (res_w**2).mean()
+                    (res_w**2).mean() +
+                    1e-2 * (res_m**2).mean() + 
+                    1e-2 * (res_P**2).mean()
                 )
 
-                # =========================
-                # LOSS TOTAL
-                # =========================
-                loss = loss_data + lambda_phys * loss_phys
+                loss = 1e-3*loss_data + lambda_phys * loss_phys
 
                 loss.backward()
                 self.optimizer.step()
