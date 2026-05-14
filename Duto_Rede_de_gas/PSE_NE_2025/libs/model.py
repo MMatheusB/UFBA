@@ -7,7 +7,7 @@ from libs.composicaogas import coef_con_ter
 
 class RNNModelWrapper(nn.Module):
     def __init__(self, sistema, input_dim, hidden_dim, output_dim, num_layers,
-                 x_min, x_max, y_min, y_max, lr=1e-3, device="cpu"):
+                 x_min, x_max, y_min, y_max, T_norm, V_norm, P_norm, w_norm, lr=1e-3, device="cpu"):
 
         super().__init__()
         self.device = device
@@ -17,7 +17,10 @@ class RNNModelWrapper(nn.Module):
         self.x_max = torch.tensor(x_max, dtype=torch.float32).to(device)
         self.y_min = torch.tensor(y_min, dtype=torch.float32).to(device)
         self.y_max = torch.tensor(y_max, dtype=torch.float32).to(device)
-
+        self.T_norm= T_norm
+        self.V_norm= V_norm
+        self.P_norm= P_norm
+        self.w_norm= w_norm
         # --------------------- MODELO ---------------------
         self.rnn = nn.LSTM(
             input_size=input_dim,
@@ -152,21 +155,20 @@ class RNNModelWrapper(nn.Module):
 
                 n = pred.shape[0]
 
-                w_T = 1e2
-                w_V = 1e4   
-                w_w = 1e5   
-                w_P = 1e1
-                w_m = 1e3
-
+                w_T = 1e0
+                w_V = 1e2   
+                w_w = 1e2   
+                w_P = 1e0
+                w_m = 1e1
+                V_nn = (self.sistema.D*self.w_norm)/self.V_norm
+                T_nn = (self.sistema.D*self.w_norm)/self.T_norm
+                
                 weights = torch.tensor([w_T, w_V, w_w, w_P, w_m], device=self.device)
 
-                err_in = (pred[0] - yb[0])**2
-                loss_in = (err_in * weights).mean()
+                err_in = (pred - yb)**2
+                loss_in = (err_in).mean()
 
-                err_out = (pred[n-1] - yb[n-1])**2
-                loss_out = (err_out * weights).mean()
-
-                loss_data = loss_in + loss_out
+                loss_data = loss_in
 
                 n_points = self.sistema.n_points
                 batch_size = pred.shape[0]
@@ -232,7 +234,7 @@ class RNNModelWrapper(nn.Module):
                     v_kg = V_np[i] / MM
                     rho = 1 / v_kg
                     A = np.pi * (self.sistema.D**2) / 4
-                    m_phys = rho * w[i].item() * A        
+                    m_phys = rho * w[i].item() * A      
                     m_phys_list.append(m_phys)
                     mu = self.sistema.visc.evaluate_viscosity(T_np[i], P_np[i])
                     Re = rho * w[i].item() * self.sistema.D / mu
@@ -280,11 +282,15 @@ class RNNModelWrapper(nn.Module):
                     -f * w * torch.abs(w) / (2 * self.sistema.D)
                 )
 
-                res_T = dT_dt - F_T
-                res_V = dV_dt - F_V
-                res_w = dw_dt - F_w
-                res_m = m - m_phys
-                res_P = P - P_phys
+                v_kg_nn = self.V_norm / MM
+                rho_nn = 1/v_kg_nn
+                w_nn = (self.sistema.D*self.w_norm)/(rho_nn * self.w_norm * A)
+                res_m = (m - m_phys)/ (rho_nn * self.w_norm * A)
+                res_P = (P - P_phys) / self.P_norm
+                
+                res_T = (dT_dt - F_T)*T_nn
+                res_V = (dV_dt - F_V)*V_nn
+                res_w = (dw_dt - F_w)*w_nn
                 
                 res_T = torch.nan_to_num(res_T, nan=0.0, posinf=0.0, neginf=0.0)
                 res_V = torch.nan_to_num(res_V, nan=0.0, posinf=0.0, neginf=0.0)
@@ -294,11 +300,11 @@ class RNNModelWrapper(nn.Module):
                     (res_T**2).mean() +
                     (res_V**2).mean() +
                     (res_w**2).mean() +
-                    1e-2 * (res_m**2).mean() + 
-                    1e-2 * (res_P**2).mean()
+                    (res_m**2).mean() + 
+                    (res_P**2).mean()
                 )
 
-                loss = 1e-3*loss_data + lambda_phys * loss_phys
+                loss = loss_data + lambda_phys * loss_phys
 
                 loss.backward()
                 self.optimizer.step()
