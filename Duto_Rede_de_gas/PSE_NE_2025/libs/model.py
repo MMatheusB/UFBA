@@ -154,21 +154,8 @@ class RNNModelWrapper(nn.Module):
                 pred = self.forward(xb)
 
                 n = pred.shape[0]
-
-                w_T = 1e0
-                w_V = 1e2   
-                w_w = 1e2   
-                w_P = 1e0
-                w_m = 1e1
                 V_nn = (self.sistema.D*self.w_norm)/self.V_norm
                 T_nn = (self.sistema.D*self.w_norm)/self.T_norm
-                
-                weights = torch.tensor([w_T, w_V, w_w, w_P, w_m], device=self.device)
-
-                err_in = (pred - yb)**2
-                loss_in = (err_in).mean()
-
-                loss_data = loss_in
 
                 n_points = self.sistema.n_points
                 batch_size = pred.shape[0]
@@ -303,9 +290,22 @@ class RNNModelWrapper(nn.Module):
                     (res_m**2).mean() + 
                     (res_P**2).mean()
                 )
+                
+                w_T = 1e0/self.T_norm
+                w_V = 1e0/ self.V_norm
+                w_w = 1e0/ self.w_norm
+                w_P = 1e0/ self.P_norm
+                w_m = 1e0 / (rho_nn * self.w_norm * A)
+                
+                weights = torch.tensor([w_T, w_V, w_w, w_P, w_m], device=self.device)
 
+                err_in = (pred - yb)**2
+                loss_in = (err_in*weights).mean()
+
+                loss_data = loss_in
+                
                 loss = loss_data + lambda_phys * loss_phys
-
+                
                 loss.backward()
                 self.optimizer.step()
 
