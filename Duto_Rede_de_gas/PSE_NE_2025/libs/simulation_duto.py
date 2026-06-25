@@ -108,64 +108,159 @@ class SimuladorDuto:
         n_points = self.sistema.n_points
         N_total = T_sol.shape[0]
 
-        X_list = []
-        Y_list = []
+        # =====================================================
+        # Pré-calcula todas as pressões
+        # =====================================================
 
-        for t in range(time_step, N_total - 1):
+        P_sol = np.zeros_like(T_sol)
+
+        for i in range(N_total):
+            for j in range(n_points):
+
+                P_sol[i, j] = (
+                    self.sistema.gas
+                    .copy_change_conditions(
+                        T_sol[i, j],
+                        None,
+                        V_sol[i, j],
+                        "gas"
+                    )
+                    .P
+                )
+
+        # =====================================================
+        # Número total de amostras
+        # =====================================================
+
+        n_samples = (N_total - time_step - 2) * n_points
+
+        X = np.empty(
+            (n_samples, time_step, 7),
+            dtype=np.float32
+        )
+
+        # Agora teremos 10 saídas
+        Y = np.empty(
+            (n_samples, 10),
+            dtype=np.float32
+        )
+
+        sample_idx = 0
+
+        # =====================================================
+        # Construção do dataset
+        # =====================================================
+
+        for t in range(time_step, N_total - 2):
+
+            # ---------------------------------------------
+            # Janela temporal (condições de contorno)
+            # ---------------------------------------------
+
+            window = np.empty(
+                (time_step, 7),
+                dtype=np.float32
+            )
+
+            for k in range(time_step):
+
+                i = t - time_step + k
+
+                window[k] = [
+                    0.0,                # posição (sobrescrita)
+                    T_sol[i, 0],
+                    m_dot[i, 0],
+                    P_sol[i, 0],
+                    T_sol[i, -1],
+                    m_dot[i, -1],
+                    P_sol[i, -1]
+                ]
+
+            # ---------------------------------------------
+            # Percorre todos os pontos espaciais
+            # ---------------------------------------------
 
             for j in range(n_points):
 
-                pos = j
-                x_window = []
+                X[sample_idx] = window
 
-                for k in range(time_step):
+                # posição espacial
+                X[sample_idx, :, 0] = j
 
-                    i = t - time_step + k
+                # --------------------------
+                # t+1
+                # --------------------------
 
-                    T_in = T_sol[i, 0]
-                    m_in = m_dot[i, 0]
-                    V_in = V_sol[i, 0]
-                    P_in = self.sistema.gas.copy_change_conditions(
-                        T_in, None, V_in, 'gas'
-                    ).P
+                T1 = T_sol[t + 1, j]
+                V1 = V_sol[t + 1, j]
+                w1 = w_sol[t + 1, j]
+                P1 = P_sol[t + 1, j]
+                m1 = m_dot[t + 1, j]
 
-                    T_out = T_sol[i, -1]
-                    m_out = m_dot[i, -1]
-                    V_out = V_sol[i, -1]
-                    P_out = self.sistema.gas.copy_change_conditions(
-                        T_out, None, V_out, 'gas'
-                    ).P
+                # --------------------------
+                # t+2
+                # --------------------------
 
-                    x_window.append([
-                        pos,
-                        T_in, m_in, P_in,
-                        T_out, m_out, P_out
-                    ])
+                T2 = T_sol[t + 2, j]
+                V2 = V_sol[t + 2, j]
+                w2 = w_sol[t + 2, j]
+                P2 = P_sol[t + 2, j]
+                m2 = m_dot[t + 2, j]
 
-                T_next = T_sol[t+1, j]
-                V_next = V_sol[t+1, j]
-                w_next = w_sol[t+1, j]
-                m_next = m_dot[t+1, j]
+                Y[sample_idx] = [
+                    T1,
+                    V1,
+                    w1,
+                    P1,
+                    m1,
+                    T2,
+                    V2,
+                    w2,
+                    P2,
+                    m2
+                ]
 
-                P_next = self.sistema.gas.copy_change_conditions(
-                    T_next, None, V_next, 'gas'
-                ).P
+                sample_idx += 1
 
-                y = [T_next, V_next, w_next, P_next, m_next]
+        # =====================================================
+        # Tensor
+        # =====================================================
 
-                X_list.append(x_window)
-                Y_list.append(y)
+        x_train = torch.from_numpy(X)
+        y_train = torch.from_numpy(Y)
 
-        x_train = torch.tensor(np.array(X_list), dtype=torch.float32)
-        y_train = torch.tensor(np.array(Y_list), dtype=torch.float32)
+        # =====================================================
+        # Normalização
+        # =====================================================
 
-        x_min = x_train.amin(dim=(0,1), keepdim=True)
-        x_max = x_train.amax(dim=(0,1), keepdim=True)
+        x_min = x_train.amin(
+            dim=(0, 1),
+            keepdim=True
+        )
 
-        y_min = y_train.amin(dim=0, keepdim=True)
-        y_max = y_train.amax(dim=0, keepdim=True)
+        x_max = x_train.amax(
+            dim=(0, 1),
+            keepdim=True
+        )
 
-        return x_train, y_train, x_min, x_max, y_min, y_max
+        y_min = y_train.amin(
+            dim=0,
+            keepdim=True
+        )
+
+        y_max = y_train.amax(
+            dim=0,
+            keepdim=True
+        )
+
+        return (
+            x_train,
+            y_train,
+            x_min,
+            x_max,
+            y_min,
+            y_max
+        )
 
     def plotar(self):
         if not self.resultados:
