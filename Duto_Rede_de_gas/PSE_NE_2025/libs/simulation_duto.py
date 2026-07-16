@@ -104,70 +104,36 @@ class SimuladorDuto:
         V_sol = self.resultados["V_sol"]
         w_sol = self.resultados["w_sol"]
         m_dot = self.resultados["m_dot"]
+        rot   = np.asarray(self.resultados["rot"])   # <-- NOVO
 
         n_points = self.sistema.n_points
         N_total = T_sol.shape[0]
 
-        # =====================================================
-        # Pré-calcula todas as pressões
-        # =====================================================
-
         P_sol = np.zeros_like(T_sol)
-
         for i in range(N_total):
             for j in range(n_points):
-
                 P_sol[i, j] = (
                     self.sistema.gas
-                    .copy_change_conditions(
-                        T_sol[i, j],
-                        None,
-                        V_sol[i, j],
-                        "gas"
-                    )
+                    .copy_change_conditions(T_sol[i, j], None, V_sol[i, j], "gas")
                     .P
                 )
 
-        # =====================================================
-        # Número total de amostras
-        # =====================================================
+        n_samples = N_total - time_step - 2
 
-        n_samples = (N_total - time_step - 2) * n_points
-
-        X = np.empty(
-            (n_samples, time_step, 7),
-            dtype=np.float32
-        )
-
-        # Agora teremos 10 saídas
-        Y = np.empty(
-            (n_samples, 10),
-            dtype=np.float32
-        )
+        X = np.empty((n_samples, time_step, 7), dtype=np.float32)  # <-- 7 no lugar de 6
+        Y = np.empty((n_samples, n_points, 10), dtype=np.float32)
 
         sample_idx = 0
 
-        # =====================================================
-        # Construção do dataset
-        # =====================================================
-
         for t in range(time_step, N_total - 2):
 
-            # ---------------------------------------------
-            # Janela temporal (condições de contorno)
-            # ---------------------------------------------
-
-            window = np.empty(
-                (time_step, 7),
-                dtype=np.float32
-            )
+            window = np.empty((time_step, 7), dtype=np.float32)
 
             for k in range(time_step):
-
                 i = t - time_step + k
 
                 window[k] = [
-                    0.0,                # posição (sobrescrita)
+                    rot[i],              # <-- perturbação explícita
                     T_sol[i, 0],
                     m_dot[i, 0],
                     P_sol[i, 0],
@@ -176,91 +142,31 @@ class SimuladorDuto:
                     P_sol[i, -1]
                 ]
 
-            # ---------------------------------------------
-            # Percorre todos os pontos espaciais
-            # ---------------------------------------------
+            X[sample_idx] = window
 
-            for j in range(n_points):
+            Y[sample_idx, :, 0] = T_sol[t + 1, :]
+            Y[sample_idx, :, 1] = V_sol[t + 1, :]
+            Y[sample_idx, :, 2] = w_sol[t + 1, :]
+            Y[sample_idx, :, 3] = P_sol[t + 1, :]
+            Y[sample_idx, :, 4] = m_dot[t + 1, :]
 
-                X[sample_idx] = window
+            Y[sample_idx, :, 5] = T_sol[t + 2, :]
+            Y[sample_idx, :, 6] = V_sol[t + 2, :]
+            Y[sample_idx, :, 7] = w_sol[t + 2, :]
+            Y[sample_idx, :, 8] = P_sol[t + 2, :]
+            Y[sample_idx, :, 9] = m_dot[t + 2, :]
 
-                # posição espacial
-                X[sample_idx, :, 0] = j
-
-                # --------------------------
-                # t+1
-                # --------------------------
-
-                T1 = T_sol[t + 1, j]
-                V1 = V_sol[t + 1, j]
-                w1 = w_sol[t + 1, j]
-                P1 = P_sol[t + 1, j]
-                m1 = m_dot[t + 1, j]
-
-                # --------------------------
-                # t+2
-                # --------------------------
-
-                T2 = T_sol[t + 2, j]
-                V2 = V_sol[t + 2, j]
-                w2 = w_sol[t + 2, j]
-                P2 = P_sol[t + 2, j]
-                m2 = m_dot[t + 2, j]
-
-                Y[sample_idx] = [
-                    T1,
-                    V1,
-                    w1,
-                    P1,
-                    m1,
-                    T2,
-                    V2,
-                    w2,
-                    P2,
-                    m2
-                ]
-
-                sample_idx += 1
-
-        # =====================================================
-        # Tensor
-        # =====================================================
+            sample_idx += 1
 
         x_train = torch.from_numpy(X)
         y_train = torch.from_numpy(Y)
 
-        # =====================================================
-        # Normalização
-        # =====================================================
+        x_min = x_train.amin(dim=(0, 1), keepdim=True)
+        x_max = x_train.amax(dim=(0, 1), keepdim=True)
+        y_min = y_train.amin(dim=0, keepdim=True)
+        y_max = y_train.amax(dim=0, keepdim=True)
 
-        x_min = x_train.amin(
-            dim=(0, 1),
-            keepdim=True
-        )
-
-        x_max = x_train.amax(
-            dim=(0, 1),
-            keepdim=True
-        )
-
-        y_min = y_train.amin(
-            dim=0,
-            keepdim=True
-        )
-
-        y_max = y_train.amax(
-            dim=0,
-            keepdim=True
-        )
-
-        return (
-            x_train,
-            y_train,
-            x_min,
-            x_max,
-            y_min,
-            y_max
-        )
+        return x_train, y_train, x_min, x_max, y_min, y_max
 
     def plotar(self):
         if not self.resultados:
