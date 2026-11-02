@@ -5,11 +5,45 @@ from torch.utils.data import DataLoader, TensorDataset
 import numpy as np
 from libs.composicaogas import coef_con_ter
 from concurrent.futures import ThreadPoolExecutor
+from casadi import SX, Function, jacobian
 import os
+
+
+class PhysicsCasADiFunction(torch.autograd.Function):
+
+    @staticmethod
+    def forward(ctx, y, physics_fn_batch, jac_fn_batch, batch_size):
+        y_np = y.detach().cpu().numpy().T
+
+        dydt_np = np.array(physics_fn_batch(y_np))
+
+        ctx.save_for_backward(y)
+        ctx.jac_fn_batch = jac_fn_batch
+        ctx.batch_size = batch_size
+
+        return torch.as_tensor(dydt_np.T, dtype=y.dtype, device=y.device)
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        (y,) = ctx.saved_tensors
+        y_np = y.detach().cpu().numpy().T
+
+        jac_np = np.array(ctx.jac_fn_batch(y_np))
+        jac_list = np.hsplit(jac_np, ctx.batch_size)
+        jac_stack = np.stack(jac_list, axis=0)
+
+        grad_output_np = grad_output.detach().cpu().numpy()
+
+        grad_input_np = np.einsum('bi,bij->bj', grad_output_np, jac_stack)
+
+        grad_input = torch.as_tensor(grad_input_np, dtype=y.dtype, device=y.device)
+
+        return grad_input, None, None, None
 
 class RNNModelWrapper(nn.Module):
     def __init__(self, sistema, input_dim, hidden_dim, num_layers,
-                 x_min, x_max, y_min, y_max, T_norm, V_norm, P_norm, w_norm, lr=1e-3, device="cpu"):
+                 x_min, x_max, y_min, y_max, T_norm, V_norm, P_norm, w_norm,
+                 batch_size_phys, lr=1e-3, device="cpu"):
 
         super().__init__()
         self.device = device
@@ -18,8 +52,7 @@ class RNNModelWrapper(nn.Module):
 
         self.x_min = x_min.clone().detach().float().to(device)
         self.x_max = x_max.clone().detach().float().to(device)
-
-        self.y_min = y_min.clone().detach().float().to(device)  # shape (1, n_points, 10)
+        self.y_min = y_min.clone().detach().float().to(device)
         self.y_max = y_max.clone().detach().float().to(device)
 
         self.T_norm = T_norm
@@ -34,13 +67,28 @@ class RNNModelWrapper(nn.Module):
             batch_first=True,
             bias=True)
 
-        # saída agora cobre todos os nós de uma vez
         self.fc = nn.Linear(hidden_dim, self.n_points * 10)
 
         self.D_lagrange = self.build_lagrange_matrix()
         self.optimizer = optim.Adam(self.parameters(), lr=lr)
         self.loss_fn = nn.MSELoss()
-        self._executor = ThreadPoolExecutor(max_workers=os.cpu_count())
+
+        # ---------------------------------------------------------
+        # Construção da física via CasADi (uma vez só)
+        # batch_size_phys = batch_size do treino * 2 (k1+k2 concatenados)
+        # ---------------------------------------------------------
+        self.n_states = 3 * self.n_points
+        self.batch_size_phys = batch_size_phys
+
+        y_sym = SX.sym("y", self.n_states)
+        dydt_sym = sistema.evaluate_physics_only(y_sym)
+        jac_sym = jacobian(dydt_sym, y_sym)
+
+        physics_fn = Function("physics_only", [y_sym], [dydt_sym])
+        jac_fn = Function("physics_jacobian", [y_sym], [jac_sym])
+
+        self.physics_fn_batch = physics_fn.map(batch_size_phys)
+        self.jac_fn_batch = jac_fn.map(batch_size_phys)
 
     def normalize_x(self, x):
         return 2 * (x - self.x_min) / (self.x_max - self.x_min) - 1
@@ -127,155 +175,26 @@ class RNNModelWrapper(nn.Module):
 
         return var @ D.T
 
-    def physics_point(self, T, V, P, w):
+    def physics_rhs_casadi(self, T, V, w):
+        # T, V, w: (batch, n_points)
+        batch = T.shape[0]
 
-        gas_temp = self.sistema.gas.copy_change_conditions(
-            T,
-            None,
-            V,
-            "gas"
-        )
+        # entrelaça T,V,w por nó: [T0,V0,w0, T1,V1,w1, ...]
+        y_cat = torch.stack([T, V, w], dim=-1).reshape(batch, -1)  # (batch, n_states)
 
-        gas_temp.ci_real()
+        dydt = PhysicsCasADiFunction.apply(
+            y_cat, self.physics_fn_batch, self.jac_fn_batch, self.batch_size_phys
+        )  # (batch, n_states)
 
-        dPdT = gas_temp.dPdT * 1000
-        dPdV = gas_temp.dPdV * 1000
+        dydt = dydt.reshape(batch, self.n_points, 3)
 
-        Cv = (
-            gas_temp.Cvt /
-            gas_temp.mixture.MM_m *
-            1000
-        )
+        F_T = dydt[:, :, 0]
+        F_V = dydt[:, :, 1]
+        F_w = dydt[:, :, 2]
 
-        P_phys = gas_temp.P
+        return F_T, F_V, F_w
 
-        MM = gas_temp.mixture.MM_m
-
-        v_kg = V / MM
-        rho = 1.0 / v_kg
-
-        A = np.pi * (self.sistema.D**2) / 4
-
-        m_phys = rho * w * A
-
-        mu = self.sistema.visc.evaluate_viscosity(
-            T,
-            P
-        )
-
-        Re = rho * w * self.sistema.D / mu
-
-        f = self.sistema.fator_friccao(Re)
-
-        kappa = coef_con_ter(gas_temp)
-
-        h_t = self.sistema.coef_cov_fluid(
-            kappa,
-            mu,
-            Re,
-            gas_temp
-        )
-
-        U = 1.0 / (
-            (1.0 / h_t)
-            +
-            (
-                self.sistema.D /
-                (2 * self.sistema.k_solo)
-            )
-            *
-            np.arccosh(
-                2 * self.sistema.z_solo /
-                self.sistema.D
-            )
-        )
-
-        q = self.sistema.q_solo(
-            rho,
-            T,
-            U
-        )
-
-        return (
-            dPdT,
-            dPdV,
-            Cv,
-            f,
-            q,
-            P_phys,
-            m_phys
-        )
-
-    def physics_rhs(self, T, V, w, P):
-        # T, V, w, P chegam já como grade: (batch, n_points)
-
-        dT_dx = self.derivada_lagrange_3p(T).reshape(-1)
-        dV_dx = self.derivada_lagrange_3p(V).reshape(-1)
-        dw_dx = self.derivada_lagrange_3p(w).reshape(-1)
-
-        T_flat = T.reshape(-1)
-        V_flat = V.reshape(-1)
-        w_flat = w.reshape(-1)
-        P_flat = P.reshape(-1)
-
-        T_np = T_flat.detach().cpu().numpy()
-        V_np = V_flat.detach().cpu().numpy()
-        P_np = P_flat.detach().cpu().numpy()
-        w_np = w_flat.detach().cpu().numpy()
-
-        def call_physics(i):
-            return self.physics_point(T_np[i], V_np[i], P_np[i], w_np[i])
-
-        results = list(self._executor.map(call_physics, range(len(T_np))))
-
-        (
-            dPdT_list, dPdV_list, Cv_list,
-            f_list, q_list, P_phys_list, m_phys_list,
-        ) = zip(*results)
-
-        def to_tensor(lst):
-            arr = np.array(
-                [np.asarray(v).reshape(-1)[0] for v in lst],
-                dtype=np.float32
-            )
-            return torch.as_tensor(arr, device=self.device)
-
-        dPdT = to_tensor(dPdT_list)
-        dPdV = to_tensor(dPdV_list)
-        Cv = to_tensor(Cv_list)
-        f = to_tensor(f_list)
-        q = to_tensor(q_list)
-        P_phys = to_tensor(P_phys_list)
-        m_phys = to_tensor(m_phys_list)
-
-        F_T = (
-            -w_flat * dT_dx
-            - T_flat * (V_flat * dPdT / Cv) * dw_dx
-            + f * w_flat**2 * torch.abs(w_flat) / (2 * self.sistema.D * Cv)
-            + q / Cv
-        )
-
-        F_V = (
-            -w_flat * dV_dx
-            + V_flat * dw_dx
-        )
-
-        F_w = (
-            -V_flat * dPdT * dT_dx
-            - V_flat * dPdV * dV_dx
-            - w_flat * dw_dx
-            - f * w_flat * torch.abs(w_flat) / (2 * self.sistema.D)
-        )
-
-        F_T = F_T.reshape(T.shape)
-        F_V = F_V.reshape(T.shape)
-        F_w = F_w.reshape(T.shape)
-        P_phys = P_phys.reshape(T.shape)
-        m_phys = m_phys.reshape(T.shape)
-
-        return F_T, F_V, F_w, P_phys, m_phys
-
-    def train_model(self, dt, train_loader, epochs, lambda_phys=1e1, warmup_epochs=2000, phys_every=1):
+    def train_model(self, dt, train_loader, epochs, lambda_phys=1e0, warmup_epochs=0):
 
         self.train()
 
@@ -290,20 +209,18 @@ class RNNModelWrapper(nn.Module):
                 self.optimizer.zero_grad()
 
                 xb = xb.to(self.device)
-                yb = yb.to(self.device)   # (batch, n_points, 10)
+                yb = yb.to(self.device)
 
-                pred = self.forward(xb)   # (batch, n_points, 10)
+                pred = self.forward(xb)
 
                 T_k1 = pred[:, :, 0]
                 V_k1 = pred[:, :, 1]
                 w_k1 = pred[:, :, 2]
-                P_k1 = pred[:, :, 3]
                 m_k1 = pred[:, :, 4]
 
                 T_k2 = pred[:, :, 5]
                 V_k2 = pred[:, :, 6]
                 w_k2 = pred[:, :, 7]
-                P_k2 = pred[:, :, 8]
                 m_k2 = pred[:, :, 9]
 
                 MM = self.sistema.gas.mixture.MM_m
@@ -312,40 +229,28 @@ class RNNModelWrapper(nn.Module):
                 rho_nn = 1.0 / v_kg_nn
                 m_scale = rho_nn * self.w_norm * A
 
-                compute_phys = (ep >= warmup_epochs) and (batch_idx % phys_every == 0)
-
-                if not compute_phys:
+                if ep < warmup_epochs:
                     loss_phys = torch.tensor(0.0, device=self.device)
                 else:
                     T_cat = torch.cat([T_k1, T_k2], dim=0)
                     V_cat = torch.cat([V_k1, V_k2], dim=0)
                     w_cat = torch.cat([w_k1, w_k2], dim=0)
-                    P_cat = torch.cat([P_k1, P_k2], dim=0)
 
-                    F_T_cat, F_V_cat, F_w_cat, P_phys_cat, m_phys_cat = self.physics_rhs(
-                        T_cat, V_cat, w_cat, P_cat
-                    )
+                    F_T_cat, F_V_cat, F_w_cat = self.physics_rhs_casadi(T_cat, V_cat, w_cat)
 
                     batch = T_k1.shape[0]
                     F_T_k1, F_T_k2 = F_T_cat[:batch], F_T_cat[batch:]
                     F_V_k1, F_V_k2 = F_V_cat[:batch], F_V_cat[batch:]
                     F_w_k1, F_w_k2 = F_w_cat[:batch], F_w_cat[batch:]
-                    P_phys = P_phys_cat[batch:]
-                    m_phys = m_phys_cat[batch:]
 
                     res_T = (T_k2 - T_k1) / dt - 0.5 * (F_T_k2 + F_T_k1)
                     res_V = (V_k2 - V_k1) / dt - 0.5 * (F_V_k2 + F_V_k1)
                     res_w = (w_k2 - w_k1) / dt - 0.5 * (F_w_k2 + F_w_k1)
 
-                    res_m = 0 * (m_k2 - m_phys)
-                    res_P = 0 * (P_k2 - P_phys)
-
                     loss_phys = (
-                        1e-4 * (res_T**2).mean()
-                        + 1e-4 * (res_V**2).mean()
-                        + 1e-4 * (res_w**2).mean()
-                        + 1e-4 * (res_m**2).mean()
-                        + 1e-4 * (res_P**2).mean()
+                         (res_T**2).mean()
+                        + (res_V**2).mean()
+                        +  (res_w**2).mean()
                     )
 
                 w_T = 5e0 / self.T_norm

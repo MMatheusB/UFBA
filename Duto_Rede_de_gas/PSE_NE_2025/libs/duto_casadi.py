@@ -185,6 +185,79 @@ class duto_casadi:
 
         return vertcat(*dydt), alg
     
+    def evaluate_physics_only(self, y):
+        """
+        Retorna dTdt, dVdt, dwdt calculados SOMENTE pela física interna
+        (equação de balanço + derivadas espaciais), sem sobrescrever
+        as condições de fronteira (que dependem de z/u).
+
+        Usado para a loss física da PINN (resíduo de Adams-Moulton),
+        já que a rede prevê apenas T, V, w (não z nem u).
+        """
+
+        T = [y[3*i + 0] for i in range(self.n_points)]
+        V = [y[3*i + 1] for i in range(self.n_points)]
+        w = [y[3*i + 2] for i in range(self.n_points)]
+
+        dTdt, dVdt, dwdt = [], [], []
+
+        for i in range(self.n_points):
+
+            gas2 = self.gas.copy_change_conditions(T[i], None, V[i], 'gas')
+            v_kg = V[i] / gas2.mixture.MM_m
+            rho = 1 / v_kg
+            gas2.ci_real()
+
+            Cv = gas2.Cvt / gas2.mixture.MM_m * 1000
+
+            mu = self.visc.evaluate_viscosity(T[i], gas2.P)
+            Re = rho * w[i] * self.D / mu
+
+            f = self.fator_friccao(Re)
+            kappa = coef_con_ter(gas2)
+            h_t = self.coef_cov_fluid(kappa, mu, Re, gas2)
+
+            U = 1 / (
+                (1 / h_t)
+                + (self.D / (2 * self.k_solo))
+                * arccosh(2 * self.z_solo / self.D)
+            )
+
+            q = self.q_solo(rho, T[i], U)
+
+            dPdT = gas2.dPdT * 1000
+            dPdV = gas2.dPdV * 1000
+
+            dT_dx = self.derivada_centrada(self.l, T, i)
+            dV_dx = self.derivada_centrada(self.l, V, i)
+            dw_dx = self.derivada_centrada(self.l, w, i)
+
+            A = vertcat(
+                horzcat(-w[i], 0, -T[i] * (v_kg * dPdT / Cv)),
+                horzcat(0, -w[i], V[i]),
+                horzcat(-v_kg * dPdT, -v_kg * dPdV, -w[i])
+            )
+
+            dx = vertcat(dT_dx, dV_dx, dw_dx)
+
+            b = vertcat(
+                f * w[i]**2 * fabs(w[i]) / (2 * self.D * Cv) + q / Cv,
+                SX(0),
+                -f * w[i] * fabs(w[i]) / (2 * self.D)
+            )
+
+            result = A @ dx + b
+
+            dTdt.append(result[0])
+            dVdt.append(result[1])
+            dwdt.append(result[2])
+
+        dydt = []
+        for i in range(self.n_points):
+            dydt += [dTdt[i], dVdt[i], dwdt[i]]
+
+        return vertcat(*dydt)
+    
     def evaluate_dae_duto2(self, t, y, z, u):
         T = [y[3*i + 0] for i in range(self.n_points * 2)]
         V = [y[3*i + 1] for i in range(self.n_points * 2)]
