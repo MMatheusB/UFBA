@@ -1,0 +1,19 @@
+Tentativa,Etapa,Alpha,Rotação,Erro
+3,Modelo fenomenológico,"[0.5734286467723452, 0.6402529197302631, 0.4477476074414456, 0.46113791181046065, 0.4908667433827424, 0.4068414077252857, 0.3889764516006415]","[37941.21330319648, 32218.915028170333, 42405.72187769774, 37054.49413406361, 46151.59850933026, 43106.09734605173, 34184.432751786946, 46141.975432089625]","Error in Function::call for 'F' [IdasInterface] at .../casadi/core/function.cpp:1466:
+Error in Function::call for 'F' [IdasInterface] at .../casadi/core/function.cpp:362:
+.../casadi/interfaces/sundials/idas_interface.cpp:599: IDACalcIC returned ""IDA_RES_FAIL"". Consult IDAS documentation."
+52,Modelo fenomenológico,"[0.352777934546337, 0.4064965924434055, 0.35938505387049335, 0.38318884026866096, 0.5360447859884889, 0.4224916726217257, 0.520763615129203]","[40574.493803620906, 46537.01266106492, 27109.0520369731, 46627.49756487444, 41239.7389878204, 30743.100180414025, 44777.559927111535, 46676.30546118347]","Error in Function::call for 'F' [IdasInterface] at .../casadi/core/function.cpp:1466:
+Error in Function::call for 'F' [IdasInterface] at .../casadi/core/function.cpp:362:
+.../casadi/interfaces/sundials/idas_interface.cpp:599: IDASolve returned ""IDA_REP_RES_ERR"". Consult IDAS documentation."
+295,Modelo fenomenológico,"[0.46138414625258806, 0.3656846032463969, 0.5727467873166867, 0.3951958272298739, 0.4271060046945373, 0.5825699756579644, 0.510415015226813]","[27321.37254662464, 27051.409709190135, 38745.19453001763, 34013.97681623148, 31147.163257889075, 41112.66056747055, 32254.038849500823, 40620.7644427538]","Error in Function::call for 'F' [IdasInterface] at .../casadi/core/function.cpp:1466:
+Error in Function::call for 'F' [IdasInterface] at .../casadi/core/function.cpp:362:
+.../casadi/interfaces/sundials/idas_interface.cpp:599: IDASolve returned ""IDA_CONV_FAIL"". Consult IDAS documentation."
+346,Modelo fenomenológico,"[0.3645483746815899, 0.4076342672747634, 0.35128484318988046, 0.5012630905036599, 0.5084943186704767, 0.5473675344217984, 0.465473734160313]","[27073.77688575923, 42499.496551375654, 28248.69501820199, 46921.91990880811, 27521.04171728256, 39200.92783490255, 47583.111294866976, 40167.260243141944]","Error in Function::call for 'F' [IdasInterface] at .../casadi/core/function.cpp:1466:
+Error in Function::call for 'F' [IdasInterface] at .../casadi/core/function.cpp:362:
+.../casadi/interfaces/sundials/idas_interface.cpp:599: IDASolve returned ""IDA_CONV_FAIL"". Consult IDAS documentation."
+362,Modelo fenomenológico,"[0.490563508842562, 0.3593831753824419, 0.6379827258033196, 0.3943260335216322, 0.45602209293592744, 0.46543839049871216, 0.496828969777524]","[45065.212513685925, 27140.076432527916, 48446.85718072972, 41857.757584669256, 48864.92422042551, 45799.959360579174, 48340.279015913984, 40823.0126715206]","Error in Function::call for 'F' [IdasInterface] at .../casadi/core/function.cpp:1466:
+Error in Function::call for 'F' [IdasInterface] at .../casadi/core/function.cpp:362:
+.../casadi/interfaces/sundials/idas_interface.cpp:599: IDASolve returned ""IDA_REP_RES_ERR"". Consult IDAS documentation."
+450,Modelo fenomenológico,"[0.6431019104047977, 0.35442423407039864, 0.5290514113788856, 0.5877534527950287, 0.449568241955271, 0.5295709376891473, 0.45863675925423447]","[28394.144425172544, 27194.614939054612, 29181.826692557333, 29263.420664761077, 41050.46488005625, 39094.900312137805, 37475.65590398227, 42914.193938855606]","Error in Function::call for 'F' [IdasInterface] at .../casadi/core/function.cpp:1466:
+Error in Function::call for 'F' [IdasInterface] at .../casadi/core/function.cpp:362:
+.../casadi/interfaces/sundials/idas_interface.cpp:599: IDASolve returned ""IDA_CONV_FAIL"". Consult IDAS documentation."
